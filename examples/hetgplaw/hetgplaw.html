@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>HETG simulation of an extended source &#8212; MARX 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    
+    <script src="../../_static/documentation_options.js?v=b6ed0530"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within MARX 6.0.1 documentation"
+          href="../../_static/opensearch.xml"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Simulating an LETG/ACIS-S observation" href="../LETGpow/letgplaw.html" />
+    <link rel="prev" title="Simulating a thermal plasma with the HETGS grating" href="../aped/aped.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="../LETGpow/letgplaw.html" title="Simulating an LETG/ACIS-S observation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../aped/aped.html" title="Simulating a thermal plasma with the HETGS grating"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../examples.html" accesskey="U">Examples of MARX in use</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">HETG simulation of an extended source</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="hetg-simulation-of-an-extended-source">
+<span id="sect-ex-hetg-disk"></span><h1>HETG simulation of an extended source<a class="headerlink" href="#hetg-simulation-of-an-extended-source" title="Link to this heading">¶</a></h1>
+<p>The purpose of this example, contributed by Dan Dewey, is to show how to use
+<strong>marx</strong> to simulate an HETG observation of a point and a
+simple extended source with a user-specified spectrum. This example, like many
+of the other examples, uses <strong>marx</strong>, <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> and <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a>, which should be
+installed on your system to run this example.</p>
+<section id="create-the-spectral-file">
+<h2>Create the spectral file<a class="headerlink" href="#create-the-spectral-file" title="Link to this heading">¶</a></h2>
+<p>Use MARX to simulate an HETG observation of a powerlaw with two added lines
+(For example, this could be Fe and Ne fluorescence lines).
+We will use <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> to create a file with model fluxes.
+This is similar to <a class="reference internal" href="../ACISpowerpileup/powerlaw.html#sect-ex-acisccd"><span class="std std-ref">Simulating a user-defined CCD spectrum with ACIS</span></a> except that the source is brighter
+and has a less steep powerlaw.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sherpa.astro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ui</span>
+
+<span class="c1"># set source properties</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">xsphabs</span><span class="o">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">ui</span><span class="o">.</span><span class="n">xspowerlaw</span><span class="o">.</span><span class="n">p</span> <span class="o">+</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsgaussian</span><span class="o">.</span><span class="n">l1</span> <span class="o">+</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsgaussian</span><span class="o">.</span><span class="n">l2</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">nH</span> <span class="o">=</span> <span class="mf">0.8</span>
+<span class="n">p</span><span class="o">.</span><span class="n">PhoIndex</span> <span class="o">=</span> <span class="mf">1.2</span>
+<span class="n">p</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.02</span>
+<span class="n">l1</span><span class="o">.</span><span class="n">lineE</span> <span class="o">=</span> <span class="mf">6.4038</span>  <span class="c1"># keV</span>
+<span class="n">l2</span><span class="o">.</span><span class="n">lineE</span> <span class="o">=</span> <span class="mf">0.8486</span>  <span class="c1"># keV</span>
+<span class="c1"># Make the lines have small but non-zero widths</span>
+<span class="n">l1</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># about 2300 km/s</span>
+<span class="n">l2</span><span class="o">.</span><span class="n">sigma</span> <span class="o">=</span> <span class="mf">0.005</span>  <span class="c1"># about 1800 km/s</span>
+<span class="n">l1</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.5e-4</span>
+<span class="n">l2</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">1e-4</span>
+
+<span class="c1"># get source</span>
+<span class="n">my_src</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_source</span><span class="p">()</span>
+
+<span class="c1"># set energy grid</span>
+<span class="n">bin_width</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">12.</span><span class="p">,</span> <span class="n">bin_width</span><span class="p">)</span>
+
+<span class="c1"># evaluate source on energy grid with lower and upper bin edges</span>
+<span class="n">flux</span> <span class="o">=</span> <span class="n">my_src</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="n">energies</span> <span class="o">+</span> <span class="n">bin_width</span><span class="p">)</span>
+
+<span class="c1"># MARX input files only have one energy column, and the conventions is that</span>
+<span class="c1"># this hold the UPPER edge of the bin.</span>
+<span class="c1"># Also, we need to divide the flux by the bin width to obtain the flux density.</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">save_arrays</span><span class="p">(</span><span class="s2">&quot;source_flux.tbl&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">energies</span> <span class="o">+</span> <span class="n">bin_width</span><span class="p">,</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">],</span>
+               <span class="p">[</span><span class="s2">&quot;keV&quot;</span><span class="p">,</span><span class="s2">&quot;photons/s/cm**2/keV&quot;</span><span class="p">],</span> <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here a fine binning is used having bins with dE/E = 0.0003 (v_bin = 90 km/s).
+This gives a high resolution spectrum across the whole 1 to 40 A
+(0.31 to 12.4 keV) range suitable for use with the HETG as well as, e.g.,
+future microcalorimeter instruments.</p>
+<p>The file <cite>source_flux.tbl</cite> can now be used by <strong>marx</strong> to define the spectrum.</p>
+</section>
+<section id="setup-and-run-marx">
+<h2>Setup and run <strong>marx</strong><a class="headerlink" href="#setup-and-run-marx" title="Link to this heading">¶</a></h2>
+<p>Roughly these steps are the same as for the previous examples, except that
+the HETG is inserted by using <a class="reference internal" href="../../inbrief/simsetup.html#parameter-GratingType"><code class="xref std std-par docutils literal notranslate"><span class="pre">GratingType=&quot;HETG&quot;</span></code></a>.</p>
+<p>It can be convenient to use <a class="reference internal" href="../../Reference/tools.html#pset"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">pset</span></code></a> to set the parameters in a
+local par file, but in this case we put together a Python dictionary with options
+that we will reformat to match the <strong>marx</strong> calling. Of course, <strong>marx</strong> can also be
+called directly from the command line, but executing everything from Python
+makes it easier for us to re-run these examples and keep everything up to date.
+Depending on your problem, it might also be a convenient way for you to script
+your <strong>marx</strong> simulations.</p>
+<p>Either way, the first simulation
+here is for a <a class="reference internal" href="../../indetail/models.html#sect-models-point"><span class="std std-ref">POINT Source</span></a>; it is followed by a few additional
+lines to do a second simulation with a <a class="reference internal" href="../../indetail/models.html#sect-models-disk"><span class="std std-ref">DISK Source</span></a>.</p>
+<p>In the working directory paste these sets of lines to the unix prompt to run
+a first simulation using a point source:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="n">marxpars</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># set the spectrum file to use:</span>
+    <span class="s2">&quot;SourceFlux&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span>
+    <span class="s2">&quot;SpectrumType&quot;</span><span class="p">:</span> <span class="s2">&quot;FILE&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;SpectrumFile&quot;</span><span class="p">:</span> <span class="s2">&quot;source_flux.tbl&quot;</span><span class="p">,</span>
+
+    <span class="c1"># Set other parameters of the simulation:</span>
+    <span class="c1"># Using 50 ks</span>
+    <span class="s2">&quot;ExposureTime&quot;</span><span class="p">:</span> <span class="mi">50000</span><span class="p">,</span>
+    <span class="s2">&quot;OutputDir&quot;</span><span class="p">:</span> <span class="s2">&quot;hetg_plaw&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DitherModel&quot;</span><span class="p">:</span> <span class="s2">&quot;INTERNAL&quot;</span><span class="p">,</span>
+
+    <span class="c1"># Use the HETG with ACIS-S:</span>
+    <span class="s2">&quot;GratingType&quot;</span><span class="p">:</span> <span class="s2">&quot;HETG&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;DetectorType&quot;</span><span class="p">:</span> <span class="s2">&quot;ACIS-S&quot;</span><span class="p">,</span>
+
+    <span class="c1"># Some other parameters it can be useful to set:</span>
+
+    <span class="c1"># Date of observation (effects ACIS QE)</span>
+    <span class="s2">&quot;TStart&quot;</span><span class="p">:</span> <span class="mf">2009.5</span><span class="p">,</span>
+
+    <span class="c1"># Roll of the observation: 0 puts average dispersion along E -- W.</span>
+    <span class="s2">&quot;Roll_Nom&quot;</span><span class="p">:</span> <span class="mi">50</span><span class="p">,</span>
+
+    <span class="c1"># Pointing RA/DEC and source position (degrees)</span>
+    <span class="s2">&quot;RA_Nom&quot;</span><span class="p">:</span> <span class="mf">250.000</span><span class="p">,</span>
+    <span class="s2">&quot;Dec_Nom&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">54.000</span><span class="p">,</span>
+    <span class="s2">&quot;SourceRA&quot;</span><span class="p">:</span> <span class="mf">250.000</span><span class="p">,</span>
+    <span class="s2">&quot;SourceDEC&quot;</span><span class="p">:</span> <span class="o">-</span><span class="mf">54.000</span><span class="p">,</span>
+<span class="p">}</span>
+
+<span class="n">marx_cmd</span> <span class="o">=</span> <span class="s1">&#39;marx &#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">marxpars</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">marx_cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># The variable &quot;out&quot; catches the return code here. A value of 0 means success.</span>
+<span class="k">assert</span> <span class="n">out</span> <span class="o">==</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p><strong>marx</strong> runs, ending with something similar to (since <strong>marx</strong> is a Monte-Carlo
+based simulation, the exact number of detected photons can vary):</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Writing output to directory &#39;hetg_plaw&#39; ...
+Total photons: 3463396, Total Photons detected: 238501, (efficiency: 0.068863)
+(efficiency this iteration  0.067985)  Total time: 50000.002238
+</pre></div>
+</div>
+<p>Now, do another simulation keeping most things the same as above
+but changing a few things to use a <a class="reference internal" href="../../indetail/models.html#sect-models-disk"><span class="std std-ref">DISK Source</span></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">marxpars</span><span class="p">[</span><span class="s2">&quot;OutputDir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;hetg_pldisk&quot;</span>
+
+<span class="c1"># Change the SourceType:</span>
+<span class="n">marxpars</span><span class="p">[</span><span class="s2">&quot;SourceType&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;DISK&quot;</span>
+<span class="c1"># a thin disk with average radius ~ 2.0&quot;</span>
+<span class="n">marxpars</span><span class="p">[</span><span class="s2">&quot;S-DiskTheta0&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.7</span>
+<span class="n">marxpars</span><span class="p">[</span><span class="s2">&quot;S-DiskTheta1&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.3</span>
+
+<span class="n">marx_cmd</span> <span class="o">=</span> <span class="s1">&#39;marx &#39;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">k</span><span class="si">}</span><span class="s1">=</span><span class="si">{</span><span class="n">v</span><span class="si">}</span><span class="s1">&#39;</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">marxpars</span><span class="o">.</span><span class="n">items</span><span class="p">()])</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">marx_cmd</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># The variable &quot;out&quot; catches the return code here. A value of 0 means success.</span>
+<span class="k">assert</span> <span class="n">out</span> <span class="o">==</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>Next, we create the fits event file and the aspect solution files for both
+simulations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;plaw&quot;</span><span class="p">,</span> <span class="s2">&quot;pldisk&quot;</span><span class="p">]:</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;marx2fits hetg_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1"> hetg_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_evt2.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;marxasp MarxDir=&quot;hetg_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">&quot; OutputFile=&quot;hetg_</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s1">_asol1.fits&quot;&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Combining <strong>marx</strong> simulations</p>
+<p>The tool <a class="reference internal" href="../../Reference/tools.html#marxcat"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marxcat</span></code></a> allows simulations to be combined, e.g., we
+could do the following to make a combination of the point and disk events:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>marxcat hetg_plaw hetg_pldisk hetg_plboth
+</pre></div>
+</div>
+<p>and then create fits and asol files as above.
+This allows more complex spatial-spectral simulations to be done with <strong>marx</strong>.</p>
+</div>
+<p>We can look at the simulation output event files with <a class="reference external" href="http://ds9.si.edu/">ds9</a> to check that they
+are as expected before continuing with ciao-processing. A suitable <a class="reference external" href="http://ds9.si.edu/">ds9</a> command that
+shows both event files side-by-side and sets up some useful display options is:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>ds9 -log -cmap heat hetg_plaw_evt2.fits -regions hetg_plaw_reg1a.fits \
+    -scale mode 99.9 hetg_pldisk_evt2.fits -regions hetg_pldisk_reg1a.fits \
+    -tile row -saveimage $@ -exit
+</pre></div>
+</div>
+<p>Alternatively, we can use a small Python script to create similar plots. Here we use
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">astropy.visualization</span></code> to do a logarithmic scaling of the images and we use
+<a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/ahelp/crates.html">crates</a> for reading the fits files (<a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/ahelp/crates.html">crates</a> is part of the <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> installation):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pycrates</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">PercentileInterval</span><span class="p">,</span> <span class="n">LogStretch</span><span class="p">,</span> <span class="n">ImageNormalize</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aspect&#39;</span><span class="p">:</span><span class="s1">&#39;equal&#39;</span><span class="p">},</span>
+                        <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">bins</span> <span class="o">=</span> <span class="p">[</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">]</span>
+<span class="n">bin_size</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="nb">range</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">4096</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">4096</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+        <span class="p">[</span><span class="mi">4096</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">4096</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">]]]</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;plaw&quot;</span><span class="p">,</span> <span class="s2">&quot;pldisk&quot;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;POINT source&#39;</span><span class="p">,</span> <span class="s1">&#39;DISK source&#39;</span><span class="p">]):</span>
+    <span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;hetg_</span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s1">_evt2.fits&#39;</span><span class="p">)</span>
+    <span class="n">hist</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                                <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="nb">range</span><span class="p">)</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">ImageNormalize</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">PercentileInterval</span><span class="p">(</span><span class="mf">99.9</span><span class="p">),</span> <span class="n">stretch</span><span class="o">=</span><span class="n">LogStretch</span><span class="p">())</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">hist</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;hot&#39;</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/4373b449d2739e4cc7fe239ca47a5fa9/hetgplaw-5.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/4b9afe86bd9b68a0276a9109e217be15/hetgplaw-5.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/20c8e4e697c366d6669c286276a4c5d0/hetgplaw-5.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/hetgplaw-5.png" class="plot-directive" src="../../_images/hetgplaw-5.png" />
+</figure>
+<p>The simulation of the point source is shown on the left, the extended source
+on the right. The extended source has a much wider zeroth order, but the
+scaling of the image is chosen to bring out the faint features so this is
+hard to see. Above and below the zeroth order the read-out streak is
+visible. In both images the X-shape of the grating spectra can be seen. The
+spectra are much wider in the right image due to the source
+extension. Still, the grating extraction area that we will calculate below is large
+enough to capture most of the signal.</p>
+<p>We can also use <a class="reference external" href="http://ds9.si.edu/">ds9</a> to record the center of the
+disk (simulation 2) in X,Y coordinates (4096.5, 4096.5) for further processing.</p>
+</section>
+<section id="extract-hetg-spectra">
+<h2>Extract HETG spectra<a class="headerlink" href="#extract-hetg-spectra" title="Link to this heading">¶</a></h2>
+<p>We will extract the HETG spectra and then calculate the response matrix
+for the positive and negative first order in the MEG grating. There is very
+little signal in the higher orders, so they would not help to constrain the fit
+significantly. Extraction of the HEG grating works in a similar way, see the
+<a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> documentation for details.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ciao_contrib.runtool</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+
+<span class="c1"># marx2fits generated file</span>
+<span class="n">evtfile</span><span class="o">=</span><span class="s2">&quot;hetg_plaw_evt2.fits&quot;</span>
+
+<span class="c1"># These files are generated by this script</span>
+<span class="n">evt1afile</span><span class="o">=</span><span class="s2">&quot;hetg_plaw_evt1a.fits&quot;</span>
+<span class="n">reg1afile</span><span class="o">=</span><span class="s2">&quot;hetg_plaw_reg1a.fits&quot;</span>
+<span class="n">asolfile</span><span class="o">=</span><span class="s2">&quot;hetg_plaw_asol1.fits&quot;</span>
+<span class="n">pha2file</span><span class="o">=</span><span class="s2">&quot;hetg_plaw_pha2.fits&quot;</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tgdetect</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">OBI_srclist_file</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;hetg_plaw_src1a.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tg_create_mask</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">reg1afile</span><span class="p">,</span> <span class="n">input_pos_tab</span><span class="o">=</span><span class="s2">&quot;hetg_plaw_src1a.fits&quot;</span><span class="p">,</span>
+                <span class="n">grating_obs</span><span class="o">=</span><span class="s2">&quot;header_value&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tg_resolve_events</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">evt1afile</span><span class="p">,</span>
+                    <span class="n">regionfile</span><span class="o">=</span><span class="n">reg1afile</span><span class="p">,</span> <span class="n">osipfile</span><span class="o">=</span><span class="s2">&quot;CALDB&quot;</span><span class="p">,</span> <span class="n">acaofffile</span><span class="o">=</span><span class="n">asolfile</span><span class="p">,</span>
+                    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tgextract</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evt1afile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span> <span class="n">tg_order_list</span><span class="o">=</span><span class="s2">&quot;-1,+1&quot;</span><span class="p">,</span>
+            <span class="n">ancrfile</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">respfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">inregion_file</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">tg_srcid_list</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outfile_type</span><span class="o">=</span><span class="s2">&quot;pha_typeII&quot;</span><span class="p">,</span> <span class="n">tg_part_list</span><span class="o">=</span><span class="s1">&#39;header_value&#39;</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">pharow</span><span class="p">,</span> <span class="n">order</span> <span class="ow">in</span> <span class="p">[(</span><span class="mi">3</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="o">+</span><span class="mi">1</span><span class="p">)]:</span>
+    <span class="n">rt</span><span class="o">.</span><span class="n">mkgrmf</span><span class="p">(</span><span class="n">grating_arm</span><span class="o">=</span><span class="s2">&quot;MEG&quot;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="n">order</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;meg</span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">_rmf.fits&quot;</span><span class="p">,</span> <span class="n">srcid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">detsubsys</span><span class="o">=</span><span class="s2">&quot;ACIS-S3&quot;</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">1e-06</span><span class="p">,</span> <span class="n">obsfile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span> <span class="n">regionfile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span>
+        <span class="n">wvgrid_arf</span><span class="o">=</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="n">wvgrid_chan</span><span class="o">=</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># fullgarf produces a lot of output. Let&#39;s capture that in a variable in case we need it.</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">rt</span><span class="o">.</span><span class="n">fullgarf</span><span class="p">(</span><span class="n">phafile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span> <span class="n">pharow</span><span class="o">=</span><span class="n">pharow</span><span class="p">,</span> <span class="n">evtfile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span>
+            <span class="n">asol</span><span class="o">=</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">engrid</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;grid(meg</span><span class="si">{</span><span class="n">order</span><span class="si">}</span><span class="s2">_rmf.fits[cols ENERG_LO,ENERG_HI])&quot;</span><span class="p">,</span>
+            <span class="n">maskfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">dafile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">dtffile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">badpix</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span>
+            <span class="n">rootname</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="c1"># Because marx does not simulate the QE maps, we set ardlibqual=UNIFORM here</span>
+            <span class="c1"># Because marx does not simulate bad pixels, we set bpmask=0 here</span>
+            <span class="n">ardlibqual</span><span class="o">=</span><span class="s2">&quot;;UNIFORM;bpmask=0&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="perform-spectral-analysis">
+<h2>Perform spectral analysis<a class="headerlink" href="#perform-spectral-analysis" title="Link to this heading">¶</a></h2>
+<p>As an examples of the spectra analysis, we will fit an absorbed powerlaw to the
+point-like source spectrum. The spectral regions where the extra lines are
+located are ignored in the fit. Fitting the spectrum of the extended source
+works in the similar way. Naturally, a lot more analysis could be done on the
+simulated spectra, the most obvious point might be a fit of the spectral lines
+to determine the spectral resolution of Chandra in this example. (The lines from
+the extended source will appear much wider.) However, that is beyond the scope
+of this example. Please check the manual of your preferred X-ray spectral
+fitting software. In this example below, we use <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a>, but <a class="reference external" href="http://heasarc.nasa.gov/xanadu/xspec/">XSPEC</a> and
+<a class="reference external" href="http://space.mit.edu/cxc/isis/">ISIS</a> work very similar.</p>
+<p>This is <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> code to fit an absorbed powerlaw to the simulated spectrum:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ui</span><span class="o">.</span><span class="n">load_pha</span><span class="p">(</span><span class="n">pha2file</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;MEG_-1_garf.fits&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_rmf</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;meg-1_rmf.fits&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;MEG_1_garf.fits&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_rmf</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;meg1_rmf.fits&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsphabs</span><span class="o">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">ui</span><span class="o">.</span><span class="n">xspowerlaw</span><span class="o">.</span><span class="n">xp</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsphabs</span><span class="o">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">ui</span><span class="o">.</span><span class="n">xspowerlaw</span><span class="o">.</span><span class="n">xp</span><span class="p">)</span>
+<span class="c1"># We didn&#39;t make ARF and RMF for the HEG, so we can&#39;t do anything</span>
+<span class="c1"># in energy space there. So, we loop to apply setting only to the MEG arms.</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">]:</span>
+    <span class="c1"># ignore the lines in the fit</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">set_analysis</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="s2">&quot;energy&quot;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">ignore_id</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">ignore_id</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">ignore_id</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mf">6.3</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">ignore_id</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mf">8.0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">group_counts</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+<span class="c1"># Now, plot the fit</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">yerrorbars</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">xlog</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ylog</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">yerrorbars</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_model</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;MEG -1&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_model</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;MEG +1&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+<span class="c1"># By default, matplotlib labels only 10^0, 10^1 etc. in log plots.</span>
+<span class="c1"># That would give us only a single xlabel on this plot.</span>
+<span class="c1"># The following lines change the matplotlib settings for the formatting</span>
+<span class="c1"># of the x-axis to show more ticks.</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">ticker</span>
+<span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.formatter.min_exponent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_minor_formatter</span><span class="p">(</span><span class="n">ticker</span><span class="o">.</span><span class="n">LogFormatterMathtext</span><span class="p">(</span><span class="n">labelOnlyBase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                            <span class="n">minor_thresholds</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">.5</span><span class="p">)))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;xtick.labelsize&#39;</span><span class="p">],</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/d311f225e1aac93857eefc68bf4af92d/hetgplaw-7.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/fd0b5e020ac51f071358779ed774f2a4/hetgplaw-7.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/1188da2c68effcceae2ca86038b47f2d/hetgplaw-7.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/hetgplaw-7.png" class="plot-directive" src="../../_images/hetgplaw-7.png" />
+</figure>
+<p>The resulting fit parameters are similar, but not identical, to the
+parameters we put into the simulation above.</p>
+<p>Datapoints are shown slightly transparent and without error bars because the plot
+would be too messy otherwise. The solid lines show the fitted model.
+The MEG orders in the plot differ from one another because the effective area is different,
+e.g. the gaps between the ACIS chips fall on different wavelengths.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<form action="../../search.html" method="get">
+<input type="text" name="q" placeholder="Search" />
+<input type="hidden" name="check_keywords" value="yes" />
+<input type="hidden" name="area" value="default" />
+</form>
+  <h3><a href="../../index.html">Page Content</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">HETG simulation of an extended source</a><ul>
+<li><a class="reference internal" href="#create-the-spectral-file">Create the spectral file</a></li>
+<li><a class="reference internal" href="#setup-and-run-marx">Setup and run <strong>marx</strong></a></li>
+<li><a class="reference internal" href="#extract-hetg-spectra">Extract HETG spectra</a></li>
+<li><a class="reference internal" href="#perform-spectral-analysis">Perform spectral analysis</a></li>
+</ul>
+</li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../aped/aped.html"
+                          title="previous chapter">Simulating a thermal plasma with the HETGS grating</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../LETGpow/letgplaw.html"
+                          title="next chapter">Simulating an LETG/ACIS-S observation</a></p>
+  </div><hr style="color: #FFF;"></hr>
+<a href="http://cxc.harvard.edu/">
+    <img src="../../_static/cxcfooterCXCicon.png" 
+	 alt="Chandra X-ray Center" class="img-logo"></img>
+</a>
+<p></p>
+<a href="http://space.mit.edu/cxc/">CXC@MIT</a>
+<p></p>
+<a href="http://space.mit.edu/">
+    <img src="../../_static/logo-mit-kavli.png" 
+	 alt="MIT Kavli Institute" class="img-logo"></img>
+</a>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="../LETGpow/letgplaw.html" title="Simulating an LETG/ACIS-S observation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../aped/aped.html" title="Simulating a thermal plasma with the HETGS grating"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../examples.html" >Examples of MARX in use</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">HETG simulation of an extended source</a></li> 
+      </ul>
+    </div>
+    <div class="footer">
+    <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
+    <a href="https://accessibility.mit.edu/">Accessibility</a>
+        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

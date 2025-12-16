@@ -1,0 +1,1541 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Reproducing an input spectrum &#8212; MARX 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    
+    <script src="../_static/documentation_options.js?v=b6ed0530"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within MARX 6.0.1 documentation"
+          href="../_static/opensearch.xml"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Source shapes in MARX" href="source.html" />
+    <link rel="prev" title="Flight grade distribution" href="Grades.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="source.html" title="Source shapes in MARX"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="Grades.html" title="Flight grade distribution"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><strong>marx</strong> accuracy and testing</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Reproducing an input spectrum</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="reproducing-an-input-spectrum">
+<h1>Reproducing an input spectrum<a class="headerlink" href="#reproducing-an-input-spectrum" title="Link to this heading">¶</a></h1>
+<p>marx allows users to specify either a flat input spectrum or to pass in a file.
+Here, we generate input spectra with the spectral modeling program <a class="reference external" href="https://cxc.cfa.harvard.edu/sherpa/">Sherpa</a>.
+We run marx to
+simulate a point source and extract the data from that simulation using <a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/">CIAO</a>,
+read it back into <a class="reference external" href="https://cxc.cfa.harvard.edu/sherpa/">Sherpa</a> and fit the simulated data.
+If everything works well and all detector effects are treated consistently,
+we should recover the same spectral parameters (up to Poisson noise).
+On the other hand, if marx and
+<code class="docutils literal notranslate"><span class="pre">CIAO</span></code>_ are inconsistent the fit parameters will deviate from the input
+parameters.</p>
+<p>In the past, this has happened after the release of marx 5.0, which contains
+some files to describe the ACIS contamination. This contamination changes with
+time and several CalDB releases had happened before we released marx 5.1.
+At that time, marx always predicted too many counts at low energies.</p>
+<p>The following tests are designed to test <strong>consistency</strong> with CIAO.
+Since there is always some uncertainty about the intrinsic spectrum of
+astrophysical sources, this test is best done with simulated input spectra.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Load marx in local environment and set up pfiles for tests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_marx</span>
+<span class="n">setup_marx</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="absorbed-powerlaw-on-acis-s">
+<h2>Absorbed powerlaw on ACIS-S<a class="headerlink" href="#absorbed-powerlaw-on-acis-s" title="Link to this heading">¶</a></h2>
+<p>This test checks the internal consistency of a marx spectral simulation
+by simulating a source placed on a back-illuminated chip of ACIS-S.
+The input spectrum is an absorbed powerlaw.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Set up a Sherpa model and use that to generate an spectrum as input for Marx.&#39;&#39;&#39;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sherpa.astro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ui</span>
+
+<span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsphabs</span><span class="o">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">ui</span><span class="o">.</span><span class="n">xspowerlaw</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">nH</span> <span class="o">=</span> <span class="mf">1.0</span>
+<span class="n">p</span><span class="o">.</span><span class="n">PhoIndex</span> <span class="o">=</span> <span class="mf">1.8</span>
+<span class="n">p</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.001</span>
+
+<span class="c1"># get source</span>
+<span class="n">my_src</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_source</span><span class="p">()</span>
+
+<span class="c1"># set energy grid</span>
+<span class="n">bin_width</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">12.</span><span class="p">,</span> <span class="n">bin_width</span><span class="p">)</span>
+
+<span class="c1"># evaluate source on energy grid</span>
+<span class="n">flux</span> <span class="o">=</span> <span class="n">my_src</span><span class="p">(</span><span class="n">energies</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+<span class="n">ui</span><span class="o">.</span><span class="n">save_arrays</span><span class="p">(</span><span class="s2">&quot;marx_input.tbl&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">],</span> 
+               <span class="p">[</span><span class="s2">&quot;keV&quot;</span><span class="p">,</span><span class="s2">&quot;photons/s/cm**2/keV&quot;</span><span class="p">],</span> <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+ 
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx SourceFlux=-1 SpectrumType=FILE SpectrumFile=marx_input.tbl ExposureTime=30000 &#39;</span> <span class="o">+</span> 
+                     <span class="s1">&#39;TStart=2015.5 OutputDir=marx GratingType=NONE DetectorType=ACIS-S DitherModel=INTERNAL &#39;</span> <span class="o">+</span>
+                     <span class="s1">&#39;RA_Nom=30 Dec_Nom=40 SourceRA=30 SourceDEC=40&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER marx marx_evt2.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out3</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marxasp MarxDir=marx OutputFile=marx_asol1.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>We generate an input spectrum and run marx. We then extract the spectrum in two different ways:</p>
+<ol class="arabic simple">
+<li><p>We use CIAO tools, but specify special qualifiers to account for the fact that marx does not include ACIS QE maps and uses FEF rmfs (FEF’s are parameterized functions to describe the shape of the RMF. They are faster to compute, but not as accurate as the tabulated values usually used in CIAO). We do that by setting the detector name to <code class="docutils literal notranslate"><span class="pre">&quot;ACIS-7;UNIFORM;bpmask=0&quot;</span></code> in <a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/ahelp/mkarf.html">mkarf</a> and by passing the appropriate FEF to <a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/ahelp/mkrmf.html">mkrmf</a>.</p></li>
+<li><p>We use the <a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/ahelp/specextract.html">specextract tool</a> without any special qualifiers. While <code class="docutils literal notranslate"><span class="pre">specextract</span></code> has a number of parameters, it does not allow us to set the dectector or force the use of an FEF file. It requires only a call to a single tool, but is inconsistent with the simulations done by marx, so fitted spectra will not match the input parameters as well as in method 1.</p></li>
+</ol>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Extract spectra</span>
+
+<span class="sd">Use special settings to account for steps that |marx| does not include:</span>
+<span class="sd">ACIS QE maps and current (non FEF) rmfs.</span>
+
+<span class="sd">We warp this into a function because we are going to use the same steps</span>
+<span class="sd">for more examples further down in the notebook and thus would be a fairly long</span>
+<span class="sd">piece of code to copy and paste.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">ciao_contrib.runtool</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">coords.chandra</span><span class="w"> </span><span class="kn">import</span> <span class="n">sky_to_chandra</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">special_extraction</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">radius</span><span class="p">):</span>
+    <span class="n">phagrid</span><span class="o">=</span><span class="s2">&quot;pi=1:1024:1&quot;</span>
+
+    <span class="n">evtfile</span><span class="o">=</span><span class="s2">&quot;marx_evt2.fits&quot;</span>
+    <span class="n">asolfile</span><span class="o">=</span><span class="s2">&quot;marx_asol1.fits&quot;</span>
+    <span class="n">phafile</span><span class="o">=</span><span class="s2">&quot;marx_pha.fits&quot;</span>
+    <span class="n">rmffile</span><span class="o">=</span><span class="s2">&quot;marx_rmf.fits&quot;</span>
+    <span class="n">arffile</span><span class="o">=</span><span class="s2">&quot;marx_arf.fits&quot;</span>
+    <span class="n">asphistfile</span><span class="o">=</span><span class="s2">&quot;marx_asp.fits&quot;</span>
+
+    <span class="n">rt</span><span class="o">.</span><span class="n">asphist</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">asphistfile</span><span class="p">,</span> <span class="n">evtfile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">rt</span><span class="o">.</span><span class="n">dmextract</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">evtfile</span><span class="si">}</span><span class="s2">[sky=circle(</span><span class="si">{</span><span class="n">x</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">y</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">radius</span><span class="si">}</span><span class="s2">)][bin </span><span class="si">{</span><span class="n">phagrid</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> 
+                <span class="n">outfile</span><span class="o">=</span><span class="n">phafile</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">coos</span> <span class="o">=</span> <span class="n">sky_to_chandra</span><span class="p">(</span><span class="n">fits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">evtfile</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">ccdid</span> <span class="o">=</span> <span class="n">coos</span><span class="p">[</span><span class="s1">&#39;chip_id&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">chipx</span> <span class="o">=</span> <span class="n">coos</span><span class="p">[</span><span class="s1">&#39;chipx&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">chipy</span> <span class="o">=</span> <span class="n">coos</span><span class="p">[</span><span class="s1">&#39;chipy&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">detname</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;ACIS-</span><span class="si">{</span><span class="n">ccdid</span><span class="si">}</span><span class="s2">;UNIFORM;bpmask=0&quot;</span>
+    <span class="c1"># For ACIS-I, use engrid=&quot;0.3:11.0:0.003&quot;. This reflects a limitation of mkrmf.</span>
+    <span class="n">engrid</span><span class="o">=</span><span class="s2">&quot;0.3:12.0:0.003&quot;</span>
+
+    <span class="n">rt</span><span class="o">.</span><span class="n">mkarf</span><span class="p">(</span><span class="n">mirror</span><span class="o">=</span><span class="s2">&quot;hrma&quot;</span><span class="p">,</span> <span class="n">detsubsys</span><span class="o">=</span><span class="n">detname</span><span class="p">,</span> <span class="n">grating</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span>
+    <span class="n">outfile</span><span class="o">=</span><span class="n">arffile</span><span class="p">,</span> <span class="n">obsfile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">engrid</span><span class="o">=</span><span class="n">engrid</span><span class="p">,</span> <span class="n">asphistfile</span><span class="o">=</span><span class="n">asphistfile</span><span class="p">,</span>
+    <span class="n">sourcepixelx</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">sourcepixely</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">maskfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">pbkfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">dafile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="n">fef</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;CALDB&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;/data/chandra/acis/fef_pha/acisD2000-01-29fef_phaN0005.fits&quot;</span>
+
+    <span class="n">cxfilter</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;chipx_hi&gt;=</span><span class="si">{</span><span class="n">chipx</span><span class="si">}</span><span class="s2">,chipx_lo&lt;=</span><span class="si">{</span><span class="n">chipx</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">cyfilter</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;chipy_hi&gt;=</span><span class="si">{</span><span class="n">chipy</span><span class="si">}</span><span class="s2">,chipy_lo&lt;=</span><span class="si">{</span><span class="n">chipy</span><span class="si">}</span><span class="s2">&quot;</span>
+    <span class="n">rt</span><span class="o">.</span><span class="n">mkrmf</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">fef</span><span class="si">}</span><span class="s2">[ccd_id=</span><span class="si">{</span><span class="n">ccdid</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">cxfilter</span><span class="si">}</span><span class="s2">,</span><span class="si">{</span><span class="n">cyfilter</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">rmffile</span><span class="p">,</span>
+            <span class="n">axis1</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;energy=</span><span class="si">{</span><span class="n">engrid</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">axis2</span><span class="o">=</span><span class="n">phagrid</span><span class="p">,</span> <span class="n">thresh</span><span class="o">=</span><span class="mf">1e-8</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    
+<span class="n">special_extraction</span><span class="p">(</span><span class="mf">4096.4</span><span class="p">,</span> <span class="mf">4096.4</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sherpa.utils.logging</span><span class="w"> </span><span class="kn">import</span> <span class="n">SherpaVerbosity</span>
+<span class="c1"># Only display error messages, but hide other output from specextract</span>
+<span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">rt</span><span class="o">.</span><span class="n">specextract</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;marx_evt2.fits[sky=circle(4096.5,4096.5,20)]&quot;</span><span class="p">,</span> <span class="s2">&quot;spec&quot;</span><span class="p">,</span> <span class="n">asp</span><span class="o">=</span><span class="s2">&quot;marx_asp.fits&quot;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mskfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">badpixfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">)</span>
+       
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_pha</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="s1">&#39;marx_pha.fits&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_rmf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="s1">&#39;marx_rmf.fits&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="s1">&#39;marx_arf.fits&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="s1">&#39;spec_grp.pi&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">group_counts</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">group_counts</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">ignore</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">ignore</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="c1"># set source properties</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsphabs</span><span class="o">.</span><span class="n">a1</span> <span class="o">*</span> <span class="n">ui</span><span class="o">.</span><span class="n">xspowerlaw</span><span class="o">.</span><span class="n">p1</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsphabs</span><span class="o">.</span><span class="n">a2</span> <span class="o">*</span> <span class="n">ui</span><span class="o">.</span><span class="n">xspowerlaw</span><span class="o">.</span><span class="n">p2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">conf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+    <span class="n">conf_special</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_confidence_results</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">conf</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+    <span class="n">conf_specextract</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_confidence_results</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+
+<span class="c1"># Better setting to display labels on a log axis</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
+<span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.formatter.min_exponent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">a1</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_arf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_arf</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+<span class="c1"># bring on same energy grid</span>
+<span class="n">engrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a1</span><span class="o">.</span><span class="n">energ_lo</span> <span class="o">+</span> <span class="n">a1</span><span class="o">.</span><span class="n">energ_hi</span><span class="p">),</span> <span class="n">a1</span><span class="o">.</span><span class="n">get_y</span><span class="p">())</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a2</span><span class="o">.</span><span class="n">energ_lo</span> <span class="o">+</span> <span class="n">a2</span><span class="o">.</span><span class="n">energ_hi</span><span class="p">)</span> <span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">get_y</span><span class="p">())</span>
+
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">xlog</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ylog</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clearwindow</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_model</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_model</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Simulated data with fits using different ARFs and RMFs&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;C2&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Energy (keV)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Effective Area (cm$^2$)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="c1"># Better setting to display labels on a log axis</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_minor_formatter</span><span class="p">(</span><span class="n">mpl</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">LogFormatterMathtext</span><span class="p">(</span><span class="n">labelOnlyBase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                               <span class="n">minor_thresholds</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">.5</span><span class="p">)))</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;xtick.labelsize&#39;</span><span class="p">],</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/2a172281263dc57c808df45ba80682a5374752ee03a2d54c89ee5db16c8f5065.png" src="../_images/2a172281263dc57c808df45ba80682a5374752ee03a2d54c89ee5db16c8f5065.png" />
+</div>
+</div>
+<p><em>top</em>: Simulated data and two model fits, assuming different ARFs and RMFs. “Special extraction” uses special qualifiers to match marx simulations, while “specextract” uses standard CIAO tools without any special qualifiers.</p>
+<p><em>bottom</em>: Shape of the ARFs used in the two extractions. Since the ARF is different, the model values are different when fitting to the same data (e.g. where the ARF is lower, the model flux has to be higher to match the data, leading to different slopes and normalizations in the two fits).</p>
+<section id="input-parameters">
+<h3>Input parameters<a class="headerlink" href="#input-parameters" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_src</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><style>/*
+Copyright (C) 2020  Smithsonian Astrophysical Observatory
+
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+*/
+
+:root {
+  --sherpa-border-color: var(--jp-border-color2, #e0e0e0);
+  --sherpa-background-color: var(--jp-layout-color0, white);
+  --sherpa-background-color-row-even: var(--jp-layout-color1, white);
+  --sherpa-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+
+  /* https://medium.com/ge-design/iot-cool-gray-is-a-great-background-color-for-data-visualization-ebf18c318418 */
+  --sherpa-background-color-dark1: #EBEFF2;
+  --sherpa-background-color-dark2: #D8E0E5;
+}
+
+div.sherpa-text-fallback {
+    display: none;
+}
+
+div.sherpa {
+    display: block;
+}
+
+div.sherpa details summary {
+    display: list-item;  /* needed for notebook, not lab */
+    font-size: larger;
+}
+
+div.sherpa details div.datavals {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    column-gap: 0.5em;
+}
+
+div.sherpa div.dataname {
+    font-weight: bold;
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa div.dataval { }
+
+div.sherpa div.datavals div:nth-child(4n + 1) ,
+div.sherpa div.datavals div:nth-child(4n + 2) {
+    background: var(--sherpa-background-color-row-odd);
+}
+
+div.sherpa table.model tbody {
+    border-bottom: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model tr.block {
+    border-top: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd ,
+div.sherpa table.model th.model-even {
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd {
+    background: var(--sherpa-background-color-dark1);
+}
+
+div.sherpa table.model th.model-even {
+    background: var(--sherpa-background-color-dark2);
+}
+
+div.sherpa .failed {
+    background: orange;
+    font-size: large;
+    padding: 1em;
+}
+</style><div class="sherpa-text-fallback">&lt;BinaryOpModel model instance &#x27;xsphabs.a * xspowerlaw.p&#x27;&gt;</div><div hidden class="sherpa"><details open><summary>Model</summary><table class="model"><caption>Expression: xsphabs.a * xspowerlaw.p</caption><thead><tr><th>Component</th><th>Parameter</th><th>Thawed</th><th>Value</th><th>Min</th><th>Max</th><th>Units</th></tr></thead><tbody><tr><th class="model-odd" scope="rowgroup" rowspan=1>xsphabs.a</th><td>nH</td><td><input disabled type="checkbox" checked></input></td><td>1.0</td><td>0.0</td><td>1000000.0</td><td>10^22 atoms / cm^2</td></tr><tr class="block"><th class="model-even" scope="rowgroup" rowspan=2>xspowerlaw.p</th><td>PhoIndex</td><td><input disabled type="checkbox" checked></input></td><td>1.8</td><td>-3.0</td><td>10.0</td><td></td></tr><tr><td>norm</td><td><input disabled type="checkbox" checked></input></td><td>0.001</td><td>0.0</td><td>1e+24</td><td></td></tr></tbody></table></details></div></div></div>
+</div>
+</section>
+<section id="fit-with-special-extraction">
+<h3>Fit with special extraction<a class="headerlink" href="#fit-with-special-extraction" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">conf_special</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><style>/*
+Copyright (C) 2020  Smithsonian Astrophysical Observatory
+
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+*/
+
+:root {
+  --sherpa-border-color: var(--jp-border-color2, #e0e0e0);
+  --sherpa-background-color: var(--jp-layout-color0, white);
+  --sherpa-background-color-row-even: var(--jp-layout-color1, white);
+  --sherpa-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+
+  /* https://medium.com/ge-design/iot-cool-gray-is-a-great-background-color-for-data-visualization-ebf18c318418 */
+  --sherpa-background-color-dark1: #EBEFF2;
+  --sherpa-background-color-dark2: #D8E0E5;
+}
+
+div.sherpa-text-fallback {
+    display: none;
+}
+
+div.sherpa {
+    display: block;
+}
+
+div.sherpa details summary {
+    display: list-item;  /* needed for notebook, not lab */
+    font-size: larger;
+}
+
+div.sherpa details div.datavals {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    column-gap: 0.5em;
+}
+
+div.sherpa div.dataname {
+    font-weight: bold;
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa div.dataval { }
+
+div.sherpa div.datavals div:nth-child(4n + 1) ,
+div.sherpa div.datavals div:nth-child(4n + 2) {
+    background: var(--sherpa-background-color-row-odd);
+}
+
+div.sherpa table.model tbody {
+    border-bottom: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model tr.block {
+    border-top: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd ,
+div.sherpa table.model th.model-even {
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd {
+    background: var(--sherpa-background-color-dark1);
+}
+
+div.sherpa table.model th.model-even {
+    background: var(--sherpa-background-color-dark2);
+}
+
+div.sherpa .failed {
+    background: orange;
+    font-size: large;
+    padding: 1em;
+}
+</style><div class="sherpa-text-fallback">&lt;confidence results instance&gt;</div><div hidden class="sherpa"><details open><summary>confidence 1&#963; (68.2689%) bounds</summary><table><thead><tr><th>Parameter</th><th>Best-fit value</th><th>Lower Bound</th><th>Upper Bound</th></tr></thead><tbody><tr><td>a1.nH</td><td>     0.96852</td><td>  -0.0488344</td><td>   0.0513345</td></tr><tr><td>p1.PhoIndex</td><td>     1.80204</td><td>  -0.0573022</td><td>   0.0585523</td></tr><tr><td>p1.norm</td><td> 0.000932026</td><td>-6.62985e-05</td><td> 7.28197e-05</td></tr></tbody></table></details><details><summary>Summary (3)</summary><div class="datavals"><div class="dataname">Dataset</div><div class="dataval">special extraction</div><div class="dataname">Fitting Method</div><div class="dataval">levmar</div><div class="dataname">Statistic</div><div class="dataval">chi2gehrels</div></div></details></div></div></div>
+</div>
+</section>
+<section id="fit-with-ciao-default-extraction">
+<h3>Fit with CIAO default extraction<a class="headerlink" href="#fit-with-ciao-default-extraction" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">conf_specextract</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><style>/*
+Copyright (C) 2020  Smithsonian Astrophysical Observatory
+
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+*/
+
+:root {
+  --sherpa-border-color: var(--jp-border-color2, #e0e0e0);
+  --sherpa-background-color: var(--jp-layout-color0, white);
+  --sherpa-background-color-row-even: var(--jp-layout-color1, white);
+  --sherpa-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+
+  /* https://medium.com/ge-design/iot-cool-gray-is-a-great-background-color-for-data-visualization-ebf18c318418 */
+  --sherpa-background-color-dark1: #EBEFF2;
+  --sherpa-background-color-dark2: #D8E0E5;
+}
+
+div.sherpa-text-fallback {
+    display: none;
+}
+
+div.sherpa {
+    display: block;
+}
+
+div.sherpa details summary {
+    display: list-item;  /* needed for notebook, not lab */
+    font-size: larger;
+}
+
+div.sherpa details div.datavals {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    column-gap: 0.5em;
+}
+
+div.sherpa div.dataname {
+    font-weight: bold;
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa div.dataval { }
+
+div.sherpa div.datavals div:nth-child(4n + 1) ,
+div.sherpa div.datavals div:nth-child(4n + 2) {
+    background: var(--sherpa-background-color-row-odd);
+}
+
+div.sherpa table.model tbody {
+    border-bottom: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model tr.block {
+    border-top: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd ,
+div.sherpa table.model th.model-even {
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd {
+    background: var(--sherpa-background-color-dark1);
+}
+
+div.sherpa table.model th.model-even {
+    background: var(--sherpa-background-color-dark2);
+}
+
+div.sherpa .failed {
+    background: orange;
+    font-size: large;
+    padding: 1em;
+}
+</style><div class="sherpa-text-fallback">&lt;confidence results instance&gt;</div><div hidden class="sherpa"><details open><summary>confidence 1&#963; (68.2689%) bounds</summary><table><thead><tr><th>Parameter</th><th>Best-fit value</th><th>Lower Bound</th><th>Upper Bound</th></tr></thead><tbody><tr><td>a2.nH</td><td>    0.897425</td><td>  -0.0465747</td><td>   0.0487622</td></tr><tr><td>p2.PhoIndex</td><td>     1.66154</td><td>  -0.0552411</td><td>   0.0564912</td></tr><tr><td>p2.norm</td><td> 0.000833138</td><td>-5.76134e-05</td><td> 6.27658e-05</td></tr></tbody></table></details><details><summary>Summary (3)</summary><div class="datavals"><div class="dataname">Dataset</div><div class="dataval">specextract</div><div class="dataname">Fitting Method</div><div class="dataval">levmar</div><div class="dataname">Statistic</div><div class="dataval">chi2gehrels</div></div></details></div></div></div>
+</div>
+<p>The tables above show the input parameters and the best-fit parameters for the two extraction methods. As expected, the fit using the special extraction method recovers the input parameters better (and typically within the uncertainties), while the standard <code class="docutils literal notranslate"><span class="pre">specextract</span></code> method shows larger deviations.</p>
+</section>
+</section>
+<section id="powerlaw-spectrum-of-an-off-axis-source">
+<h2>Powerlaw spectrum of an off-axis source<a class="headerlink" href="#powerlaw-spectrum-of-an-off-axis-source" title="Link to this heading">¶</a></h2>
+<p>Same as above, but for an off-axis source on ACIS-I.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx SourceFlux=-1 SpectrumType=FILE SpectrumFile=marx_input.tbl ExposureTime=60000 &#39;</span> <span class="o">+</span> 
+                     <span class="s1">&#39;TStart=2015.5 OutputDir=marx GratingType=NONE DetectorType=ACIS-I DitherModel=INTERNAL &#39;</span> <span class="o">+</span>
+                     <span class="s1">&#39;RA_Nom=30 Dec_Nom=40 SourceRA=29.9814917 SourceDEC=40.1508083&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER marx marx_evt2.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out3</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marxasp MarxDir=marx OutputFile=marx_asol1.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">special_extraction</span><span class="p">(</span><span class="mi">4200</span><span class="p">,</span> <span class="mi">5200</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">rt</span><span class="o">.</span><span class="n">specextract</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;marx_evt2.fits[sky=circle(4200,5200,200)]&quot;</span><span class="p">,</span> <span class="s2">&quot;spec&quot;</span><span class="p">,</span> <span class="n">asp</span><span class="o">=</span><span class="s2">&quot;marx_asp.fits&quot;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mskfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">badpixfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_pha</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="s1">&#39;marx_pha.fits&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_rmf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="s1">&#39;marx_rmf.fits&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="s1">&#39;marx_arf.fits&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="s1">&#39;spec_grp.pi&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">group_counts</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">group_counts</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">ignore</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">ignore</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="c1"># set source properties</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsphabs</span><span class="o">.</span><span class="n">a1</span> <span class="o">*</span> <span class="n">ui</span><span class="o">.</span><span class="n">xspowerlaw</span><span class="o">.</span><span class="n">p1</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsphabs</span><span class="o">.</span><span class="n">a2</span> <span class="o">*</span> <span class="n">ui</span><span class="o">.</span><span class="n">xspowerlaw</span><span class="o">.</span><span class="n">p2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">conf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+    <span class="n">conf_special</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_confidence_results</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">conf</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+    <span class="n">conf_specextract</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_confidence_results</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a1</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_arf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_arf</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+<span class="c1"># bring on same energy grid</span>
+<span class="n">engrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a1</span><span class="o">.</span><span class="n">energ_lo</span> <span class="o">+</span> <span class="n">a1</span><span class="o">.</span><span class="n">energ_hi</span><span class="p">),</span> <span class="n">a1</span><span class="o">.</span><span class="n">get_y</span><span class="p">())</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a2</span><span class="o">.</span><span class="n">energ_lo</span> <span class="o">+</span> <span class="n">a2</span><span class="o">.</span><span class="n">energ_hi</span><span class="p">)</span> <span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">get_y</span><span class="p">())</span>
+
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">xlog</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ylog</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clearwindow</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_model</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_model</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Simulated data with fits using different ARFs and RMFs&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;C2&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Energy (keV)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Effective Area (cm$^2$)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="c1"># Better setting to display labels on a log axis</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_minor_formatter</span><span class="p">(</span><span class="n">mpl</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">LogFormatterMathtext</span><span class="p">(</span><span class="n">labelOnlyBase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                               <span class="n">minor_thresholds</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">.5</span><span class="p">)))</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;xtick.labelsize&#39;</span><span class="p">],</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/28100761575268e7953a9fa58fcda1c83f81bcb4451d8be1c03a29a8da54941a.png" src="../_images/28100761575268e7953a9fa58fcda1c83f81bcb4451d8be1c03a29a8da54941a.png" />
+</div>
+</div>
+<section id="id1">
+<h3>Input parameters<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h3>
+<p>(some as above, but printed here again)</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_src</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><style>/*
+Copyright (C) 2020  Smithsonian Astrophysical Observatory
+
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+*/
+
+:root {
+  --sherpa-border-color: var(--jp-border-color2, #e0e0e0);
+  --sherpa-background-color: var(--jp-layout-color0, white);
+  --sherpa-background-color-row-even: var(--jp-layout-color1, white);
+  --sherpa-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+
+  /* https://medium.com/ge-design/iot-cool-gray-is-a-great-background-color-for-data-visualization-ebf18c318418 */
+  --sherpa-background-color-dark1: #EBEFF2;
+  --sherpa-background-color-dark2: #D8E0E5;
+}
+
+div.sherpa-text-fallback {
+    display: none;
+}
+
+div.sherpa {
+    display: block;
+}
+
+div.sherpa details summary {
+    display: list-item;  /* needed for notebook, not lab */
+    font-size: larger;
+}
+
+div.sherpa details div.datavals {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    column-gap: 0.5em;
+}
+
+div.sherpa div.dataname {
+    font-weight: bold;
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa div.dataval { }
+
+div.sherpa div.datavals div:nth-child(4n + 1) ,
+div.sherpa div.datavals div:nth-child(4n + 2) {
+    background: var(--sherpa-background-color-row-odd);
+}
+
+div.sherpa table.model tbody {
+    border-bottom: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model tr.block {
+    border-top: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd ,
+div.sherpa table.model th.model-even {
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd {
+    background: var(--sherpa-background-color-dark1);
+}
+
+div.sherpa table.model th.model-even {
+    background: var(--sherpa-background-color-dark2);
+}
+
+div.sherpa .failed {
+    background: orange;
+    font-size: large;
+    padding: 1em;
+}
+</style><div class="sherpa-text-fallback">&lt;BinaryOpModel model instance &#x27;xsphabs.a * xspowerlaw.p&#x27;&gt;</div><div hidden class="sherpa"><details open><summary>Model</summary><table class="model"><caption>Expression: xsphabs.a * xspowerlaw.p</caption><thead><tr><th>Component</th><th>Parameter</th><th>Thawed</th><th>Value</th><th>Min</th><th>Max</th><th>Units</th></tr></thead><tbody><tr><th class="model-odd" scope="rowgroup" rowspan=1>xsphabs.a</th><td>nH</td><td><input disabled type="checkbox" checked></input></td><td>1.0</td><td>0.0</td><td>1000000.0</td><td>10^22 atoms / cm^2</td></tr><tr class="block"><th class="model-even" scope="rowgroup" rowspan=2>xspowerlaw.p</th><td>PhoIndex</td><td><input disabled type="checkbox" checked></input></td><td>1.8</td><td>-3.0</td><td>10.0</td><td></td></tr><tr><td>norm</td><td><input disabled type="checkbox" checked></input></td><td>0.001</td><td>0.0</td><td>1e+24</td><td></td></tr></tbody></table></details></div></div></div>
+</div>
+</section>
+<section id="id2">
+<h3>Fit with special extraction<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">conf_special</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><style>/*
+Copyright (C) 2020  Smithsonian Astrophysical Observatory
+
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+*/
+
+:root {
+  --sherpa-border-color: var(--jp-border-color2, #e0e0e0);
+  --sherpa-background-color: var(--jp-layout-color0, white);
+  --sherpa-background-color-row-even: var(--jp-layout-color1, white);
+  --sherpa-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+
+  /* https://medium.com/ge-design/iot-cool-gray-is-a-great-background-color-for-data-visualization-ebf18c318418 */
+  --sherpa-background-color-dark1: #EBEFF2;
+  --sherpa-background-color-dark2: #D8E0E5;
+}
+
+div.sherpa-text-fallback {
+    display: none;
+}
+
+div.sherpa {
+    display: block;
+}
+
+div.sherpa details summary {
+    display: list-item;  /* needed for notebook, not lab */
+    font-size: larger;
+}
+
+div.sherpa details div.datavals {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    column-gap: 0.5em;
+}
+
+div.sherpa div.dataname {
+    font-weight: bold;
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa div.dataval { }
+
+div.sherpa div.datavals div:nth-child(4n + 1) ,
+div.sherpa div.datavals div:nth-child(4n + 2) {
+    background: var(--sherpa-background-color-row-odd);
+}
+
+div.sherpa table.model tbody {
+    border-bottom: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model tr.block {
+    border-top: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd ,
+div.sherpa table.model th.model-even {
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd {
+    background: var(--sherpa-background-color-dark1);
+}
+
+div.sherpa table.model th.model-even {
+    background: var(--sherpa-background-color-dark2);
+}
+
+div.sherpa .failed {
+    background: orange;
+    font-size: large;
+    padding: 1em;
+}
+</style><div class="sherpa-text-fallback">&lt;confidence results instance&gt;</div><div hidden class="sherpa"><details open><summary>confidence 1&#963; (68.2689%) bounds</summary><table><thead><tr><th>Parameter</th><th>Best-fit value</th><th>Lower Bound</th><th>Upper Bound</th></tr></thead><tbody><tr><td>a1.nH</td><td>    0.901507</td><td>  -0.0527481</td><td>   0.0543107</td></tr><tr><td>p1.PhoIndex</td><td>     1.73311</td><td>     -0.0528</td><td>   0.0540501</td></tr><tr><td>p1.norm</td><td> 0.000852955</td><td>-5.91562e-05</td><td> 6.44466e-05</td></tr></tbody></table></details><details><summary>Summary (3)</summary><div class="datavals"><div class="dataname">Dataset</div><div class="dataval">special extraction</div><div class="dataname">Fitting Method</div><div class="dataval">levmar</div><div class="dataname">Statistic</div><div class="dataval">chi2gehrels</div></div></details></div></div></div>
+</div>
+</section>
+<section id="id3">
+<h3>Fit with CIAO default extraction<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">conf_specextract</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><style>/*
+Copyright (C) 2020  Smithsonian Astrophysical Observatory
+
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+*/
+
+:root {
+  --sherpa-border-color: var(--jp-border-color2, #e0e0e0);
+  --sherpa-background-color: var(--jp-layout-color0, white);
+  --sherpa-background-color-row-even: var(--jp-layout-color1, white);
+  --sherpa-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+
+  /* https://medium.com/ge-design/iot-cool-gray-is-a-great-background-color-for-data-visualization-ebf18c318418 */
+  --sherpa-background-color-dark1: #EBEFF2;
+  --sherpa-background-color-dark2: #D8E0E5;
+}
+
+div.sherpa-text-fallback {
+    display: none;
+}
+
+div.sherpa {
+    display: block;
+}
+
+div.sherpa details summary {
+    display: list-item;  /* needed for notebook, not lab */
+    font-size: larger;
+}
+
+div.sherpa details div.datavals {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    column-gap: 0.5em;
+}
+
+div.sherpa div.dataname {
+    font-weight: bold;
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa div.dataval { }
+
+div.sherpa div.datavals div:nth-child(4n + 1) ,
+div.sherpa div.datavals div:nth-child(4n + 2) {
+    background: var(--sherpa-background-color-row-odd);
+}
+
+div.sherpa table.model tbody {
+    border-bottom: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model tr.block {
+    border-top: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd ,
+div.sherpa table.model th.model-even {
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd {
+    background: var(--sherpa-background-color-dark1);
+}
+
+div.sherpa table.model th.model-even {
+    background: var(--sherpa-background-color-dark2);
+}
+
+div.sherpa .failed {
+    background: orange;
+    font-size: large;
+    padding: 1em;
+}
+</style><div class="sherpa-text-fallback">&lt;confidence results instance&gt;</div><div hidden class="sherpa"><details open><summary>confidence 1&#963; (68.2689%) bounds</summary><table><thead><tr><th>Parameter</th><th>Best-fit value</th><th>Lower Bound</th><th>Upper Bound</th></tr></thead><tbody><tr><td>a2.nH</td><td>    0.900009</td><td>  -0.0526273</td><td>   0.0545024</td></tr><tr><td>p2.PhoIndex</td><td>     1.73017</td><td>  -0.0530052</td><td>   0.0539428</td></tr><tr><td>p2.norm</td><td> 0.000870168</td><td>-6.02136e-05</td><td> 6.55985e-05</td></tr></tbody></table></details><details><summary>Summary (3)</summary><div class="datavals"><div class="dataname">Dataset</div><div class="dataval">specextract</div><div class="dataname">Fitting Method</div><div class="dataval">levmar</div><div class="dataname">Statistic</div><div class="dataval">chi2gehrels</div></div></details></div></div></div>
+</div>
+<p>For the off-axis simulation, the difference between the two extraction methods is smaller, probably because we are using the ACIS-I detector here.</p>
+</section>
+</section>
+<section id="two-thermal-components-on-acis-i-on-axis">
+<h2>Two thermal components on ACIS-I, on-axis<a class="headerlink" href="#two-thermal-components-on-acis-i-on-axis" title="Link to this heading">¶</a></h2>
+<p>Same as above, but for a front-illuminated ACIS-I chip and using
+an input spectrum with two thermal components similar to a stellar corona.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsvapec</span><span class="o">.</span><span class="n">apec1</span> <span class="o">+</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsvapec</span><span class="o">.</span><span class="n">apec2</span><span class="p">)</span>
+<span class="n">apec1</span><span class="o">.</span><span class="n">Ne</span><span class="o">.</span><span class="n">frozen</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">apec2</span><span class="o">.</span><span class="n">Ne</span> <span class="o">=</span> <span class="n">apec1</span><span class="o">.</span><span class="n">Ne</span>
+<span class="n">apec1</span><span class="o">.</span><span class="n">kT</span> <span class="o">=</span> <span class="mf">0.7</span>
+<span class="n">apec1</span><span class="o">.</span><span class="n">Ne</span> <span class="o">=</span> <span class="mf">2.0</span>
+<span class="n">apec1</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.0002</span>
+<span class="n">apec2</span><span class="o">.</span><span class="n">kT</span> <span class="o">=</span> <span class="mf">2.0</span>
+<span class="n">apec2</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.0004</span>
+
+<span class="c1"># get source</span>
+<span class="n">my_src</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_source</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># set energy grid</span>
+<span class="n">bin_width</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.15</span><span class="p">,</span> <span class="mf">12.</span><span class="p">,</span> <span class="n">bin_width</span><span class="p">)</span>
+
+<span class="c1"># evaluate source on energy grid</span>
+<span class="n">flux</span> <span class="o">=</span> <span class="n">my_src</span><span class="p">(</span><span class="n">energies</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+<span class="n">ui</span><span class="o">.</span><span class="n">save_arrays</span><span class="p">(</span><span class="s2">&quot;marx_input.tbl&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">],</span> 
+               <span class="p">[</span><span class="s2">&quot;keV&quot;</span><span class="p">,</span><span class="s2">&quot;photons/s/cm**2/keV&quot;</span><span class="p">],</span> <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+ 
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stream highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>Reading APEC data from 3.0.9
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx SourceFlux=-1 SpectrumType=FILE SpectrumFile=marx_input.tbl ExposureTime=30000 &#39;</span> <span class="o">+</span> 
+                     <span class="s1">&#39;TStart=2015.5 OutputDir=marx GratingType=NONE DetectorType=ACIS-I DitherModel=INTERNAL &#39;</span> <span class="o">+</span>
+                     <span class="s1">&#39;RA_Nom=30 Dec_Nom=40 SourceRA=30 SourceDEC=40&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER marx marx_evt2.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out3</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marxasp MarxDir=marx OutputFile=marx_asol1.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">special_extraction</span><span class="p">(</span><span class="mf">4096.4</span><span class="p">,</span> <span class="mf">4096.4</span><span class="p">,</span> <span class="mf">20.0</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">rt</span><span class="o">.</span><span class="n">specextract</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;marx_evt2.fits[sky=circle(4096.5,4096.5,20)]&quot;</span><span class="p">,</span> <span class="s2">&quot;spec&quot;</span><span class="p">,</span> <span class="n">asp</span><span class="o">=</span><span class="s2">&quot;marx_asp.fits&quot;</span><span class="p">,</span> <span class="n">weight</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">mskfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">badpixfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">)</span>
+       
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_pha</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="s1">&#39;marx_pha.fits&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_rmf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="s1">&#39;marx_rmf.fits&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="s1">&#39;marx_arf.fits&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="s1">&#39;spec_grp.pi&#39;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">group_counts</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">group_counts</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">ignore</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">ignore</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+    <span class="c1"># set source properties</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsvapec</span><span class="o">.</span><span class="n">apec1_1</span> <span class="o">+</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsvapec</span><span class="o">.</span><span class="n">apec2_1</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsvapec</span><span class="o">.</span><span class="n">apec1_2</span> <span class="o">+</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsvapec</span><span class="o">.</span><span class="n">apec2_2</span><span class="p">)</span>
+
+    <span class="n">apec1_1</span><span class="o">.</span><span class="n">Ne</span><span class="o">.</span><span class="n">frozen</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">apec2_1</span><span class="o">.</span><span class="n">Ne</span> <span class="o">=</span> <span class="n">apec1_1</span><span class="o">.</span><span class="n">Ne</span>
+    <span class="n">apec1_2</span><span class="o">.</span><span class="n">Ne</span><span class="o">.</span><span class="n">frozen</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">apec2_2</span><span class="o">.</span><span class="n">Ne</span> <span class="o">=</span> <span class="n">apec1_2</span><span class="o">.</span><span class="n">Ne</span>
+
+    <span class="c1"># Set some starting values close to the true value</span>
+    <span class="n">apec1_1</span><span class="o">.</span><span class="n">kT</span> <span class="o">=</span> <span class="mf">0.9</span>
+    <span class="n">apec1_1</span><span class="o">.</span><span class="n">Ne</span> <span class="o">=</span> <span class="mf">1.5</span>
+    <span class="n">apec1_1</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.00015</span>
+    <span class="n">apec2_1</span><span class="o">.</span><span class="n">kT</span> <span class="o">=</span> <span class="mf">1.8</span>
+    <span class="n">apec2_1</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.00035</span>
+    <span class="n">apec1_2</span><span class="o">.</span><span class="n">kT</span> <span class="o">=</span> <span class="mf">0.9</span>
+    <span class="n">apec1_2</span><span class="o">.</span><span class="n">Ne</span> <span class="o">=</span> <span class="mf">1.5</span>
+    <span class="n">apec1_2</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.00015</span>
+    <span class="n">apec2_2</span><span class="o">.</span><span class="n">kT</span> <span class="o">=</span> <span class="mf">1.8</span>
+    <span class="n">apec2_2</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.00035</span>  
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">conf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+    <span class="n">conf_special</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_confidence_results</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">SherpaVerbosity</span><span class="p">(</span><span class="s1">&#39;ERROR&#39;</span><span class="p">):</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+    <span class="n">ui</span><span class="o">.</span><span class="n">conf</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+    <span class="n">conf_specextract</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_confidence_results</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">a1</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_arf</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_arf</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+<span class="c1"># bring on same energy grid</span>
+<span class="n">engrid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">10.</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">)</span>
+<span class="n">a1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a1</span><span class="o">.</span><span class="n">energ_lo</span> <span class="o">+</span> <span class="n">a1</span><span class="o">.</span><span class="n">energ_hi</span><span class="p">),</span> <span class="n">a1</span><span class="o">.</span><span class="n">get_y</span><span class="p">())</span>
+<span class="n">a2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">interp</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">a2</span><span class="o">.</span><span class="n">energ_lo</span> <span class="o">+</span> <span class="n">a2</span><span class="o">.</span><span class="n">energ_hi</span><span class="p">)</span> <span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">get_y</span><span class="p">())</span>
+
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">sca</span><span class="p">(</span><span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">xlog</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ylog</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clearwindow</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_model</span><span class="p">(</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;special extraction&quot;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_model</span><span class="p">(</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;specextract&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s2">&quot;Simulated data with fits using different ARFs and RMFs&quot;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="n">a1</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;special extraction&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;C1&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">engrid</span><span class="p">,</span> <span class="n">a2</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s2">&quot;specextract&quot;</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="s2">&quot;C2&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s2">&quot;Energy (keV)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s2">&quot;Effective Area (cm$^2$)&quot;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+
+<span class="c1"># Better setting to display labels on a log axis</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_minor_formatter</span><span class="p">(</span><span class="n">mpl</span><span class="o">.</span><span class="n">ticker</span><span class="o">.</span><span class="n">LogFormatterMathtext</span><span class="p">(</span><span class="n">labelOnlyBase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                               <span class="n">minor_thresholds</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mf">.5</span><span class="p">)))</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">tick_params</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">labelsize</span><span class="o">=</span><span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;xtick.labelsize&#39;</span><span class="p">],</span> <span class="n">which</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/3133f6a5bb3f4e9e9518ac1fe4faa8594bab34c45d589b7ece77e117b0d92dc8.png" src="../_images/3133f6a5bb3f4e9e9518ac1fe4faa8594bab34c45d589b7ece77e117b0d92dc8.png" />
+</div>
+</div>
+<p><em>top</em>: Simulated data and two model fits, assuming different ARFs and RMFs. “Special extraction” uses special qualifiers to match marx simulations, while “specextract” uses standard CIAO tools without any special qualifiers.</p>
+<p><em>bottom</em>: Shape of the ARFs used in the two extractions. Since the ARF is different, the model values are different when fitting to the same data (e.g. where the ARF is lower, the model flux has to be higher to match the data, leading to different slopes and normalizations in the two fits).</p>
+<section id="id4">
+<h3>Input parameters<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">my_src</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><style>/*
+Copyright (C) 2020  Smithsonian Astrophysical Observatory
+
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+*/
+
+:root {
+  --sherpa-border-color: var(--jp-border-color2, #e0e0e0);
+  --sherpa-background-color: var(--jp-layout-color0, white);
+  --sherpa-background-color-row-even: var(--jp-layout-color1, white);
+  --sherpa-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+
+  /* https://medium.com/ge-design/iot-cool-gray-is-a-great-background-color-for-data-visualization-ebf18c318418 */
+  --sherpa-background-color-dark1: #EBEFF2;
+  --sherpa-background-color-dark2: #D8E0E5;
+}
+
+div.sherpa-text-fallback {
+    display: none;
+}
+
+div.sherpa {
+    display: block;
+}
+
+div.sherpa details summary {
+    display: list-item;  /* needed for notebook, not lab */
+    font-size: larger;
+}
+
+div.sherpa details div.datavals {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    column-gap: 0.5em;
+}
+
+div.sherpa div.dataname {
+    font-weight: bold;
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa div.dataval { }
+
+div.sherpa div.datavals div:nth-child(4n + 1) ,
+div.sherpa div.datavals div:nth-child(4n + 2) {
+    background: var(--sherpa-background-color-row-odd);
+}
+
+div.sherpa table.model tbody {
+    border-bottom: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model tr.block {
+    border-top: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd ,
+div.sherpa table.model th.model-even {
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd {
+    background: var(--sherpa-background-color-dark1);
+}
+
+div.sherpa table.model th.model-even {
+    background: var(--sherpa-background-color-dark2);
+}
+
+div.sherpa .failed {
+    background: orange;
+    font-size: large;
+    padding: 1em;
+}
+</style><div class="sherpa-text-fallback">&lt;BinaryOpModel model instance &#x27;xsvapec.apec1 + xsvapec.apec2&#x27;&gt;</div><div hidden class="sherpa"><details open><summary>Model</summary><table class="model"><caption>Expression: xsvapec.apec1 + xsvapec.apec2</caption><thead><tr><th>Component</th><th>Parameter</th><th>Thawed</th><th>Value</th><th>Min</th><th>Max</th><th>Units</th></tr></thead><tbody><tr><th class="model-odd" scope="rowgroup" rowspan=16>xsvapec.apec1</th><td>kT</td><td><input disabled type="checkbox" checked></input></td><td>0.7</td><td>0.0808</td><td>68.447</td><td>keV</td></tr><tr><td>He</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>C</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>N</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>O</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Ne</td><td><input disabled type="checkbox" checked></input></td><td>2.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Mg</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Al</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Si</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>S</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Ar</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Ca</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Fe</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Ni</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Redshift</td><td><input disabled type="checkbox"></input></td><td>0.0</td><td>-0.999</td><td>10.0</td><td></td></tr><tr><td>norm</td><td><input disabled type="checkbox" checked></input></td><td>0.0002</td><td>0.0</td><td>1e+24</td><td></td></tr><tr class="block"><th class="model-even" scope="rowgroup" rowspan=16>xsvapec.apec2</th><td>kT</td><td><input disabled type="checkbox" checked></input></td><td>2.0</td><td>0.0808</td><td>68.447</td><td>keV</td></tr><tr><td>He</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>C</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>N</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>O</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Ne</td><td>linked</td><td>2.0</td><td colspan=2>&#8656; apec1.Ne</td><td></td></tr><tr><td>Mg</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Al</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Si</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>S</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Ar</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Ca</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Fe</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Ni</td><td><input disabled type="checkbox"></input></td><td>1.0</td><td>0.0</td><td>1000.0</td><td></td></tr><tr><td>Redshift</td><td><input disabled type="checkbox"></input></td><td>0.0</td><td>-0.999</td><td>10.0</td><td></td></tr><tr><td>norm</td><td><input disabled type="checkbox" checked></input></td><td>0.0004</td><td>0.0</td><td>1e+24</td><td></td></tr></tbody></table></details></div></div></div>
+</div>
+</section>
+<section id="id5">
+<h3>Fit with special extraction<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">conf_special</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><style>/*
+Copyright (C) 2020  Smithsonian Astrophysical Observatory
+
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+*/
+
+:root {
+  --sherpa-border-color: var(--jp-border-color2, #e0e0e0);
+  --sherpa-background-color: var(--jp-layout-color0, white);
+  --sherpa-background-color-row-even: var(--jp-layout-color1, white);
+  --sherpa-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+
+  /* https://medium.com/ge-design/iot-cool-gray-is-a-great-background-color-for-data-visualization-ebf18c318418 */
+  --sherpa-background-color-dark1: #EBEFF2;
+  --sherpa-background-color-dark2: #D8E0E5;
+}
+
+div.sherpa-text-fallback {
+    display: none;
+}
+
+div.sherpa {
+    display: block;
+}
+
+div.sherpa details summary {
+    display: list-item;  /* needed for notebook, not lab */
+    font-size: larger;
+}
+
+div.sherpa details div.datavals {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    column-gap: 0.5em;
+}
+
+div.sherpa div.dataname {
+    font-weight: bold;
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa div.dataval { }
+
+div.sherpa div.datavals div:nth-child(4n + 1) ,
+div.sherpa div.datavals div:nth-child(4n + 2) {
+    background: var(--sherpa-background-color-row-odd);
+}
+
+div.sherpa table.model tbody {
+    border-bottom: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model tr.block {
+    border-top: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd ,
+div.sherpa table.model th.model-even {
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd {
+    background: var(--sherpa-background-color-dark1);
+}
+
+div.sherpa table.model th.model-even {
+    background: var(--sherpa-background-color-dark2);
+}
+
+div.sherpa .failed {
+    background: orange;
+    font-size: large;
+    padding: 1em;
+}
+</style><div class="sherpa-text-fallback">&lt;confidence results instance&gt;</div><div hidden class="sherpa"><details open><summary>confidence 1&#963; (68.2689%) bounds</summary><table><thead><tr><th>Parameter</th><th>Best-fit value</th><th>Lower Bound</th><th>Upper Bound</th></tr></thead><tbody><tr><td>apec1_1.kT</td><td>    0.728632</td><td>  -0.0292126</td><td>   0.0304627</td></tr><tr><td>apec1_1.Ne</td><td>     1.07123</td><td>-----</td><td>     1.16581</td></tr><tr><td>apec1_1.norm</td><td> 0.000219788</td><td>-1.22787e-05</td><td> 1.34332e-05</td></tr><tr><td>apec2_1.kT</td><td>     1.96796</td><td>   -0.126638</td><td>    0.147016</td></tr><tr><td>apec2_1.norm</td><td> 0.000381227</td><td>-2.44487e-05</td><td> 2.50262e-05</td></tr></tbody></table></details><details><summary>Summary (3)</summary><div class="datavals"><div class="dataname">Dataset</div><div class="dataval">special extraction</div><div class="dataname">Fitting Method</div><div class="dataval">levmar</div><div class="dataname">Statistic</div><div class="dataval">chi2gehrels</div></div></details></div></div></div>
+</div>
+</section>
+<section id="id6">
+<h3>Fit with CIAO default extraction<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">conf_specextract</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_html"><style>/*
+Copyright (C) 2020  Smithsonian Astrophysical Observatory
+
+
+ This program is free software; you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation; either version 3 of the License, or
+ (at your option) any later version.
+
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+
+ You should have received a copy of the GNU General Public License along
+ with this program; if not, write to the Free Software Foundation, Inc.,
+ 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+
+*/
+
+:root {
+  --sherpa-border-color: var(--jp-border-color2, #e0e0e0);
+  --sherpa-background-color: var(--jp-layout-color0, white);
+  --sherpa-background-color-row-even: var(--jp-layout-color1, white);
+  --sherpa-background-color-row-odd: var(--jp-layout-color2, #eeeeee);
+
+  /* https://medium.com/ge-design/iot-cool-gray-is-a-great-background-color-for-data-visualization-ebf18c318418 */
+  --sherpa-background-color-dark1: #EBEFF2;
+  --sherpa-background-color-dark2: #D8E0E5;
+}
+
+div.sherpa-text-fallback {
+    display: none;
+}
+
+div.sherpa {
+    display: block;
+}
+
+div.sherpa details summary {
+    display: list-item;  /* needed for notebook, not lab */
+    font-size: larger;
+}
+
+div.sherpa details div.datavals {
+    display: grid;
+    grid-template-columns: 1fr 3fr;
+    column-gap: 0.5em;
+}
+
+div.sherpa div.dataname {
+    font-weight: bold;
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa div.dataval { }
+
+div.sherpa div.datavals div:nth-child(4n + 1) ,
+div.sherpa div.datavals div:nth-child(4n + 2) {
+    background: var(--sherpa-background-color-row-odd);
+}
+
+div.sherpa table.model tbody {
+    border-bottom: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model tr.block {
+    border-top: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd ,
+div.sherpa table.model th.model-even {
+    border-right: 1px solid var(--sherpa-border-color);
+}
+
+div.sherpa table.model th.model-odd {
+    background: var(--sherpa-background-color-dark1);
+}
+
+div.sherpa table.model th.model-even {
+    background: var(--sherpa-background-color-dark2);
+}
+
+div.sherpa .failed {
+    background: orange;
+    font-size: large;
+    padding: 1em;
+}
+</style><div class="sherpa-text-fallback">&lt;confidence results instance&gt;</div><div hidden class="sherpa"><details open><summary>confidence 1&#963; (68.2689%) bounds</summary><table><thead><tr><th>Parameter</th><th>Best-fit value</th><th>Lower Bound</th><th>Upper Bound</th></tr></thead><tbody><tr><td>apec1_2.kT</td><td>    0.727378</td><td>  -0.0282397</td><td>   0.0298023</td></tr><tr><td>apec1_2.Ne</td><td>     1.18932</td><td>-----</td><td>     1.13253</td></tr><tr><td>apec1_2.norm</td><td> 0.000228965</td><td> -1.2408e-05</td><td>  1.3536e-05</td></tr><tr><td>apec2_2.kT</td><td>     1.98416</td><td>   -0.132099</td><td>    0.152265</td></tr><tr><td>apec2_2.norm</td><td> 0.000399334</td><td> -2.6079e-05</td><td> 2.65234e-05</td></tr></tbody></table></details><details><summary>Summary (3)</summary><div class="datavals"><div class="dataname">Dataset</div><div class="dataval">specextract</div><div class="dataname">Fitting Method</div><div class="dataval">levmar</div><div class="dataname">Statistic</div><div class="dataval">chi2gehrels</div></div></details></div></div></div>
+</div>
+<p>Again we are looking at an ACIS-I simulation and the differences between the two extraction methods are smaller than for ACIS-S. While the Ne abundance is not well-constrained in this case, the fitted values are in general in agreement with the input values.</p>
+</section>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<form action="../search.html" method="get">
+<input type="text" name="q" placeholder="Search" />
+<input type="hidden" name="check_keywords" value="yes" />
+<input type="hidden" name="area" value="default" />
+</form>
+  <h3><a href="../index.html">Page Content</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Reproducing an input spectrum</a><ul>
+<li><a class="reference internal" href="#absorbed-powerlaw-on-acis-s">Absorbed powerlaw on ACIS-S</a><ul>
+<li><a class="reference internal" href="#input-parameters">Input parameters</a></li>
+<li><a class="reference internal" href="#fit-with-special-extraction">Fit with special extraction</a></li>
+<li><a class="reference internal" href="#fit-with-ciao-default-extraction">Fit with CIAO default extraction</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#powerlaw-spectrum-of-an-off-axis-source">Powerlaw spectrum of an off-axis source</a><ul>
+<li><a class="reference internal" href="#id1">Input parameters</a></li>
+<li><a class="reference internal" href="#id2">Fit with special extraction</a></li>
+<li><a class="reference internal" href="#id3">Fit with CIAO default extraction</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#two-thermal-components-on-acis-i-on-axis">Two thermal components on ACIS-I, on-axis</a><ul>
+<li><a class="reference internal" href="#id4">Input parameters</a></li>
+<li><a class="reference internal" href="#id5">Fit with special extraction</a></li>
+<li><a class="reference internal" href="#id6">Fit with CIAO default extraction</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="Grades.html"
+                          title="previous chapter">Flight grade distribution</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="source.html"
+                          title="next chapter">Source shapes in MARX</a></p>
+  </div><hr style="color: #FFF;"></hr>
+<a href="http://cxc.harvard.edu/">
+    <img src="../_static/cxcfooterCXCicon.png" 
+	 alt="Chandra X-ray Center" class="img-logo"></img>
+</a>
+<p></p>
+<a href="http://space.mit.edu/cxc/">CXC@MIT</a>
+<p></p>
+<a href="http://space.mit.edu/">
+    <img src="../_static/logo-mit-kavli.png" 
+	 alt="MIT Kavli Institute" class="img-logo"></img>
+</a>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="source.html" title="Source shapes in MARX"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="Grades.html" title="Flight grade distribution"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" ><strong>marx</strong> accuracy and testing</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Reproducing an input spectrum</a></li> 
+      </ul>
+    </div>
+    <div class="footer">
+    <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
+    <a href="https://accessibility.mit.edu/">Accessibility</a>
+        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

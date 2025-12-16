@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Coordinates on the sky and the chip &#8212; MARX 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    
+    <script src="../_static/documentation_options.js?v=b6ed0530"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within MARX 6.0.1 documentation"
+          href="../_static/opensearch.xml"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="marx reference" href="../Reference/reference.html" />
+    <link rel="prev" title="Source shapes in MARX" href="source.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="../Reference/reference.html" title="marx reference"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="source.html" title="Source shapes in MARX"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><strong>marx</strong> accuracy and testing</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Coordinates on the sky and the chip</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_marx</span>
+<span class="n">setup_marx</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="coordinates-on-the-sky-and-the-chip">
+<h1>Coordinates on the sky and the chip<a class="headerlink" href="#coordinates-on-the-sky-and-the-chip" title="Link to this heading">¶</a></h1>
+<p>In every marx simulation, one or more sources are placed at some sky position.
+marx simulates photons coming from that position, traces them through the
+mirror and gratings and finally places them on the chip. With a known
+aspect solution, chip coordinates can then be transformed back to sky
+coordinates. In general, this will not recover the exact sky position where a
+photon started out. A big part of that is scatter in the mirrors, which blurs
+the image.
+However, with a large number of photons, we can fit the average position which
+should be close to the real sky position.</p>
+<p>In real observations, other factors contribute, such as the finite
+resolution of the detectors (marx usually takes that into account, but it can
+be switched off through the <code class="docutils literal notranslate"><span class="pre">--pixadj=&quot;EXACT&quot;</span></code> switch in <code class="docutils literal notranslate"><span class="pre">marx2fits</span></code>)
+and the uncertainty of the aspect solution.</p>
+<p>Within a single observation, positions will be less certain for fainter sources
+(due to Poisson statistics) and for sources at a larger off-axis angles (due to the
+larger PSF).</p>
+<section id="chandra-orion-ultradeep-project">
+<h2>Chandra Orion Ultradeep project<a class="headerlink" href="#chandra-orion-ultradeep-project" title="Link to this heading">¶</a></h2>
+<p>The <a class="reference external" href="http://simbad.u-strasbg.fr/simbad/sim-basic?Ident=onc">Orion Nebula Cluster (ONC)</a>
+is a dense star forming region with about 1600 X-ray sources observed
+in the COUP survey by
+<a class="reference external" href="http://adsabs.harvard.edu/abs/2005ApJS..160..319G">Getman et al (2005)</a>.
+We simulate this field with marx and then run a source detection to check
+how well we recover the input coordinates. This will depend on the number
+of counts detected and the position in the field.
+To simplify the simulation input, we assume that all sources have flat
+lightcurves and are monoenergetic at the observed mean energy (the energy matters because
+the effective area is energy dependent and so is the PSF).
+We write a short C code that reads an input coordinate list and generates the photons in this manner.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ciao_contrib.cda.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_chandra_obsids</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">download_chandra_obsids</span><span class="p">([</span><span class="mi">3744</span><span class="p">],</span> <span class="n">filetypes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;asol&#39;</span><span class="p">,</span> <span class="s1">&#39;evt2&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">asolfile</span> <span class="o">=</span> <span class="s1">&#39;3744/primary/pcadf03744_000N001_asol1.fits.gz&#39;</span>
+<span class="n">evt2file</span> <span class="o">=</span> <span class="s1">&#39;3744/primary/acisf03744N004_evt2.fits.gz&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Make input coordinate table</span>
+
+<span class="sd">- Coordinates are relative to pointing direction in arcmin</span>
+<span class="sd">- weight is a measure for the fraction on photons coming from that source, i.e. a linear luminosity</span>
+<span class="sd">- For the source spectrum, we just take a mono-energetic source with the average energy.</span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+
+<span class="n">asol</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">coup</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;COUP.tsv&#39;</span><span class="p">),</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;ascii.fast_tab&#39;</span><span class="p">)</span>
+<span class="n">tab</span> <span class="o">=</span> <span class="n">Table</span><span class="p">()</span>
+<span class="n">tab</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">coup</span><span class="p">[</span><span class="s1">&#39;RAJ2000&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">asol</span><span class="p">[</span><span class="s1">&#39;RA_NOM&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">60</span>
+<span class="n">tab</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">coup</span><span class="p">[</span><span class="s1">&#39;DEJ2000&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">asol</span><span class="p">[</span><span class="s1">&#39;DEC_NOM&#39;</span><span class="p">])</span> <span class="o">*</span> <span class="mi">60</span>
+<span class="n">tab</span><span class="p">[</span><span class="s1">&#39;weight&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">10</span><span class="o">**</span><span class="p">(</span><span class="n">coup</span><span class="p">[</span><span class="s1">&#39;Lt&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="mi">27</span><span class="p">)</span>
+<span class="n">tab</span><span class="p">[</span><span class="s1">&#39;energy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">coup</span><span class="p">[</span><span class="s1">&#39;&lt;E&gt;&#39;</span><span class="p">]</span>
+<span class="n">tab</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;coup.marxin&#39;</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="s1">&#39;ascii.no_header&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;C code for a grid of sources.</span>
+
+<span class="sd">(``user.h`` and ``jdmath.h`` are shipped with marx.)&#39;&#39;&#39;</span>
+<span class="n">ccode</span><span class="o">=</span><span class="sa">r</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">#include &lt;stdio.h&gt;</span>
+<span class="s1">#include &lt;stdlib.h&gt;</span>
+<span class="s1">#include &lt;jdmath.h&gt;</span>
+<span class="s1">#include &quot;user.h&quot;</span>
+
+<span class="s1">/* This user source implements many point sources via a file that</span>
+<span class="s1"> * specifies the source positions and energies.  The current implementation</span>
+<span class="s1"> * assumes the format:</span>
+<span class="s1"> *  RA  Dec weight energy</span>
+<span class="s1"> * Here RA, Dec specify the source position, weight specifies the strength</span>
+<span class="s1"> * of the source in relation to the others.</span>
+<span class="s1"> */</span>
+<span class="s1">typedef struct</span>
+<span class="s1">{</span>
+<span class="s1">   double cosx, cosy, cosz;</span>
+<span class="s1">   double weight;</span>
+<span class="s1">   double energy;</span>
+<span class="s1">}</span>
+<span class="s1">Point_Source_Type;</span>
+
+<span class="s1">static unsigned int Num_Points;</span>
+<span class="s1">static Point_Source_Type *Point_Sources;</span>
+<span class="s1">static unsigned int Max_Num_Points;</span>
+
+<span class="s1">static char *do_realloc (char *p, unsigned int len)</span>
+<span class="s1">{</span>
+<span class="s1">   if (p == NULL)</span>
+<span class="s1">     p = malloc (len);</span>
+<span class="s1">   else</span>
+<span class="s1">     p = realloc (p, len);</span>
+
+<span class="s1">   if (p == NULL)</span>
+<span class="s1">     fprintf (stderr, &quot;Not enough memory\n&quot;);</span>
+
+<span class="s1">   return p;</span>
+<span class="s1">}</span>
+
+<span class="s1">static void free_sources (void)</span>
+<span class="s1">{</span>
+<span class="s1">   if (Point_Sources == NULL)</span>
+<span class="s1">     return;</span>
+
+<span class="s1">   free ((char *) Point_Sources);</span>
+<span class="s1">   Point_Sources = NULL;</span>
+<span class="s1">}</span>
+
+<span class="s1">static int add_source (double ra, double dec, double weight, double energy)</span>
+<span class="s1">{</span>
+<span class="s1">   Point_Source_Type *p;</span>
+<span class="s1">   double cosx, cosy, cosz;</span>
+
+<span class="s1">   /* Convert to God&#39;s units from arc-min */</span>
+<span class="s1">   ra = ra * (PI/(180.0 * 60.0));</span>
+<span class="s1">   dec = dec * (PI/(180.0 * 60.0));</span>
+
+<span class="s1">   if (Max_Num_Points == Num_Points)</span>
+<span class="s1">     {</span>
+<span class="s1">        Max_Num_Points += 32;</span>
+<span class="s1">        p = (Point_Source_Type *)do_realloc ((char *)Point_Sources, Max_Num_Points * sizeof (Point_Source_Type));</span>
+<span class="s1">        if (p == NULL)</span>
+<span class="s1">          {</span>
+<span class="s1">             free_sources ();</span>
+<span class="s1">             return -1;</span>
+<span class="s1">          }</span>
+<span class="s1">        Point_Sources = p;</span>
+<span class="s1">     }</span>
+
+<span class="s1">   p = Point_Sources + Num_Points;</span>
+<span class="s1">   /* Note the the minus sign is to generate a vector pointing from the</span>
+<span class="s1">    * source to the origin</span>
+<span class="s1">    */</span>
+<span class="s1">   p-&gt;cosx = -cos (dec) * cos (ra);</span>
+<span class="s1">   p-&gt;cosy = -cos (dec) * sin(ra);</span>
+<span class="s1">   p-&gt;cosz = -sin (dec);</span>
+
+<span class="s1">   p-&gt;weight = weight;</span>
+<span class="s1">   p-&gt;energy = energy;</span>
+<span class="s1">   Num_Points += 1;</span>
+
+<span class="s1">   return 0;</span>
+<span class="s1">}</span>
+
+<span class="s1">static void normalize_sources (void)</span>
+<span class="s1">{</span>
+<span class="s1">   double total;</span>
+<span class="s1">   unsigned int i;</span>
+
+<span class="s1">   total = 0;</span>
+<span class="s1">   for (i = 0; i &lt; Num_Points; i++)</span>
+<span class="s1">     {</span>
+<span class="s1">	Point_Sources[i].weight += total;</span>
+<span class="s1">	total = Point_Sources[i].weight;</span>
+<span class="s1">     }</span>
+
+<span class="s1">   for (i = 0; i &lt; Num_Points; i++)</span>
+<span class="s1">     Point_Sources[i].weight /= total;</span>
+
+<span class="s1">   /* Make sure no round-off error affects the weight of the last point */</span>
+<span class="s1">   Point_Sources[Num_Points - 1].weight = 1.0;</span>
+<span class="s1">}</span>
+
+<span class="s1">int user_open_source (char **argv, int argc, double area,</span>
+<span class="s1">		      double cosx, double cosy, double cosz)</span>
+<span class="s1">{</span>
+<span class="s1">   FILE *fp;</span>
+<span class="s1">   char line[1024];</span>
+<span class="s1">   char *file;</span>
+<span class="s1">   unsigned int linenum;</span>
+
+<span class="s1">   file = argv[0];</span>
+<span class="s1">   if (file == NULL)</span>
+<span class="s1">     {</span>
+<span class="s1">	fprintf (stderr, &quot;UserSource Model requires FILE as argument\n&quot;);</span>
+<span class="s1">	return -1;</span>
+<span class="s1">     }</span>
+
+<span class="s1">   fp = fopen (file, &quot;r&quot;);</span>
+<span class="s1">   if (fp == NULL)</span>
+<span class="s1">     {</span>
+<span class="s1">	fprintf (stderr, &quot;Unable to open </span><span class="si">%s</span><span class="s1">\n&quot;, file);</span>
+<span class="s1">	return -1;</span>
+<span class="s1">     }</span>
+
+<span class="s1">   linenum = 0;</span>
+<span class="s1">   while (NULL != fgets (line, sizeof (line), fp))</span>
+<span class="s1">     {</span>
+<span class="s1">	double ra, dec, weight, energy;</span>
+
+<span class="s1">	linenum++;</span>
+<span class="s1">	if (4 != sscanf (line, &quot;</span><span class="si">%lf</span><span class="s1"> </span><span class="si">%lf</span><span class="s1"> </span><span class="si">%lf</span><span class="s1"> </span><span class="si">%lf</span><span class="s1">&quot;, &amp;ra, &amp;dec, &amp;weight, &amp;energy))</span>
+<span class="s1">	  continue;</span>
+
+<span class="s1">	if (weight &lt;= 0.0)</span>
+<span class="s1">	  {</span>
+<span class="s1">	     fprintf (stderr, &quot;weight on line </span><span class="si">%d</span><span class="s1"> of </span><span class="si">%s</span><span class="s1"> must be positive\n&quot;,</span>
+<span class="s1">		      linenum, file);</span>
+<span class="s1">	     free_sources ();</span>
+<span class="s1">	     return -1;</span>
+<span class="s1">	  }</span>
+
+<span class="s1">	if (-1 == add_source (ra, dec, weight, energy))</span>
+<span class="s1">	  {</span>
+<span class="s1">	     fclose (fp);</span>
+<span class="s1">	     return -1;</span>
+<span class="s1">	  }</span>
+<span class="s1">     }</span>
+
+<span class="s1">   fclose (fp);</span>
+<span class="s1">   if (Num_Points == 0)</span>
+<span class="s1">     {</span>
+<span class="s1">	fprintf (stderr, &quot;</span><span class="si">%s</span><span class="s1"> contains no sources\n&quot;, file);</span>
+<span class="s1">	return -1;</span>
+<span class="s1">     }</span>
+
+<span class="s1">   normalize_sources ();</span>
+<span class="s1">   return 0;</span>
+<span class="s1">}</span>
+
+<span class="s1">void user_close_source (void)</span>
+<span class="s1">{</span>
+<span class="s1">   free_sources ();</span>
+<span class="s1">}</span>
+
+
+<span class="s1">int user_create_ray (double *delta_t, double *energy,</span>
+<span class="s1">		     double *cosx, double *cosy, double *cosz)</span>
+<span class="s1">{</span>
+<span class="s1">   double r;</span>
+<span class="s1">   Point_Source_Type *p;</span>
+
+<span class="s1">   p = Point_Sources;</span>
+
+<span class="s1">   r = JDMrandom ();</span>
+<span class="s1">   while (r &gt; p-&gt;weight)</span>
+<span class="s1">     p++;</span>
+
+<span class="s1">   *delta_t = -1.0;</span>
+<span class="s1">   *energy = p-&gt;energy;</span>
+<span class="s1">   *cosx = p-&gt;cosx;</span>
+<span class="s1">   *cosy = p-&gt;cosy;</span>
+<span class="s1">   *cosz = p-&gt;cosz;</span>
+
+<span class="s1">   return 0;</span>
+<span class="s1">}</span>
+
+<span class="s1">int main (int a, char **b)</span>
+<span class="s1">{</span>
+<span class="s1">   (void) a;</span>
+<span class="s1">   (void) b;</span>
+<span class="s1">   return 1;</span>
+<span class="s1">}</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;pnts.c&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">ccode</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="n">marxpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;marx&#39;</span><span class="p">))</span>
+<span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxpath</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;share&#39;</span><span class="p">,</span> <span class="s1">&#39;doc&#39;</span><span class="p">,</span> <span class="s1">&#39;marx&#39;</span><span class="p">,</span> <span class="s1">&#39;examples&#39;</span><span class="p">,</span> <span class="s1">&#39;user-source&#39;</span><span class="p">)</span>
+<span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="s1">&#39;user.h&#39;</span><span class="p">),</span> <span class="s1">&#39;user.h&#39;</span><span class="p">)</span>
+<span class="n">jdmath_h</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxpath</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;include&#39;</span><span class="p">)</span>
+<span class="n">jdmath_a</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxpath</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;lib&#39;</span><span class="p">,</span> <span class="s1">&#39;libjdmath.a&#39;</span><span class="p">)</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;gcc&#39;</span><span class="p">,</span> <span class="s1">&#39;-I&#39;</span> <span class="o">+</span> <span class="n">jdmath_h</span><span class="p">,</span> <span class="n">jdmath_a</span><span class="p">,</span>
+                      <span class="s1">&#39;-shared&#39;</span><span class="p">,</span> <span class="s1">&#39;pnts.c&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="s1">&#39;pnts.so&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">marxpars_from_asol</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">marxpars_from_asol</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">evt2file</span><span class="p">)</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;OutputDir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;COUP&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;SourceType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;USER&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;UserSourceFile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;pnts.so&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;UserSourceArgs&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;coup.marxin&#39;</span>
+<span class="c1"># We could try to rigorously determine the total flux of the field</span>
+<span class="c1"># but here we just pick a number that will give us a good number of photons.</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;SourceFlux&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.03</span>
+
+<span class="n">marxcall</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;marx&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<span class="n">marxcall</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxcall</span><span class="p">)</span>
+
+<span class="sd">&#39;&#39;&#39;Currently, MARX can only be run from the command line. So we build</span>
+<span class="sd">a command line call from the parameters dictionary and run it via</span>
+<span class="sd">subprocess.call().&#39;&#39;&#39;</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">marxcall</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER COUP COUP.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>In the observation, the brightest sources are piled-up. We don’t bother
+simulating this here, so for the visualization we just set the scaling limits to bring out
+the fainter details and ignore the bright peaks.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">simple_norm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageGrid</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pycrates</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">ImageGrid</span><span class="p">(</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="mi">111</span><span class="p">,</span>  <span class="c1"># similar to fig.add_subplot(142).</span>
+    <span class="n">nrows_ncols</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axes_pad</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">label_mode</span><span class="o">=</span><span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="n">share_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">cbar_location</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="n">cbar_mode</span><span class="o">=</span><span class="s2">&quot;single&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">cax</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">cbar_axes</span><span class="p">,</span> 
+                               <span class="p">[</span><span class="n">evt2file</span><span class="p">,</span> <span class="s1">&#39;COUP.fits&#39;</span><span class="p">],</span> 
+                               <span class="p">[</span><span class="s1">&#39;Observation&#39;</span><span class="p">,</span> <span class="s1">&#39;MARX Simulation&#39;</span><span class="p">]):</span>
+    <span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="n">hist</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                    <span class="n">bins</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="mi">3900</span><span class="p">,</span><span class="mi">4500</span><span class="p">],</span> <span class="p">[</span><span class="mi">3900</span><span class="p">,</span><span class="mi">4500</span><span class="p">]])</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">simple_norm</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;log&#39;</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="mi">3900</span><span class="p">,</span><span class="mi">4500</span><span class="p">,</span><span class="mi">3900</span><span class="p">,</span><span class="mi">4500</span><span class="p">],</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">cbar</span> <span class="o">=</span> <span class="n">cax</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+    <span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Counts per bin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/ce0e93d1d4bb6d74f3f4132c60219bc3da07346bfb2344f185e780419f6cca47.png" src="../_images/ce0e93d1d4bb6d74f3f4132c60219bc3da07346bfb2344f185e780419f6cca47.png" />
+</div>
+</div>
+<p>Image of the observed data (left) and simulation (right). The diagonal line from the center to the top right is the read-out streak from $\theta^1$ Ori C.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ciao_contrib</span><span class="w"> </span><span class="kn">import</span> <span class="n">runtool</span> <span class="k">as</span> <span class="n">rt</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="s2">&quot;COUP.fits[EVENTS][bin x=2500:5500:2,y=2500:5500:2]&quot;</span><span class="p">,</span> <span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">,</span>
+           <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">mkpsfmap</span><span class="p">(</span><span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;psf.map&quot;</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="mf">1.4</span><span class="p">,</span> <span class="n">ecf</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">celldetect</span><span class="p">(</span><span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;src.fits&quot;</span><span class="p">,</span> <span class="n">psffile</span><span class="o">=</span><span class="s2">&quot;psf.map&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkyCoord</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+<span class="n">src</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;src.fits&#39;</span><span class="p">)</span>
+
+<span class="n">src_co</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">],</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span>
+<span class="n">srcin_co</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span><span class="n">coup</span><span class="p">[</span><span class="s1">&#39;RAJ2000&#39;</span><span class="p">],</span> <span class="n">coup</span><span class="p">[</span><span class="s1">&#39;DEJ2000&#39;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span>
+<span class="n">idx</span><span class="p">,</span> <span class="n">d2d</span><span class="p">,</span> <span class="n">d3d</span> <span class="o">=</span> <span class="n">src_co</span><span class="o">.</span><span class="n">match_to_catalog_sky</span><span class="p">(</span><span class="n">srcin_co</span><span class="p">)</span>
+
+<span class="n">asol</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">cen</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span><span class="n">asol</span><span class="p">[</span><span class="s1">&#39;RA_NOM&#39;</span><span class="p">],</span> <span class="n">asol</span><span class="p">[</span><span class="s1">&#39;DEC_NOM&#39;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">cen</span><span class="o">.</span><span class="n">separation</span><span class="p">(</span><span class="n">src_co</span><span class="p">)</span><span class="o">.</span><span class="n">arcsec</span>
+
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">()</span>
+<span class="n">ax1</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">)</span>
+<span class="n">scat1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">d2d</span><span class="o">.</span><span class="n">arcsec</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">log10</span><span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;NET_COUNTS&#39;</span><span class="p">]),</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;distance from aimpoint [arcsec]&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;coordinate error [arcsec]&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">350</span><span class="p">])</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
+<span class="n">cbar1</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">scat1</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax1</span><span class="p">)</span>
+<span class="n">cbar1</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;log(net counts per source)&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/878fe4bfaef4962cab9385d66a28d18ff06eb64659cafabe873a64253f77b995.png" src="../_images/878fe4bfaef4962cab9385d66a28d18ff06eb64659cafabe873a64253f77b995.png" />
+</div>
+</div>
+<p>Apart from a clump close to the aimpoint (where sources in the ONC are so close to each other that they can easily be confused), the distribution of coordinate errors spreads out with increasing distance, i.e. size of the PSF.</p>
+</section>
+<section id="simulations-with-an-image-source">
+<h2>Simulations with an IMAGE source<a class="headerlink" href="#simulations-with-an-image-source" title="Link to this heading">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">SourceType=IMAGE</span></code> in marx is a strange beast that behaves in ways that users might find surprising. When using this source type, marx will read in an image file and use the pixel values as relative probabilities for generating photons across the image.</p>
+<p>Marx <em>will</em> read the WCS in the image header, but <em>only</em> use the absolute value for the pixel size, not the orientation or position. The center of the image is always supposed to be at the nominal pointing position and the image x/y axes are always aligned with the sky coordinate system in marx.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Turn the downloaded event file into an image</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ciao_contrib</span><span class="w"> </span><span class="kn">import</span> <span class="n">runtool</span> <span class="k">as</span> <span class="n">rt</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="o">.</span><span class="n">punlearn</span><span class="p">()</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="n">evt2file</span> <span class="o">+</span> <span class="s1">&#39;[bin x=3900:4500:1,y=3900:4500:1]&#39;</span><span class="p">,</span> <span class="s1">&#39;3744_image.fits&#39;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Are using astropy for the coordinate transforms, just because I know it better and can type it faster</span>
+<span class="c1"># than the equivalent packages that are part of CIAO</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.wcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">WCS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+
+<span class="c1"># Fortunately, the chandra X/Y axes are already aligned with the axes that marx uses,</span>
+<span class="c1"># so no image rotation is needed here.</span>
+<span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="s1">&#39;3744_image.fits&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdus</span><span class="p">:</span>
+    <span class="n">wcs</span> <span class="o">=</span> <span class="n">WCS</span><span class="p">(</span><span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="n">fix</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">shape</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">center</span> <span class="o">=</span> <span class="n">wcs</span><span class="o">.</span><span class="n">pixel_to_world</span><span class="p">(</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">,</span> <span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;MARX simulation with an IMAGE source </span>
+<span class="sd">&#39;&#39;&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;SourceFlux&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.003</span> <span class="c1"># speed up during experimentation</span>
+
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;SourceType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;IMAGE&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;S-ImageFile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;3744_image.fits&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;OutputDir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;COUP_image&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;SourceRA&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">center</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">deg</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;SourceDEC&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">center</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">deg</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;DitherModel&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;INTERNAL&#39;</span>
+
+<span class="n">marxcall</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;marx&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<span class="n">marxcall</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxcall</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">marxcall</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER COUP_image COUP_image_evt2.fits&#39;</span><span class="p">,</span>
+                      <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let&#39;s turn the simulated data into an image, too, to make it easier to </span>
+<span class="c1"># display in WCS instead of in detector coordinates</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="s1">&#39;COUP_image_evt2.fits[bin x=3900:4500:1,y=3900:4500:1]&#39;</span><span class="p">,</span> <span class="s1">&#39;COUP_image.fits&#39;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s1">&#39;3744_image.fits&#39;</span><span class="p">,</span> <span class="s1">&#39;COUP_image.fits&#39;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">fits</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">f</span><span class="p">)</span> <span class="k">as</span> <span class="n">hdus</span><span class="p">:</span>
+        <span class="n">wcs</span> <span class="o">=</span> <span class="n">WCS</span><span class="p">(</span><span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">header</span><span class="p">,</span> <span class="n">fix</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">hdus</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">data</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">simple_norm</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;log&#39;</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">wcs</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING: FITSFixedWarning: RADECSYS= &#39;ICRS &#39; / WCS system 
+the RADECSYS keyword is deprecated, use RADESYSa. [astropy.wcs.wcs]
+</pre></div>
+</div>
+<img alt="../_images/a6383fef4cff43cb38634cc4a0b45b928ccdc90242522c6e1b9b80c94459cf51.png" src="../_images/a6383fef4cff43cb38634cc4a0b45b928ccdc90242522c6e1b9b80c94459cf51.png" />
+</div>
+</div>
+</section>
+<section id="regular-grid-acis">
+<h2>Regular Grid (ACIS)<a class="headerlink" href="#regular-grid-acis" title="Link to this heading">¶</a></h2>
+<p>In this example we place a radial grid of sources on the sky. Each source
+emits an equal number of photons (exactly, no Poisson statistics) so that
+we can compare the accuracy of the position we recover. Note that the
+<em>detected</em> number of photons will be smaller for off-axis photons because
+of vignetting!</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ccode</span><span class="o">=</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">#include &lt;stdio.h&gt;</span>
+<span class="s1">#include &lt;math.h&gt;</span>
+<span class="s1">#include &quot;user.h&quot;</span>
+
+<span class="s1">static double Source_CosX;</span>
+<span class="s1">static double Source_CosY;</span>
+<span class="s1">static double Source_CosZ;</span>
+
+<span class="s1">int user_open_source (char **argv, int argc, double area,</span>
+<span class="s1">		      double cosx, double cosy, double cosz)</span>
+<span class="s1">{</span>
+<span class="s1">   return 0;</span>
+<span class="s1">}</span>
+
+<span class="s1">void user_close_source (void)</span>
+<span class="s1">{</span>
+<span class="s1">}</span>
+
+<span class="s1">static double To_Radians = (M_PI / 180.0 / 3600.0);</span>
+<span class="s1">#define ARC_SECONDS_PER_CELL 50</span>
+<span class="s1">#define ANGULAR_STEPS 16</span>
+
+<span class="s1">int user_create_ray (double *delta_t, double *energy,</span>
+<span class="s1">		     double *cosx, double *cosy, double *cosz)</span>
+<span class="s1">{</span>
+<span class="s1">   static int last_i = 0;</span>
+<span class="s1">   static int last_j = 0;</span>
+<span class="s1">   double theta, phi;</span>
+<span class="s1">   double cos_theta, sin_theta;</span>
+
+<span class="s1">   if (last_j == ANGULAR_STEPS){</span>
+<span class="s1">        last_j = 0;</span>
+<span class="s1">        last_i++;</span>
+<span class="s1">   }</span>
+<span class="s1">   if (last_i == 20) last_i = 0;</span>
+
+<span class="s1">   theta = To_Radians * last_i * ARC_SECONDS_PER_CELL;</span>
+<span class="s1">   phi = (10. /180 * M_PI) + last_j * 2 * M_PI / ANGULAR_STEPS;</span>
+
+<span class="s1">   sin_theta = sin(theta);</span>
+
+<span class="s1">   *cosx = -cos (theta);</span>
+<span class="s1">   *cosy = sin_theta * cos (phi);</span>
+<span class="s1">   *cosz = sin_theta * sin (phi);</span>
+
+<span class="s1">   *delta_t = -1.0;</span>
+<span class="s1">   *energy = -1.0;</span>
+
+<span class="s1">   if (last_i ==0){</span>
+<span class="s1">     last_i++;</span>
+<span class="s1">        }</span>
+<span class="s1">   else {</span>
+<span class="s1">     last_j++;</span>
+<span class="s1">        }</span>
+
+<span class="s1">   return 0;</span>
+<span class="s1">}</span>
+
+<span class="s1">int main (int a, char **b)</span>
+<span class="s1">{</span>
+<span class="s1">   (void) a;</span>
+<span class="s1">   (void) b;</span>
+<span class="s1">   return 1;</span>
+<span class="s1">}&#39;&#39;&#39;</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;radialgrid.c&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">ccode</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;gcc&#39;</span><span class="p">,</span> <span class="s1">&#39;-lm&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;-shared&#39;</span><span class="p">,</span> <span class="s1">&#39;radialgrid.c&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="s1">&#39;radialgrid.so&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pars</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;SourceType&#39;</span><span class="p">:</span> <span class="s1">&#39;USER&#39;</span><span class="p">,</span> <span class="s1">&#39;OutputDir&#39;</span><span class="p">:</span> <span class="s1">&#39;points&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;GratingType&#39;</span><span class="p">:</span> <span class="s1">&#39;NONE&#39;</span><span class="p">,</span><span class="s1">&#39;SourceRA&#39;</span><span class="p">:</span> <span class="mf">90.</span><span class="p">,</span> <span class="s1">&#39;SourceDEC&#39;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
+        <span class="s1">&#39;RA_Nom&#39;</span><span class="p">:</span> <span class="mf">90.</span><span class="p">,</span> <span class="s1">&#39;Dec_Nom&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Roll_Nom&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="s1">&#39;DetectorType&#39;</span><span class="p">:</span> <span class="s1">&#39;ACIS-I&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;UserSourceFile&#39;</span><span class="p">:</span> <span class="s1">&#39;radialgrid.so&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;NumRays&#39;</span><span class="p">:</span> <span class="o">-</span><span class="mi">100000</span><span class="p">,</span> <span class="s1">&#39;ExposureTime&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">}</span>
+<span class="n">marxcall</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;marx&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<span class="n">marxcall</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxcall</span><span class="p">)</span>
+
+<span class="sd">&#39;&#39;&#39;Currently, MARX can only be run from the command line. So we build</span>
+<span class="sd">a command line call from the parameters dictionary and run it via</span>
+<span class="sd">subprocess.call().&#39;&#39;&#39;</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">marxcall</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER points points.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+
+<span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;points.fits&#39;</span><span class="p">)</span>
+<span class="n">hist</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                <span class="n">bins</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="mi">4097</span><span class="o">-</span><span class="mi">1200</span><span class="p">,</span><span class="mi">4097</span><span class="o">+</span><span class="mi">1200</span><span class="p">],</span> <span class="p">[</span><span class="mi">4097</span><span class="o">-</span><span class="mi">1200</span><span class="p">,</span><span class="mi">4097</span><span class="o">+</span><span class="mi">1200</span><span class="p">]])</span>
+<span class="n">norm</span> <span class="o">=</span> <span class="n">simple_norm</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;log&#39;</span><span class="p">)</span> <span class="c1">#, vmax=300)</span>
+<span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="mi">4097</span><span class="o">-</span><span class="mi">1200</span><span class="p">,</span><span class="mi">4097</span><span class="o">+</span><span class="mi">1200</span><span class="p">,</span><span class="mi">4097</span><span class="o">-</span><span class="mi">1200</span><span class="p">,</span><span class="mi">4097</span><span class="o">+</span><span class="mi">1200</span><span class="p">],</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+<span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+<span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Counts per bin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/23261d646b28399bd5186143f9e7413527d35dec9bee08cd3f7ebfa7efb05bfb.png" src="../_images/23261d646b28399bd5186143f9e7413527d35dec9bee08cd3f7ebfa7efb05bfb.png" />
+</div>
+</div>
+<p>Image of the simulation. The size of the PSF increases further away from the aimpoint.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="s2">&quot;points.fits[EVENTS][bin x=3000:5100:1,y=3000:5100:1]&quot;</span><span class="p">,</span> <span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">,</span>
+           <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">mkpsfmap</span><span class="p">(</span><span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;psf.map&quot;</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="mf">1.4</span><span class="p">,</span> <span class="n">ecf</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">celldetect</span><span class="p">(</span><span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;src.fits&quot;</span><span class="p">,</span> <span class="n">psffile</span><span class="o">=</span><span class="s2">&quot;psf.map&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">src</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;src.fits&#39;</span><span class="p">)</span>
+<span class="c1"># Find distance from input position.</span>
+<span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA_INPUT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">//</span> <span class="p">(</span><span class="mf">360.</span><span class="o">/</span><span class="mf">16.</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mf">360.</span><span class="o">/</span><span class="mf">16.</span><span class="p">)</span> <span class="o">-</span> <span class="mf">10.</span>
+<span class="c1"># Problem: Might expect source at 1.0,</span>
+<span class="c1"># but measure at 0.99. In this case distance to next lower source</span>
+<span class="c1"># is 0.99. Thus shift input by 0.005 (about 50 arcsec / 2)</span>
+<span class="c1"># before integer devision</span>
+<span class="n">src</span><span class="p">[</span><span class="s1">&#39;DEC_INPUT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="p">((</span><span class="mf">0.005</span> <span class="o">+</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">])</span> <span class="o">//</span> <span class="p">(</span><span class="mf">50.</span><span class="o">/</span><span class="mf">3600.</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mf">50.</span><span class="o">/</span><span class="mf">3600.</span><span class="p">)</span>
+
+<span class="n">cen</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span><span class="mf">90.</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span>
+<span class="n">det</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">],</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">cen</span><span class="o">.</span><span class="n">separation</span><span class="p">(</span><span class="n">det</span><span class="p">)</span><span class="o">.</span><span class="n">arcsec</span>
+<span class="n">d_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">d</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">50.</span><span class="p">)</span> <span class="o">-</span> <span class="mi">10</span>
+
+<span class="n">ang</span> <span class="o">=</span> <span class="n">cen</span><span class="o">.</span><span class="n">position_angle</span><span class="p">(</span><span class="n">det</span><span class="p">)</span><span class="o">.</span><span class="n">degree</span>
+<span class="c1"># Subtract offset that we placed in the C code to avoid 0./360. ambiguity</span>
+<span class="c1"># Step width is 360./16 = 22.5 deg</span>
+<span class="c1"># Offset is 10 deg. Complement we find here is 12.5 deg.</span>
+<span class="n">ang</span> <span class="o">=</span> <span class="n">ang</span> <span class="o">-</span> <span class="mf">12.5</span>
+
+<span class="n">ang_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">ang</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">360.</span> <span class="o">/</span> <span class="mf">16.</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+<span class="n">ind</span> <span class="o">=</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">10</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">scat1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">d_err</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;NET_COUNTS&#39;</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;distance [arcsec]&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;distance error [arcsec]&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">620</span><span class="p">])</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+<span class="n">scat2</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ang</span><span class="p">,</span> <span class="n">ang_err</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;NET_COUNTS&#39;</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;pos ang [deg]&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;pos ang error [deg]&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">350</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+<span class="n">cbar2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">scat2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+<span class="n">cbar2</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;net counts per source&#39;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/7a051e1e95630ce43e890446cee5d7082b93587ffa418c2e695b65a932e6bf33.png" src="../_images/7a051e1e95630ce43e890446cee5d7082b93587ffa418c2e695b65a932e6bf33.png" />
+</div>
+</div>
+<p><em>left</em>: The error in the position (measured radially to the optical axis) increases with the distance to the optical axis. One part of this is just that the effective area and thus the number of counts decreases. There is also a systematic trend where sources at larger off-axis angle are systematically fitted too close to the center. Further investigation is necessary to check if this is a problem of marx or the CIAO tool celldetect. In any case, the typical offset is below 0.2 arcsec, which is less than half a pixel in ACIS. <em>right</em>: Difference in position angle between input and fit.</p>
+<p>The input position is typically recovered to much better than one pixel for sources with a few hundred counts. There is a small systematic trend that needs to be studied further.</p>
+</section>
+<section id="regular-grid-hrc">
+<h2>Regular grid (HRC)<a class="headerlink" href="#regular-grid-hrc" title="Link to this heading">¶</a></h2>
+<p>Same as above, but with HRC-I as a detector.</p>
+<p>The field-of-view for the HRC-I is larger for than for ACIS-I, but the PSF becomes
+very large at large off-axis angles and thus the positional uncertainty
+will be so large that a comparison to marx is no longer helpful to test
+the accuracy of the marx simulations.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pars</span><span class="p">[</span><span class="s1">&#39;DetectorType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;HRC-I&#39;</span>
+<span class="n">marxcall</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;marx&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<span class="n">marxcall</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxcall</span><span class="p">)</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">marxcall</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER points points.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+
+<span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;points.fits&#39;</span><span class="p">)</span>
+<span class="n">hist</span><span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                <span class="n">bins</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="mi">16292</span><span class="o">-</span><span class="mi">4000</span><span class="p">,</span><span class="mi">16292</span><span class="o">+</span><span class="mi">4000</span><span class="p">],</span> <span class="p">[</span><span class="mi">16392</span><span class="o">-</span><span class="mi">4000</span><span class="p">,</span><span class="mi">16392</span><span class="o">+</span><span class="mi">4000</span><span class="p">]])</span>
+<span class="n">norm</span> <span class="o">=</span> <span class="n">simple_norm</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;log&#39;</span><span class="p">)</span> <span class="c1">#, vmax=300)</span>
+<span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">hist</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="mi">16292</span><span class="o">-</span><span class="mi">4000</span><span class="p">,</span><span class="mi">16292</span><span class="o">+</span><span class="mi">4000</span><span class="p">,</span><span class="mi">16392</span><span class="o">-</span><span class="mi">4000</span><span class="p">,</span><span class="mi">16392</span><span class="o">+</span><span class="mi">4000</span><span class="p">],</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">)</span>
+<span class="n">cbar</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+<span class="n">cbar</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;Counts per bin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/4795f81b8185e8f5537a976ff1af87238e45d13c715a011f32c73c5db4769b6b.png" src="../_images/4795f81b8185e8f5537a976ff1af87238e45d13c715a011f32c73c5db4769b6b.png" />
+</div>
+</div>
+<p>Image of the simulation. The size of the PSF increases further away from the aimpoint.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="s2">&quot;points.fits[EVENTS][bin x=8500:24500:2,y=8500:24500:2]&quot;</span><span class="p">,</span> <span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">,</span>
+           <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">mkpsfmap</span><span class="p">(</span><span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;psf.map&quot;</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="mf">1.4</span><span class="p">,</span> <span class="n">ecf</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">celldetect</span><span class="p">(</span><span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;src.fits&quot;</span><span class="p">,</span> <span class="n">psffile</span><span class="o">=</span><span class="s2">&quot;psf.map&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">src</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;src.fits&#39;</span><span class="p">)</span>
+<span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA_INPUT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">//</span> <span class="p">(</span><span class="mf">360.</span><span class="o">/</span><span class="mf">16.</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mf">360.</span><span class="o">/</span><span class="mf">16.</span><span class="p">)</span> <span class="o">-</span> <span class="mf">10.</span>
+<span class="n">src</span><span class="p">[</span><span class="s1">&#39;DEC_INPUT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="p">((</span><span class="mf">0.005</span> <span class="o">+</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">])</span> <span class="o">//</span> <span class="p">(</span><span class="mf">50.</span><span class="o">/</span><span class="mf">3600.</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mf">50.</span><span class="o">/</span><span class="mf">3600.</span><span class="p">)</span>
+
+<span class="n">cen</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span><span class="mf">90.</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span>
+<span class="n">det</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">],</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;DEC&#39;</span><span class="p">],</span> <span class="n">unit</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">cen</span><span class="o">.</span><span class="n">separation</span><span class="p">(</span><span class="n">det</span><span class="p">)</span><span class="o">.</span><span class="n">arcsec</span>
+<span class="n">d_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">d</span> <span class="o">+</span> <span class="mi">10</span><span class="p">,</span> <span class="mf">50.</span><span class="p">)</span> <span class="o">-</span> <span class="mi">10</span>
+
+<span class="n">ang</span> <span class="o">=</span> <span class="n">cen</span><span class="o">.</span><span class="n">position_angle</span><span class="p">(</span><span class="n">det</span><span class="p">)</span><span class="o">.</span><span class="n">degree</span>
+<span class="c1"># Subtract offset that we placed in the C code to avoid 0./360. ambiguity</span>
+<span class="c1"># Step width is 360./16 = 22.5 deg</span>
+<span class="c1"># Offset is 10 deg. Complement we find here is 12.5 deg.</span>
+<span class="n">ang</span> <span class="o">=</span> <span class="n">ang</span> <span class="o">-</span> <span class="mf">12.5</span>
+
+<span class="n">ang_err</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">ang</span> <span class="o">+</span> <span class="mi">2</span><span class="p">,</span> <span class="mf">360.</span> <span class="o">/</span> <span class="mf">16.</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span>
+<span class="n">ind</span> <span class="o">=</span> <span class="n">d</span> <span class="o">&gt;</span> <span class="mi">10</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="p">(</span><span class="n">ax1</span><span class="p">,</span> <span class="n">ax2</span><span class="p">)</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+<span class="n">scat1</span> <span class="o">=</span> <span class="n">ax1</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">d_err</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;NET_COUNTS&#39;</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;distance [arcsec]&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;distance error [arcsec]&#39;</span><span class="p">)</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">10</span><span class="p">,</span> <span class="mi">620</span><span class="p">])</span>
+<span class="n">ax1</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
+<span class="n">scat2</span> <span class="o">=</span> <span class="n">ax2</span><span class="o">.</span><span class="n">scatter</span><span class="p">(</span><span class="n">ang</span><span class="p">,</span> <span class="n">ang_err</span><span class="p">,</span> <span class="n">c</span><span class="o">=</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;NET_COUNTS&#39;</span><span class="p">],</span> <span class="n">lw</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;pos ang [deg]&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;pos ang error [deg]&#39;</span><span class="p">)</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">([</span><span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mi">350</span><span class="p">])</span>
+<span class="n">ax2</span><span class="o">.</span><span class="n">set_ylim</span><span class="p">([</span><span class="o">-</span><span class="mf">0.3</span><span class="p">,</span> <span class="mf">0.3</span><span class="p">])</span>
+<span class="n">cbar2</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">scat2</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax2</span><span class="p">)</span>
+<span class="n">cbar2</span><span class="o">.</span><span class="n">set_label</span><span class="p">(</span><span class="s1">&#39;net counts per source&#39;</span><span class="p">)</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/25307a2686fce5388a201189bf2e49c7b5ae3e15f8b419f073aad3a8ea270fe4.png" src="../_images/25307a2686fce5388a201189bf2e49c7b5ae3e15f8b419f073aad3a8ea270fe4.png" />
+</div>
+</div>
+<p>See previous example. The same trends are visible with a slightly larger scatter.</p>
+<p>In the central few arcmin the input position is typically recovered to better than 0.2 pixels for sources with a few hundred counts.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<form action="../search.html" method="get">
+<input type="text" name="q" placeholder="Search" />
+<input type="hidden" name="check_keywords" value="yes" />
+<input type="hidden" name="area" value="default" />
+</form>
+  <h3><a href="../index.html">Page Content</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Coordinates on the sky and the chip</a><ul>
+<li><a class="reference internal" href="#chandra-orion-ultradeep-project">Chandra Orion Ultradeep project</a></li>
+<li><a class="reference internal" href="#simulations-with-an-image-source">Simulations with an IMAGE source</a></li>
+<li><a class="reference internal" href="#regular-grid-acis">Regular Grid (ACIS)</a></li>
+<li><a class="reference internal" href="#regular-grid-hrc">Regular grid (HRC)</a></li>
+</ul>
+</li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="source.html"
+                          title="previous chapter">Source shapes in MARX</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../Reference/reference.html"
+                          title="next chapter"><strong>marx</strong> reference</a></p>
+  </div><hr style="color: #FFF;"></hr>
+<a href="http://cxc.harvard.edu/">
+    <img src="../_static/cxcfooterCXCicon.png" 
+	 alt="Chandra X-ray Center" class="img-logo"></img>
+</a>
+<p></p>
+<a href="http://space.mit.edu/cxc/">CXC@MIT</a>
+<p></p>
+<a href="http://space.mit.edu/">
+    <img src="../_static/logo-mit-kavli.png" 
+	 alt="MIT Kavli Institute" class="img-logo"></img>
+</a>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="../Reference/reference.html" title="marx reference"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="source.html" title="Source shapes in MARX"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" ><strong>marx</strong> accuracy and testing</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Coordinates on the sky and the chip</a></li> 
+      </ul>
+    </div>
+    <div class="footer">
+    <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
+    <a href="https://accessibility.mit.edu/">Accessibility</a>
+        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

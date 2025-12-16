@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Source shapes in MARX &#8212; MARX 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    
+    <script src="../_static/documentation_options.js?v=b6ed0530"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within MARX 6.0.1 documentation"
+          href="../_static/opensearch.xml"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Coordinates on the sky and the chip" href="positions.html" />
+    <link rel="prev" title="Reproducing an input spectrum" href="spectrum.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="positions.html" title="Coordinates on the sky and the chip"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="spectrum.html" title="Reproducing an input spectrum"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><strong>marx</strong> accuracy and testing</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Source shapes in MARX</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="source-shapes-in-marx">
+<h1>Source shapes in MARX<a class="headerlink" href="#source-shapes-in-marx" title="Link to this heading">¶</a></h1>
+<p>marx offers different source shapes. Tests in this module exercise those sources (except <code class="docutils literal notranslate"><span class="pre">SAOSAC</span></code>, which is heavily used in the PSF tests already).</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_marx</span>
+<span class="n">setup_marx</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="build-in-geometric-sources">
+<h2>Build-in geometric sources<a class="headerlink" href="#build-in-geometric-sources" title="Link to this heading">¶</a></h2>
+<p>This test exercises build-in |marx| sources with different geometric shapes.
+Most source types have parameters, and not all parameters are tested here.
+See source documentation for a detailed description of source parameters.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="n">sources</span> <span class="o">=</span> <span class="p">[</span> <span class="p">{</span><span class="s1">&#39;OutputDir&#39;</span><span class="p">:</span> <span class="s1">&#39;point&#39;</span><span class="p">},</span> <span class="c1"># Default shape is POINT</span>
+            <span class="p">{</span><span class="s1">&#39;SourceType&#39;</span><span class="p">:</span> <span class="s1">&#39;GAUSS&#39;</span><span class="p">,</span> <span class="s1">&#39;S-GaussSigma&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;OutputDir&#39;</span><span class="p">:</span> <span class="s1">&#39;gauss&#39;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;SourceType&#39;</span><span class="p">:</span> <span class="s1">&#39;BETA&#39;</span><span class="p">,</span> <span class="s1">&#39;S-BetaCoreRadius&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span><span class="s1">&#39;S-BetaBeta&#39;</span><span class="p">:</span> <span class="mf">0.6</span><span class="p">,</span> <span class="s1">&#39;OutputDir&#39;</span><span class="p">:</span> <span class="s1">&#39;beta&#39;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;SourceType&#39;</span><span class="p">:</span> <span class="s1">&#39;DISK&#39;</span><span class="p">,</span> <span class="s1">&#39;S-DiskTheta0&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;S-DiskTheta1&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;OutputDir&#39;</span><span class="p">:</span> <span class="s1">&#39;disk&#39;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;SourceType&#39;</span><span class="p">:</span> <span class="s1">&#39;DISK&#39;</span><span class="p">,</span> <span class="s1">&#39;S-DiskTheta0&#39;</span><span class="p">:</span> <span class="mi">10</span><span class="p">,</span> <span class="s1">&#39;S-DiskTheta1&#39;</span><span class="p">:</span> <span class="mi">20</span><span class="p">,</span> <span class="s1">&#39;OutputDir&#39;</span><span class="p">:</span> <span class="s1">&#39;diskhole&#39;</span><span class="p">},</span>
+            <span class="p">{</span><span class="s1">&#39;SourceType&#39;</span><span class="p">:</span> <span class="s1">&#39;LINE&#39;</span><span class="p">,</span> <span class="s1">&#39;S-LinePhi&#39;</span><span class="p">:</span> <span class="mi">45</span><span class="p">,</span> <span class="s1">&#39;S-LineTheta&#39;</span><span class="p">:</span> <span class="mi">30</span><span class="p">,</span> <span class="s1">&#39;OutputDir&#39;</span><span class="p">:</span> <span class="s1">&#39;line&#39;</span><span class="p">},</span>
+        <span class="p">]</span>
+<span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+    <span class="n">marxcall</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;marx GratingType=NONE&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">src</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+    <span class="n">marxcall</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxcall</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">marxcall</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;marx2fits --pixadj=EDSER </span><span class="si">{</span><span class="n">src</span><span class="p">[</span><span class="s2">&quot;OutputDir&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1"> </span><span class="si">{</span><span class="n">src</span><span class="p">[</span><span class="s2">&quot;OutputDir&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">.fits&#39;</span><span class="p">,</span> 
+                             <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pycrates</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aspect&#39;</span><span class="p">:</span><span class="s1">&#39;equal&#39;</span><span class="p">})</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span> <span class="n">sources</span><span class="p">):</span>
+    <span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">src</span><span class="p">[</span><span class="s2">&quot;OutputDir&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">.fits&#39;</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                    <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="mi">3900</span><span class="p">,</span><span class="mi">4150</span><span class="p">],</span> <span class="p">[</span><span class="mi">4000</span><span class="p">,</span><span class="mi">4250</span><span class="p">]])</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;OutputDir&#39;</span><span class="p">])</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/1ce166846a2a675da9173383d2f5c394a45a250f73e8a6f08b89d50ae06c675d.png" src="../_images/1ce166846a2a675da9173383d2f5c394a45a250f73e8a6f08b89d50ae06c675d.png" />
+</div>
+</div>
+</section>
+<section id="image-as-source">
+<h2>Image as source<a class="headerlink" href="#image-as-source" title="Link to this heading">¶</a></h2>
+<p>An image can be used as marx input. In this case, the intensity of the
+X-ray radiation on that sky is taken to be proportional to the value of the
+image at that point.</p>
+<p>In this example we use Python to make a simple image as input, but one could use any fits image, e.g. a source observed in a different wavelength or the output of a simulation.
+In the Python code, we set up a 3-d box and fill it with an emitting shell. We then integrate along one dimension to obtain a collapsed image. Physically, this represents the thin shell of a supernova explosion.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.wcs</span><span class="w"> </span><span class="kn">import</span> <span class="n">WCS</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
+
+<span class="c1"># Actually to make this run faster, we&#39;ll do only one quadrant here</span>
+<span class="n">cube</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">201</span><span class="p">,</span> <span class="mi">201</span><span class="p">,</span> <span class="mi">201</span><span class="p">))</span>
+<span class="n">mg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mgrid</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span> <span class="mf">201.</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">201</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">201</span> <span class="p">]</span>
+<span class="n">d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">mg</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">mg</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">mg</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:]</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">cube</span><span class="p">[(</span><span class="n">d</span> <span class="o">&gt;</span> <span class="mf">160.</span><span class="p">)</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">d</span> <span class="o">&lt;</span> <span class="mi">170</span><span class="p">)]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">im</span> <span class="o">=</span> <span class="n">cube</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># Now rotate and put the four quarters together</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">401</span><span class="p">,</span> <span class="mi">401</span><span class="p">))</span>
+<span class="n">image</span><span class="p">[:</span><span class="mi">201</span><span class="p">,</span> <span class="p">:</span><span class="mi">201</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">im</span><span class="p">))</span>
+<span class="n">image</span><span class="p">[:</span><span class="mi">201</span><span class="p">,</span> <span class="mi">200</span><span class="p">:]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+<span class="n">image</span><span class="p">[</span><span class="mi">200</span><span class="p">:,</span> <span class="p">:</span><span class="mi">201</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+<span class="n">image</span><span class="p">[</span><span class="mi">200</span><span class="p">:,</span> <span class="mi">200</span><span class="p">:]</span> <span class="o">=</span> <span class="n">im</span>
+
+<span class="c1"># Create a new WCS object.</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">WCS</span><span class="p">(</span><span class="n">naxis</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">crpix</span> <span class="o">=</span> <span class="p">[</span><span class="mf">100.</span><span class="p">,</span> <span class="mf">100.</span><span class="p">]</span>
+<span class="c1"># Pixel size of our image shall be 1 arcsec</span>
+<span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">cdelt</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.</span> <span class="o">/</span> <span class="mf">3600.</span><span class="p">,</span> <span class="mf">1.</span> <span class="o">/</span> <span class="mf">3600.</span><span class="p">]</span>
+<span class="n">w</span><span class="o">.</span><span class="n">wcs</span><span class="o">.</span><span class="n">ctype</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;RA---TAN&quot;</span><span class="p">,</span> <span class="s2">&quot;DEC--TAN&quot;</span><span class="p">]</span>
+
+<span class="c1"># Now, write out the WCS object as a FITS header</span>
+<span class="n">header</span> <span class="o">=</span> <span class="n">w</span><span class="o">.</span><span class="n">to_header</span><span class="p">()</span>
+
+<span class="c1"># header is an astropy.io.fits.Header object.  We can use it to create a new</span>
+<span class="c1"># PrimaryHDU and write it to a file.</span>
+<span class="n">hdu</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">PrimaryHDU</span><span class="p">(</span><span class="n">header</span><span class="o">=</span><span class="n">header</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">image</span><span class="p">)</span>
+
+<span class="c1"># Save to FITS file</span>
+<span class="n">hdu</span><span class="o">.</span><span class="n">writeto</span><span class="p">(</span><span class="s1">&#39;input_image.fits&#39;</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx SourceType=IMAGE S-ImageFile=input_image.fits MinEnergy=1.9 MaxEnergy=1.9 GratingType=NONE OutputDir=image&#39;</span><span class="p">,</span>
+                      <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;marx2fits --pixadj=EDSER image image.fits&#39;</span><span class="p">,</span> 
+                             <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aspect&#39;</span><span class="p">:</span><span class="s1">&#39;equal&#39;</span><span class="p">})</span>
+<span class="n">input_image</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;input_image.fits&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;input image&#39;</span><span class="p">)</span>
+
+<span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;image.fits&#39;</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                    <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="mi">3600</span><span class="p">,</span><span class="mi">4600</span><span class="p">],</span> <span class="p">[</span><span class="mi">3600</span><span class="p">,</span><span class="mi">4600</span><span class="p">]])</span>
+<span class="n">axes</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;Binned events from marx&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span> <span class="ow">in</span> <span class="n">axes</span><span class="p">:</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/055b865b4de694b01fc12b3a9e3ba6090068e0f54298e2fd7e7491348848b339.png" src="../_images/055b865b4de694b01fc12b3a9e3ba6090068e0f54298e2fd7e7491348848b339.png" />
+</div>
+</div>
+<p>The left image shows the input image, the right image the binned events from marx using that image as source. Note that the apparent size of the images is different, since the scale is in pixels, not in Ra/Dec and the pixel size of the input image differs from the ACIS pixel size.</p>
+</section>
+<section id="using-a-rayfile-source">
+<h2>Using a RAYFILE source<a class="headerlink" href="#using-a-rayfile-source" title="Link to this heading">¶</a></h2>
+<p>marx is a Monte-Carlo code, thus the exact distribution of photons
+on the sky will be different every time the code is run. Sometimes it
+can be useful to generate a list of photons with position, time and
+energy from the source on the sky and then “observe” the exact same list
+with different instrument configurations so that any differences in the
+result are only due to the different configuration and not to random
+fluctuations in the source.</p>
+<p>In this example, we look at a relatively large, diffuse emission region
+with a very soft spectrum (for simplicity we are using a flat spectrum).
+We compare simulations using ACIS-S and ACIS-I. ACIS-S has a better
+response to soft photons, but some parts of the source may not be in the
+field-of-view; ACIS-I is less efficient for soft photons, but has a
+larger field-of-view.
+For the simulation, we pick a date early in the Chandra mission, since the contamination layer on ACIS was still thin at the time. Today, neither ACIS-S nor ACIS-I would detect many photons from such a soft source.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx SourceType=GAUSS S-GaussSigma=300 MinEnergy=0.3 MaxEnergy=0.8 GratingType=NONE DumpToRayFile=yes ExposureTime=30000&#39;</span><span class="p">,</span>
+                      <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="s1">&#39;si&#39;</span><span class="p">:</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;marx SourceType=RAYFILE RayFile=marx.output OutputDir=acis</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1"> DetectorType=ACIS-</span><span class="si">{</span><span class="n">n</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span><span class="si">}</span><span class="s1"> TStart=2005&#39;</span><span class="p">,</span>
+                         <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;marx2fits --pixadj=EXACT acis</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1"> acis</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s1">.fits&#39;</span><span class="p">,</span> 
+                             <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">mpl_toolkits.axes_grid1</span><span class="w"> </span><span class="kn">import</span> <span class="n">ImageGrid</span>
+<span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
+<span class="n">grid</span> <span class="o">=</span> <span class="n">ImageGrid</span><span class="p">(</span>
+    <span class="n">fig</span><span class="p">,</span> <span class="mi">111</span><span class="p">,</span>  <span class="c1"># similar to fig.add_subplot(142).</span>
+    <span class="n">nrows_ncols</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">axes_pad</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">label_mode</span><span class="o">=</span><span class="s2">&quot;L&quot;</span><span class="p">,</span> <span class="n">share_all</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="n">cbar_location</span><span class="o">=</span><span class="s2">&quot;top&quot;</span><span class="p">,</span> <span class="n">cbar_mode</span><span class="o">=</span><span class="s2">&quot;each&quot;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">cax</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">grid</span><span class="p">,</span> <span class="n">grid</span><span class="o">.</span><span class="n">cbar_axes</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;aciss&#39;</span><span class="p">,</span> <span class="s1">&#39;acisi&#39;</span><span class="p">]):</span>
+    <span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="si">{</span><span class="n">src</span><span class="si">}</span><span class="s1">.fits&#39;</span><span class="p">)</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                    <span class="n">bins</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="mi">3000</span><span class="p">,</span><span class="mi">5000</span><span class="p">],</span> <span class="p">[</span><span class="mi">3000</span><span class="p">,</span><span class="mi">5000</span><span class="p">]])</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;ACIS-&#39;</span> <span class="o">+</span> <span class="n">src</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">())</span>
+    <span class="n">cax</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">im</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/f88ba460264be1ec5b7cc394d7f02a2ea04167d727c60547c32e11259f64a96c.png" src="../_images/f88ba460264be1ec5b7cc394d7f02a2ea04167d727c60547c32e11259f64a96c.png" />
+</div>
+</div>
+<p>Both sources are generated from the same photon list. Sometimes the same pattern of photons can be seen in both images, but with a some events missing on ACIS-I due to the lower soft response, while others lie outside of the ACIS-S field-of-view.</p>
+</section>
+<section id="compiling-a-user-source">
+<h2>Compiling a USER source<a class="headerlink" href="#compiling-a-user-source" title="Link to this heading">¶</a></h2>
+<p>marx comes with several examples for user written sources in C.
+These can be compiled as shared objects and dynamically linked into marx
+at run time.
+To test this, we copy one of the source files from the installed marx
+version and compile it with gcc. This particular case is not very useful,
+because marx already has a point source with the same properties
+build-in. The purpose of this test is only to have a check that
+the dynamic linking works.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+
+<span class="n">marxpath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;marx&#39;</span><span class="p">))</span>
+<span class="n">src</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxpath</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span>
+                    <span class="s1">&#39;share&#39;</span><span class="p">,</span> <span class="s1">&#39;doc&#39;</span><span class="p">,</span> <span class="s1">&#39;marx&#39;</span><span class="p">,</span> <span class="s1">&#39;examples&#39;</span><span class="p">,</span> <span class="s1">&#39;user-source&#39;</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;point.c&#39;</span><span class="p">,</span> <span class="s1">&#39;user.h&#39;</span><span class="p">]:</span>
+    <span class="n">shutil</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">f</span><span class="p">),</span> <span class="n">f</span><span class="p">)</span>
+<span class="n">jdmath_h</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxpath</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;include&#39;</span><span class="p">)</span>
+<span class="n">jdmath_a</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxpath</span><span class="p">,</span> <span class="s1">&#39;..&#39;</span><span class="p">,</span> <span class="s1">&#39;lib&#39;</span><span class="p">,</span> <span class="s1">&#39;libjdmath.a&#39;</span><span class="p">)</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;gcc&#39;</span><span class="p">,</span> <span class="s1">&#39;-I&#39;</span> <span class="o">+</span> <span class="n">jdmath_h</span><span class="p">,</span> <span class="n">jdmath_a</span><span class="p">,</span>
+                      <span class="s1">&#39;-shared&#39;</span><span class="p">,</span> <span class="s1">&#39;point.c&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="s1">&#39;point.so&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;marx SourceType=USER UserSourceFile=point.so GratingType=NONE OutputDir=userpoint&#39;</span><span class="p">,</span>
+                         <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;marx2fits --pixadj=EDSER userpoint userpoint.fits&#39;</span><span class="p">,</span> 
+                             <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">5</span><span class="p">,</span> <span class="mi">5</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aspect&#39;</span><span class="p">:</span><span class="s1">&#39;equal&#39;</span><span class="p">})</span>
+<span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;userpoint.fits&#39;</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> 
+                <span class="n">bins</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="mi">4010</span><span class="p">,</span><span class="mi">4030</span><span class="p">],</span> <span class="p">[</span><span class="mi">4130</span><span class="p">,</span><span class="mi">4150</span><span class="p">]])</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">axes</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;User compiled point source&#39;</span><span class="p">)</span>
+<span class="c1">#axes.set_axis_off()</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/15cf753769b19c3bb95fb55d6f2dc6f31f2981b912905341741ae8cb4a73fc27.png" src="../_images/15cf753769b19c3bb95fb55d6f2dc6f31f2981b912905341741ae8cb4a73fc27.png" />
+</div>
+</div>
+<p>The distribution of source is indeed a point source; it seems that we compiled and liked the user source file correctly.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<form action="../search.html" method="get">
+<input type="text" name="q" placeholder="Search" />
+<input type="hidden" name="check_keywords" value="yes" />
+<input type="hidden" name="area" value="default" />
+</form>
+  <h3><a href="../index.html">Page Content</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Source shapes in MARX</a><ul>
+<li><a class="reference internal" href="#build-in-geometric-sources">Build-in geometric sources</a></li>
+<li><a class="reference internal" href="#image-as-source">Image as source</a></li>
+<li><a class="reference internal" href="#using-a-rayfile-source">Using a RAYFILE source</a></li>
+<li><a class="reference internal" href="#compiling-a-user-source">Compiling a USER source</a></li>
+</ul>
+</li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="spectrum.html"
+                          title="previous chapter">Reproducing an input spectrum</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="positions.html"
+                          title="next chapter">Coordinates on the sky and the chip</a></p>
+  </div><hr style="color: #FFF;"></hr>
+<a href="http://cxc.harvard.edu/">
+    <img src="../_static/cxcfooterCXCicon.png" 
+	 alt="Chandra X-ray Center" class="img-logo"></img>
+</a>
+<p></p>
+<a href="http://space.mit.edu/cxc/">CXC@MIT</a>
+<p></p>
+<a href="http://space.mit.edu/">
+    <img src="../_static/logo-mit-kavli.png" 
+	 alt="MIT Kavli Institute" class="img-logo"></img>
+</a>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="positions.html" title="Coordinates on the sky and the chip"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="spectrum.html" title="Reproducing an input spectrum"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" ><strong>marx</strong> accuracy and testing</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Source shapes in MARX</a></li> 
+      </ul>
+    </div>
+    <div class="footer">
+    <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
+    <a href="https://accessibility.mit.edu/">Accessibility</a>
+        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

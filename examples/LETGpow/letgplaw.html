@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Simulating an LETG/ACIS-S observation &#8212; MARX 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    
+    <script src="../../_static/documentation_options.js?v=b6ed0530"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within MARX 6.0.1 documentation"
+          href="../../_static/opensearch.xml"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Simulating two overlapping sources" href="../marxcat/marxcat.html" />
+    <link rel="prev" title="HETG simulation of an extended source" href="../hetgplaw/hetgplaw.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="../marxcat/marxcat.html" title="Simulating two overlapping sources"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../hetgplaw/hetgplaw.html" title="HETG simulation of an extended source"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../examples.html" accesskey="U">Examples of MARX in use</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simulating an LETG/ACIS-S observation</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="simulating-an-letg-acis-s-observation">
+<span id="sect-ex-letgplaw"></span><h1>Simulating an LETG/ACIS-S observation<a class="headerlink" href="#simulating-an-letg-acis-s-observation" title="Link to this heading">¶</a></h1>
+<p>In this example, we simulate an LETG/ACIS-S observation with <strong>marx</strong>.
+The primary goal of this exercise is to see how well <strong>marx</strong> can
+simulate this instrument combination by performing a spectral analysis
+of the result.  For simplicity, we assume an on-axis point source and an
+absorbed powerlaw spectrum with a column density of <span class="math notranslate nohighlight">\(10^{19}\)</span> atoms/cm^2, a
+spectral index of 1.8. Rather than specifying an
+exposure time for the observation as in the other examples, here we
+specify the desired number of detected events.  In this case, the
+simulation will be run until 1,000,000 (1e6) events have been
+detected.</p>
+<section id="creating-an-input-spectrum-from-a-sherpa-model">
+<span id="creating-sherpa-spectrum"></span><h2>Creating an input spectrum from a Sherpa model<a class="headerlink" href="#creating-an-input-spectrum-from-a-sherpa-model" title="Link to this heading">¶</a></h2>
+<p>The first step is to create a 2-column text file that tabulates
+the absorbed powerlaw flux [photons/sec/keV/cm^2] (second column)
+as a function of energy [keV] (first column).  The easiest way to create
+such a file is to make use of a spectral modeling program.  For a change, we
+will use the <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> program in this example.</p>
+<p>We chose the specific physical model (a positive powerlaw with an
+unrealistically high flux) because we want
+to construct a really detailed picture of the features seen in the PSF and we
+need a large number of photons over a wide range of energies:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">sherpa.astro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ui</span>
+
+<span class="c1"># set source properties</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">xsphabs</span><span class="o">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">ui</span><span class="o">.</span><span class="n">xspowerlaw</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+<span class="n">a</span><span class="o">.</span><span class="n">nH</span> <span class="o">=</span> <span class="mf">0.001</span>
+<span class="n">p</span><span class="o">.</span><span class="n">PhoIndex</span> <span class="o">=</span> <span class="mf">1.8</span>
+<span class="n">p</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.1</span>
+
+<span class="c1"># get source</span>
+<span class="n">my_src</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_source</span><span class="p">()</span>
+
+<span class="c1"># set energy grid</span>
+<span class="n">bin_width</span> <span class="o">=</span> <span class="mf">0.01</span>
+<span class="n">energies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.03</span><span class="p">,</span> <span class="mf">12.</span><span class="p">,</span> <span class="n">bin_width</span><span class="p">)</span>
+
+<span class="c1"># evaluate source on energy grid with lower and upper bin edges</span>
+<span class="n">flux</span> <span class="o">=</span> <span class="n">my_src</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="n">energies</span> <span class="o">+</span> <span class="n">bin_width</span><span class="p">)</span>
+
+<span class="c1"># MARX input files only have one energy column, and the conventions is that</span>
+<span class="c1"># this hold the UPPER edge of the bin.</span>
+<span class="c1"># Also, we need to divide the flux by the bin width to obtain the flux density.</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">save_arrays</span><span class="p">(</span><span class="s2">&quot;source_flux.tbl&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">energies</span> <span class="o">+</span> <span class="n">bin_width</span><span class="p">,</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">],</span>
+               <span class="p">[</span><span class="s2">&quot;keV&quot;</span><span class="p">,</span><span class="s2">&quot;photons/s/cm**2/keV&quot;</span><span class="p">],</span> <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>More details about the format of the <strong>marx</strong> input spectrum can be found at <a class="reference internal" href="../../indetail/models.html#parameter-SpectrumFile"><code class="xref std std-par docutils literal notranslate"><span class="pre">SpectrumFile</span></code></a>.
+Note, that the parameter <a class="reference internal" href="../../indetail/models.html#parameter-SourceFlux"><code class="xref std std-par docutils literal notranslate"><span class="pre">SourceFlux</span></code></a> sets the normalization of the flux; if the
+normalization of the model file should be used, set <a class="reference internal" href="../../indetail/models.html#parameter-SourceFlux"><code class="xref std std-par docutils literal notranslate"><span class="pre">SourceFlux=-1</span></code></a>.</p>
+</section>
+<section id="running-marx">
+<h2>Running marx<a class="headerlink" href="#running-marx" title="Link to this heading">¶</a></h2>
+<p>The next step is to run <strong>marx</strong> in the desired configuration.  Some
+prefer to use tools such as <a class="reference internal" href="../../Reference/tools.html#pset"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">pset</span></code></a> to update the <code class="docutils literal notranslate"><span class="pre">marx.par</span></code>
+file and then run <strong>marx</strong>.  Here, the parameters will be explicitly
+passed to <strong>marx</strong>. Currently, <strong>marx</strong> can only be run from the command line.
+So we run it via <a class="reference external" href="https://docs.python.org/3/library/subprocess.html#subprocess.call" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">subprocess.call()</span></code></a> in our Python script:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marx SourceFlux=-1 SpectrumType=&quot;FILE&quot; SpectrumFile=&quot;source_flux.tbl&quot; &#39;</span> <span class="o">+</span>
+    <span class="s1">&#39;NumRays=-100000 ExposureTime=0 TStart=2012.5 &#39;</span> <span class="o">+</span>
+    <span class="s1">&#39;OutputDir=letgplaw GratingType=&quot;LETG&quot; DetectorType=&quot;ACIS-S&quot; &#39;</span> <span class="o">+</span>
+    <span class="s1">&#39;DitherModel=&quot;INTERNAL&quot; RA_Nom=30 Dec_Nom=40 Roll_Nom=50 &#39;</span> <span class="o">+</span>
+    <span class="s1">&#39;SourceRA=30 SourceDEC=40 Verbose=0&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># The variable &quot;out&quot; catches the return code here. A value of 0 means success.</span>
+<span class="k">assert</span> <span class="n">out</span> <span class="o">==</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>Note the use of a <em>negative</em> value of the <a class="reference internal" href="../../inbrief/simsetup.html#parameter-NumRays"><code class="xref std std-par docutils literal notranslate"><span class="pre">NumRays</span></code></a> parameter.
+This tells <strong>marx</strong> that the simulation is to continue until the absolute
+value of that number of rays have been detected.
+The <a class="reference internal" href="../../indetail/models.html#parameter-SourceFlux"><code class="xref std std-par docutils literal notranslate"><span class="pre">SourceFlux</span></code></a> parameter may be used to indicate the integrated flux of
+the spectrum. The value of <code class="docutils literal notranslate"><span class="pre">-1</span></code>
+as given above means that the integrated flux is to be taken from the file.
+The results of the
+simulation will be written to a subdirectory called <code class="docutils literal notranslate"><span class="pre">letgplaw</span></code>, as
+specified by the <a class="reference internal" href="../../inbrief/simsetup.html#parameter-OutputDir"><code class="xref std std-par docutils literal notranslate"><span class="pre">OutputDir</span></code></a> parameter.  After the simulation has
+completed, a standard Chandra event file may be created using the <a class="reference internal" href="../../Reference/tools.html#marx2fits"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marx2fits</span></code></a>
+program:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marx2fits letgplaw letgplaw_evt.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The fits file <code class="docutils literal notranslate"><span class="pre">letgplaw_evt.fits</span></code> can be further processed
+with standard <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> tools.  As some of these tools require the aspect
+history, the <a class="reference internal" href="../../Reference/tools.html#marxasp"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marxasp</span></code></a> program is used to create an aspect
+solution file that matches the simulation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marxasp MarxDir=&quot;letgplaw&quot; OutputFile=&quot;letgplaw_asol1.fits&quot;&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is interesting to look at the event file with a viewer such as
+<a class="reference external" href="http://ds9.si.edu/">ds9</a>.  Here we use <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/dmimg2jpg.html">dmimg2jpg</a>, which displays an RGB image of the events
+projected to the sky plane.</p>
+<div class="highlight-python notranslate" id="fig-ex-leg"><div class="highlight"><pre><span></span><span class="c1"># Can&#39;t call with runtool because of https://cxc.cfa.harvard.edu/ciao/ahelp/ciao_runtool.html#Redirected_values</span>
+<span class="c1"># see https://github.com/cxcsds/ciao-contrib/issues/1015 for discussion</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;dmimg2jpg &quot;letgplaw_evt.fits[x=3950:4250][y=3950:4250][energy=0:500][bin sky=1]&quot; &#39;</span> <span class="o">+</span>
+             <span class="s1">&#39;&quot;letgplaw_evt.fits[x=3950:4250][y=3950:4250][energy=500:2000][bin sky=1]&quot; &#39;</span> <span class="o">+</span>
+             <span class="s1">&#39;&quot;letgplaw_evt.fits[x=3950:4250][y=3950:4250][energy=2000:12000][bin sky=1]&quot; &#39;</span> <span class="o">+</span>
+             <span class="s1">&#39;regionfile=&quot;&quot; outfile=&quot;image_rgb.jpg&quot; minred=0 mingreen=0 minblue=0 maxred=10 &#39;</span> <span class="o">+</span>
+             <span class="s1">&#39;maxgreen=50 maxblue=1000 clobber=yes&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.image</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpimg</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="n">img</span> <span class="o">=</span> <span class="n">mpimg</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="s1">&#39;image_rgb.jpg&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">img</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">axis</span><span class="p">(</span><span class="s1">&#39;off&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/cb7c16c8bf2836f62954457b3e0f93c3/letgplaw-5.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/984e8f7a680a97775909291550a8284f/letgplaw-5.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/46d6566d2fe6cf1e4787b68446048a91/letgplaw-5.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id1">
+<img alt="../../_images/letgplaw-5.png" class="plot-directive" src="../../_images/letgplaw-5.png" />
+<figcaption>
+<p><span class="caption-text">RGB image of the event file. The energy bands were color-coded as follows: red: 0.0 to 0.5 keV, green: 0.5 to 2.0 keV, blue: 2.0 to 12 keV.</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+<p>This image shows what the pattern of events looks like near zeroth
+order.  There are a number of features in this image that are worth
+pointing out.  The thick blue line in the middle of the fan-like
+structure that extends from the top left of the figure to the bottom
+right corresponds to diffracted photons from the primary grating bars
+of the LEG.  The events in this line are the subject of the spatial
+extraction step when creating the event histograms for spectral
+analysis, as described below.  The other blue lines in the fan-like
+structure correspond to photons that have also been diffracted by the
+fine support structure of the LEG. This fine support structure forms a
+grating that diffracts in a direction orthogonal to the primary
+diffraction direction.  The events in the multicolored line that runs
+from the bottom left to the upper right consists of two contributions.
+The first is from photons that arrived at the detector while the image
+was being read out between frames.  The second is from the
+undiffracted photons from the primary grating that have been
+diffracted from the LEG fine support structure. The red star-like
+pattern in the center of the figure was produced by photons that have
+diffracted from the LEG’s coarse support structure, whose 2 mm period
+diffracts only the very lowest energy photons through an appreciable
+angle.  Finally, if one looks closely enough, the shadowing of the
+mirror support struts may be seen near zeroth order.</p>
+</section>
+<section id="analyzing-the-data-simulated-by-marx">
+<h2>Analyzing the data simulated by marx<a class="headerlink" href="#analyzing-the-data-simulated-by-marx" title="Link to this heading">¶</a></h2>
+<p>The (type-II) PHA file, grating ARFs and RMFs can be produced using the
+standard <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> tools using the simulated event file
+<code class="docutils literal notranslate"><span class="pre">letgplaw_evt.fits</span></code> and the aspect solution file
+<code class="docutils literal notranslate"><span class="pre">letgplaw_asol1.fits</span></code> as inputs. Here is a Python script that does
+this:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ciao_contrib.runtool</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+
+<span class="c1"># marx2fits generated file</span>
+<span class="n">evtfile</span><span class="o">=</span><span class="s2">&quot;letgplaw_evt.fits&quot;</span>
+
+<span class="c1"># These files are generated by this script</span>
+<span class="n">evt1afile</span><span class="o">=</span><span class="s2">&quot;letgplaw_evt1a.fits&quot;</span>
+<span class="n">reg1afile</span><span class="o">=</span><span class="s2">&quot;letgplaw_reg1a.fits&quot;</span>
+<span class="n">asolfile</span><span class="o">=</span><span class="s2">&quot;letgplaw_asol1.fits&quot;</span>
+<span class="n">pha2file</span><span class="o">=</span><span class="s2">&quot;letgplaw_pha2.fits&quot;</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tgdetect</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">OBI_srclist_file</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;letgplaw_src1a.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tg_create_mask</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">reg1afile</span><span class="p">,</span> <span class="n">input_pos_tab</span><span class="o">=</span><span class="s2">&quot;letgplaw_src1a.fits&quot;</span><span class="p">,</span>
+                <span class="n">grating_obs</span><span class="o">=</span><span class="s2">&quot;header_value&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tg_resolve_events</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">evt1afile</span><span class="p">,</span>
+                    <span class="n">regionfile</span><span class="o">=</span><span class="n">reg1afile</span><span class="p">,</span> <span class="n">osipfile</span><span class="o">=</span><span class="s2">&quot;CALDB&quot;</span><span class="p">,</span> <span class="n">acaofffile</span><span class="o">=</span><span class="n">asolfile</span><span class="p">,</span>
+                    <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tgextract</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evt1afile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span> <span class="n">tg_order_list</span><span class="o">=</span><span class="s2">&quot;-1,+1&quot;</span><span class="p">,</span>
+            <span class="n">ancrfile</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">respfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">inregion_file</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="n">tg_srcid_list</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outfile_type</span><span class="o">=</span><span class="s2">&quot;pha_typeII&quot;</span><span class="p">,</span> <span class="n">tg_part_list</span><span class="o">=</span><span class="s1">&#39;header_value&#39;</span><span class="p">)</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">mkgrmf</span><span class="p">(</span><span class="n">grating_arm</span><span class="o">=</span><span class="s2">&quot;LEG&quot;</span><span class="p">,</span> <span class="n">order</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;leg-1_rmf.fits&quot;</span><span class="p">,</span> <span class="n">srcid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">detsubsys</span><span class="o">=</span><span class="s2">&quot;ACIS-S3&quot;</span><span class="p">,</span>
+        <span class="n">threshold</span><span class="o">=</span><span class="mf">1e-06</span><span class="p">,</span> <span class="n">obsfile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span> <span class="n">regionfile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span>
+        <span class="n">wvgrid_arf</span><span class="o">=</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="n">wvgrid_chan</span><span class="o">=</span><span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># fullgarf produces a lot of output. Let&#39;s capture tha tin a variable in case we want to inspect it later</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">rt</span><span class="o">.</span><span class="n">fullgarf</span><span class="p">(</span><span class="n">phafile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span>  <span class="n">pharow</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">evtfile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span>
+            <span class="n">asol</span><span class="o">=</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">engrid</span><span class="o">=</span><span class="s2">&quot;grid(leg-1_rmf.fits[cols ENERG_LO,ENERG_HI])&quot;</span><span class="p">,</span>
+            <span class="n">maskfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">dafile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">dtffile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">badpix</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span>
+            <span class="n">rootname</span><span class="o">=</span><span class="s2">&quot;leg&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="c1"># Because marx does not simulate the QE maps, we set ardlibqual=UNIFORM here</span>
+            <span class="c1"># Because marx does not simulate bad pixels, we set bpmask=0 here</span>
+            <span class="n">ardlibqual</span><span class="o">=</span><span class="s2">&quot;;UNIFORM;bpmask=0&quot;</span><span class="p">)</span>
+
+<span class="c1"># The lines below do the same for the +1 order</span>
+<span class="c1"># But we comment them out to reduce the runtime of this notebook</span>
+
+<span class="c1"># rt.mkgrmf(grating_arm=&quot;LEG&quot;, order=+1, outfile=&quot;leg+1_rmf.fits&quot;, srcid=1, detsubsys=&quot;ACIS-S3&quot;,</span>
+<span class="c1">#           threshold=1e-06, obsfile=pha2file, regionfile=pha2file,</span>
+<span class="c1">#           wvgrid_arf=&quot;compute&quot;, wvgrid_chan=&quot;compute&quot;, clobber=True)</span>
+
+<span class="c1"># out = rt.fullgarf(phafile=pha2file,  pharow=2, evtfile=file,</span>
+<span class="c1">#            asol=asolfile, engrid=&quot;grid(leg+1_rmf.fits[cols ENERG_LO,ENERG_HI])&quot;,</span>
+<span class="c1">#            maskfile=&quot;NONE&quot;, dafile=&quot;NONE&quot;, dtffile=&quot;NONE&quot;, badpix=&quot;NONE&quot;,</span>
+<span class="c1">#            rootname=&quot;leg&quot;, ardlibqual=&quot;;UNIFORM;bpmask=0&quot;)</span>
+</pre></div>
+</div>
+<p>In particular, this script constructs an order-sorted level 1.5 file from
+which plus and minus first order events are extracted, and creates the
+corresponding ARFs and RMFs for the extracted spectra.</p>
+<p>For this example, we wish to verify that the marx simulation is
+consistent with the input spectrum.  To this end, we use <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> to fit
+an absorbed powerlaw to the spectrum.  The spectral fits to the
+minus first order histograms can be carried out using the
+following commands (positive order works similarly):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sherpa.astro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ui</span>
+
+<span class="n">ui</span><span class="o">.</span><span class="n">load_pha</span><span class="p">(</span><span class="s1">&#39;letgplaw_pha2.fits&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="s1">&#39;legLEG_-1_garf.fits&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_rmf</span><span class="p">(</span><span class="s1">&#39;leg-1_rmf.fits&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">xsphabs</span><span class="o">.</span><span class="n">a</span> <span class="o">*</span> <span class="n">ui</span><span class="o">.</span><span class="n">xspowerlaw</span><span class="o">.</span><span class="n">xp</span><span class="p">)</span>
+
+<span class="n">ui</span><span class="o">.</span><span class="n">group_counts</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">fit</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This command sequence produced the following parameter values and a reduced
+chi-square around 1:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Reduced statistic     = 1.08292
+Change in statistic   = 2.84957e+07
+   a.nH           0
+   xp.PhoIndex    1.75727
+   xp.norm        0.10434
+</pre></div>
+</div>
+<p>The reduced chi-squared value indicates that we found an acceptable fit and all
+parameter values are close to the original input values (the nH is so small in
+the input that the fit may give a zero value as fit result). Note that your
+results may vary slightly if you run this example, because <strong>marx</strong> is a
+Monte-Carlo simulation based on random numbers.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ui</span><span class="o">.</span><span class="n">plot_fit_delchi</span><span class="p">(</span><span class="n">xlog</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/50f8fe693a587ece8cc5bba961d75aa4/letgplaw-8.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/bf051e3b6af1691e92492e4332b7ebeb/letgplaw-8.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/94fd0067505a2f57d71c82e095ddf037/letgplaw-8.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id3">
+<img alt="../../_images/letgplaw-8.png" class="plot-directive" src="../../_images/letgplaw-8.png" />
+<figcaption>
+<p><span class="caption-text">Simulated Spectrum in order -1 and a best-fit model.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
+</figcaption>
+</figure>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<form action="../../search.html" method="get">
+<input type="text" name="q" placeholder="Search" />
+<input type="hidden" name="check_keywords" value="yes" />
+<input type="hidden" name="area" value="default" />
+</form>
+  <h3><a href="../../index.html">Page Content</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Simulating an LETG/ACIS-S observation</a><ul>
+<li><a class="reference internal" href="#creating-an-input-spectrum-from-a-sherpa-model">Creating an input spectrum from a Sherpa model</a></li>
+<li><a class="reference internal" href="#running-marx">Running marx</a></li>
+<li><a class="reference internal" href="#analyzing-the-data-simulated-by-marx">Analyzing the data simulated by marx</a></li>
+</ul>
+</li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../hetgplaw/hetgplaw.html"
+                          title="previous chapter">HETG simulation of an extended source</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../marxcat/marxcat.html"
+                          title="next chapter">Simulating two overlapping sources</a></p>
+  </div><hr style="color: #FFF;"></hr>
+<a href="http://cxc.harvard.edu/">
+    <img src="../../_static/cxcfooterCXCicon.png" 
+	 alt="Chandra X-ray Center" class="img-logo"></img>
+</a>
+<p></p>
+<a href="http://space.mit.edu/cxc/">CXC@MIT</a>
+<p></p>
+<a href="http://space.mit.edu/">
+    <img src="../../_static/logo-mit-kavli.png" 
+	 alt="MIT Kavli Institute" class="img-logo"></img>
+</a>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="../marxcat/marxcat.html" title="Simulating two overlapping sources"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../hetgplaw/hetgplaw.html" title="HETG simulation of an extended source"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../examples.html" >Examples of MARX in use</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simulating an LETG/ACIS-S observation</a></li> 
+      </ul>
+    </div>
+    <div class="footer">
+    <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
+    <a href="https://accessibility.mit.edu/">Accessibility</a>
+        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

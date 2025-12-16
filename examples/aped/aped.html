@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Simulating a thermal plasma with the HETGS grating &#8212; MARX 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
+    <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    
+    <script src="../../_static/documentation_options.js?v=b6ed0530"></script>
+    <script src="../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within MARX 6.0.1 documentation"
+          href="../../_static/opensearch.xml"/>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="HETG simulation of an extended source" href="../hetgplaw/hetgplaw.html" />
+    <link rel="prev" title="Simulating a user-defined CCD spectrum with ACIS" href="../ACISpowerpileup/powerlaw.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="../hetgplaw/hetgplaw.html" title="HETG simulation of an extended source"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../ACISpowerpileup/powerlaw.html" title="Simulating a user-defined CCD spectrum with ACIS"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../examples.html" accesskey="U">Examples of MARX in use</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simulating a thermal plasma with the HETGS grating</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="simulating-a-thermal-plasma-with-the-hetgs-grating">
+<span id="sect-ex-aped"></span><h1>Simulating a thermal plasma with the HETGS grating<a class="headerlink" href="#simulating-a-thermal-plasma-with-the-hetgs-grating" title="Link to this heading">¶</a></h1>
+<p>The purpose of this example is to show how to use <strong>marx</strong> to simulate
+an HETG grating spectrum of a star whose spectrum is represented by an
+<a class="reference external" href="http://www.atomdb.org">APEC</a>  model.</p>
+<section id="creating-the-spectral-file-for-marx">
+<h2>Creating the spectral file for <strong>marx</strong><a class="headerlink" href="#creating-the-spectral-file-for-marx" title="Link to this heading">¶</a></h2>
+<p>As in <a class="reference internal" href="../ACISpowerpileup/powerlaw.html#sect-ex-acisccd"><span class="std std-ref">Simulating a user-defined CCD spectrum with ACIS</span></a>, we will use
+<a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> again to generate the spectral file from the
+parameter file describing the model. The procedure to define the model is very
+similar to the one used in <a class="reference internal" href="../ACISpowerpileup/powerlaw.html#sect-ex-acisccd"><span class="std std-ref">Simulating a user-defined CCD spectrum with ACIS</span></a>, except that we will use
+a much finer energy grid for the model. Here is a model with two thermal components.
+Since we don’t define an interstellar absorption for this example, there is a lot of
+flux at low energies.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sherpa.astro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ui</span>
+
+<span class="c1"># set source properties</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">set_source</span><span class="p">(</span><span class="n">ui</span><span class="o">.</span><span class="n">xsvapec</span><span class="o">.</span><span class="n">a1</span> <span class="o">+</span> <span class="n">ui</span><span class="o">.</span><span class="n">xsvapec</span><span class="o">.</span><span class="n">a2</span><span class="p">)</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">norm</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">norm</span> <span class="o">=</span> <span class="mf">0.016</span><span class="p">,</span> <span class="mf">0.0156</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">kT</span><span class="p">,</span> <span class="n">a2</span><span class="o">.</span><span class="n">kT</span> <span class="o">=</span> <span class="mf">8.5</span><span class="p">,</span> <span class="mf">2.8</span>  <span class="c1"># in keV</span>
+<span class="n">a2</span><span class="o">.</span><span class="n">Ne</span> <span class="o">=</span> <span class="n">a1</span><span class="o">.</span><span class="n">Ne</span>
+<span class="n">a2</span><span class="o">.</span><span class="n">Fe</span> <span class="o">=</span> <span class="n">a1</span><span class="o">.</span><span class="n">Fe</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">Ne</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">a1</span><span class="o">.</span><span class="n">Fe</span> <span class="o">=</span> <span class="mf">0.2</span>
+
+<span class="n">my_src</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_source</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Like in the previous example, we will arrange bins (this time in wavelength space)
+and write the tabulated model to a file. We will use a grid from 1 to 30 Angstrom
+with 16384 bins.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="c1"># set energy grid</span>
+<span class="n">wavelength</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">30.</span><span class="p">,</span> <span class="mi">16384</span><span class="p">)</span>  <span class="c1"># in Angstrom</span>
+<span class="c1"># convert to keV</span>
+<span class="n">energies</span> <span class="o">=</span> <span class="mf">12.39842</span> <span class="o">/</span> <span class="n">wavelength</span>  <span class="c1"># keV</span>
+<span class="c1"># for simplicity, reverse to be array ascending in energy</span>
+<span class="n">energies</span> <span class="o">=</span> <span class="n">energies</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+<span class="c1"># evaluate source on energy grid with lower and upper bin edges</span>
+<span class="n">flux</span> <span class="o">=</span> <span class="n">my_src</span><span class="p">(</span><span class="n">energies</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+<span class="c1"># MARX input files only have one energy column, and the conventions is that</span>
+<span class="c1"># this hold the UPPER edge of the bin.</span>
+<span class="c1"># Also, we need to divide the flux by the bin width to obtain the flux density.</span>
+<span class="n">bin_width</span> <span class="o">=</span> <span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">energies</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">save_arrays</span><span class="p">(</span><span class="s2">&quot;apedflux.tbl&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">],</span>
+            <span class="p">[</span><span class="s2">&quot;keV&quot;</span><span class="p">,</span><span class="s2">&quot;photons/s/cm**2/keV&quot;</span><span class="p">],</span> <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">midbin</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">energies</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">loglog</span><span class="p">(</span><span class="n">midbin</span><span class="p">,</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s2">&quot;Energy (keV)&quot;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s2">&quot;Flux (photons/s/cm$^2$/keV)&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/80500254d066ea309e88e1d078f1c253/aped-2.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/73ae7c1b42e606d9e0c8dbb9e10a1838/aped-2.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/75d7411da2e9706116a2f64826cfcec0/aped-2.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/aped-2.png" class="plot-directive" src="../../_images/aped-2.png" />
+</figure>
+</section>
+<section id="running-marx-for-the-hetgs">
+<h2>Running marx for the HETGS<a class="headerlink" href="#running-marx-for-the-hetgs" title="Link to this heading">¶</a></h2>
+<p>The next step is to run <strong>marx</strong> in the desired configuration.  For this
+example, ACIS-S and the HETG are used. Here, we will wrap the <strong>marx</strong> call
+into a Python script. Since <strong>marx</strong> currently does not have a “nice” Python
+interface, we run it via <a class="reference external" href="https://docs.python.org/3/library/subprocess.html#subprocess.call" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">subprocess.call()</span></code></a>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marx SourceFlux=-1 SpectrumType=&quot;FILE&quot; &#39;</span> <span class="o">+</span> \
+         <span class="s1">&#39;SpectrumFile=&quot;apedflux.tbl&quot; ExposureTime=80000 OutputDir=aped &#39;</span> <span class="o">+</span>\
+         <span class="s1">&#39;DitherModel=&quot;INTERNAL&quot; &#39;</span> <span class="o">+</span>\
+         <span class="s1">&#39;GratingType=&quot;HETG&quot; DetectorType=&quot;ACIS-S&quot;&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This will run the simulation and place the results in a subdirectory
+called <code class="docutils literal notranslate"><span class="pre">aped</span></code>.  The results may be converted to a standard Chandra
+level-2 fits file by the <a class="reference internal" href="../../Reference/tools.html#marx2fits"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marx2fits</span></code></a> program:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">evtfile</span><span class="o">=</span><span class="s2">&quot;aped_evt2.fits&quot;</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;marx2fits aped </span><span class="si">{</span><span class="n">evtfile</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The resulting fits file <code class="docutils literal notranslate"><span class="pre">aped_evt2.fits</span></code> may be further processed
+with standard <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> tools, as described below.  As some of these tools
+require the aspect history, the <a class="reference internal" href="../../Reference/tools.html#marxasp"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marxasp</span></code></a> program will be used to
+create an aspect solution file that matches the simulation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">asol1file</span><span class="o">=</span><span class="s2">&quot;aped_asol1.fits&quot;</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;marxasp MarxDir=&quot;aped&quot; OutputFile=&quot;</span><span class="si">{</span><span class="n">asol1file</span><span class="si">}</span><span class="s1">&quot;&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</section>
+<section id="creating-a-type-ii-pha-file">
+<h2>Creating a type-II PHA file<a class="headerlink" href="#creating-a-type-ii-pha-file" title="Link to this heading">¶</a></h2>
+<p>For a Chandra grating observation, the <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/tgextract.html">tgextract</a> tool
+may used to create a type-II PHA file.  Before this can be done, an
+extraction region mask file must be created using
+<a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/tg_create_mask.html">tg_create_mask</a>, followed by order resolution using
+<a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/tg_resolve_events.html">tg_resolve_events</a>.  The first step is to determine the
+source position, which is used by
+<a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/tg_create_mask.html">tg_create_mask</a>.  There are many ways to do this; the easiest might be
+to open the event file in <a class="reference external" href="http://ds9.si.edu/">ds9</a>, put a circles on the source
+position and use the ds9 functions to center it. Another way would be to use
+the <em>find zero-order</em> algorithm of
+<a class="reference external" href="http://space.mit.edu/cxc/analysis/findzo/">findzo</a> ,
+which is robust enough to work on heavily piled-up sources with read-out
+streaks. For this particular example, the
+position of the zeroth order in sky coordinates is (4017.88, 4141.43).</p>
+<p>We are using a <a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/scripting/runtool.html">Python interface to CIAO</a> to run the CIAO tools to
+create a PHA2 file called <code class="docutils literal notranslate"><span class="pre">aped_pha2.fits</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ciao_contrib.runtool</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+
+<span class="n">evt1afile</span> <span class="o">=</span> <span class="s2">&quot;aped_evt1a.fits&quot;</span>
+<span class="n">reg1afile</span> <span class="o">=</span> <span class="s2">&quot;aped_reg1a.fits&quot;</span>
+<span class="n">pha2file</span> <span class="o">=</span> <span class="s2">&quot;aped_pha2.fits&quot;</span>
+<span class="n">srcfile</span> <span class="o">=</span> <span class="s2">&quot;src1a.fits&quot;</span>
+<span class="n">asol1file</span><span class="o">=</span><span class="s2">&quot;aped_asol1.fits&quot;</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tgdetect</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;letgplaw_src1a.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tg_create_mask</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">reg1afile</span><span class="p">,</span> <span class="n">input_pos_tab</span><span class="o">=</span><span class="s2">&quot;letgplaw_src1a.fits&quot;</span><span class="p">,</span>
+                <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tg_resolve_events</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">evt1afile</span><span class="p">,</span> <span class="n">regionfile</span><span class="o">=</span><span class="n">reg1afile</span><span class="p">,</span>
+                    <span class="n">acaofffile</span><span class="o">=</span><span class="n">asol1file</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">rt</span><span class="o">.</span><span class="n">tgextract</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evt1afile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span> <span class="n">tg_order_list</span><span class="o">=</span><span class="s2">&quot;-1,+1&quot;</span><span class="p">,</span> <span class="n">tg_srcid_list</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>An important by-product of this script is the <code class="docutils literal notranslate"><span class="pre">evt1a</span></code> file, which
+includes columns for the computed values of the wavelengths and orders
+of the diffracted events.  In fact, <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/tgextract.html">tgextract</a> makes use of
+those columns to create the PHA2.</p>
+<p>As usual, we again want to generate the response files. With the setting above,
+the PHA2 file contains four spectra, MEG and HEG, each with positive and negative
+orders.  Here, we will create the RMF and ARF for the MEG +1 order only. Note that
+we set the <code class="docutils literal notranslate"><span class="pre">ardlibqual=&quot;;UNIFORM;bpmask=0&quot;</span></code> for the <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/fullgarf.html">fullgarf</a> call
+to get a uniform ARF without any bad pixel masking ans assuming a uniform quantum
+efficiency across the detector because those are the assumptions that <strong>marx</strong> makes
+in the simulation.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rt</span><span class="o">.</span><span class="n">mkgrmf</span><span class="p">(</span><span class="n">grating_arm</span><span class="o">=</span><span class="s2">&quot;MEG&quot;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;meg1.rmf&quot;</span><span class="p">,</span> <span class="n">srcid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">detsubsys</span><span class="o">=</span><span class="s2">&quot;ACIS-S3&quot;</span><span class="p">,</span> <span class="n">obsfile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span>
+          <span class="n">regionfile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">fullgarf</span><span class="p">(</span><span class="n">phafile</span><span class="o">=</span><span class="n">pha2file</span><span class="p">,</span> <span class="n">pharow</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">evtfile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span> <span class="n">asol</span><span class="o">=</span><span class="n">asol1file</span><span class="p">,</span> <span class="n">engrid</span><span class="o">=</span><span class="s2">&quot;grid(meg1.rmf[cols ENERG_LO,ENERG_HI])&quot;</span><span class="p">,</span>
+            <span class="n">ardlibqual</span><span class="o">=</span><span class="s2">&quot;;UNIFORM;bpmask=0&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The resulting event file may be loaded into <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a>. Since the PHA2 file contains
+four spectra, Sherpa creates for datasets, labelled 1 to 4. The last one is the MEG +1
+spectrum, which we will plot here:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ui</span><span class="o">.</span><span class="n">load_pha</span><span class="p">(</span><span class="n">pha2file</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_rmf</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;meg1.rmf&quot;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;MEG_1_garf.fits&quot;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">set_analysis</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;wave&quot;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">group_width</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">notice_id</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">25.</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="n">yerrorbars</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">linestyle</span><span class="o">=</span><span class="s1">&#39;solid&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/1c7008eae376b1963462fff2caf9e332/aped-8.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/e5c80cf5b446a84103fbd376fca5f27e/aped-8.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/8c22344114651b4bc6f237080f7c4cf2/aped-8.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default">
+<img alt="../../_images/aped-8.png" class="plot-directive" src="../../_images/aped-8.png" />
+</figure>
+<p>Here, we used <a class="reference external" href="https://sherpa.readthedocs.io/en/latest/ui/api/sherpa.astro.ui.group_width.html#sherpa.astro.ui.group_width" title="(in Sherpa v4.18.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">group_width()</span></code></a> to group neighboring bins together.</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<form action="../../search.html" method="get">
+<input type="text" name="q" placeholder="Search" />
+<input type="hidden" name="check_keywords" value="yes" />
+<input type="hidden" name="area" value="default" />
+</form>
+  <h3><a href="../../index.html">Page Content</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Simulating a thermal plasma with the HETGS grating</a><ul>
+<li><a class="reference internal" href="#creating-the-spectral-file-for-marx">Creating the spectral file for <strong>marx</strong></a></li>
+<li><a class="reference internal" href="#running-marx-for-the-hetgs">Running marx for the HETGS</a></li>
+<li><a class="reference internal" href="#creating-a-type-ii-pha-file">Creating a type-II PHA file</a></li>
+</ul>
+</li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="../ACISpowerpileup/powerlaw.html"
+                          title="previous chapter">Simulating a user-defined CCD spectrum with ACIS</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="../hetgplaw/hetgplaw.html"
+                          title="next chapter">HETG simulation of an extended source</a></p>
+  </div><hr style="color: #FFF;"></hr>
+<a href="http://cxc.harvard.edu/">
+    <img src="../../_static/cxcfooterCXCicon.png" 
+	 alt="Chandra X-ray Center" class="img-logo"></img>
+</a>
+<p></p>
+<a href="http://space.mit.edu/cxc/">CXC@MIT</a>
+<p></p>
+<a href="http://space.mit.edu/">
+    <img src="../../_static/logo-mit-kavli.png" 
+	 alt="MIT Kavli Institute" class="img-logo"></img>
+</a>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="../hetgplaw/hetgplaw.html" title="HETG simulation of an extended source"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../ACISpowerpileup/powerlaw.html" title="Simulating a user-defined CCD spectrum with ACIS"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../examples.html" >Examples of MARX in use</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Simulating a thermal plasma with the HETGS grating</a></li> 
+      </ul>
+    </div>
+    <div class="footer">
+    <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
+    <a href="https://accessibility.mit.edu/">Accessibility</a>
+        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>

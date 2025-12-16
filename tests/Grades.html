@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+
+<html lang="en" data-content_root="../">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Flight grade distribution &#8212; MARX 6.0.1 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
+    <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
+    
+    <script src="../_static/documentation_options.js?v=b6ed0530"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    
+    <link rel="search" type="application/opensearchdescription+xml"
+          title="Search within MARX 6.0.1 documentation"
+          href="../_static/opensearch.xml"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Reproducing an input spectrum" href="spectrum.html" />
+    <link rel="prev" title="Wings of the Chandra PSF" href="PSF_wings.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="spectrum.html" title="Reproducing an input spectrum"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="PSF_wings.html" title="Wings of the Chandra PSF"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" accesskey="U"><strong>marx</strong> accuracy and testing</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Flight grade distribution</a></li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <section id="flight-grade-distribution">
+<h1>Flight grade distribution<a class="headerlink" href="#flight-grade-distribution" title="Link to this heading">¶</a></h1>
+<p>When an X-ray photon (or a highly energetic particle) hits the ACIS detector, it produces a charge cloud in the silicon of the chip. The size and the shape of the this charge cloud depends strongly on the energy of the event, the type of the event, and on the characteristics of the detector.</p>
+<p>In many cases, the charge cloud is large enough to produce detectable signal in more than one pixel. This information is encoded in the “flight grade” (see <a class="reference external" href="http://cxc.harvard.edu/proposer/POG/html/chap6.html#tth_sEc6.14">the observatory guide</a> for details). Flight grades are used to filter out background events by removing those grades where a large fraction of all detected events is due to particles and also in the sub-pixel event repositioning (<a class="reference external" href="http://cxc.harvard.edu/ciao/why/acissubpix.html">EDSER</a>). For example, grade “0” events have charge in one pixel only, and grade “2” indicates an event that has charge in two neighboring pixels. Most likely, the grade “0” event occurred close to the center of the pixel and the grade “2” event close to the boundary of the two pixels. Thus, simulating the right event grade distribution is a prerequisite to using any sub-pixel event repositioning algorithm on simulated data.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+
+<span class="sd">&#39;&#39;&#39;These environment parameters should be set before running the notebook,</span>
+<span class="sd">but I didn&#39;t so, so I&#39;m setting them here.&#39;&#39;&#39;</span>
+
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;/Users/guenther/code/marx_installed/bin:&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PATH&#39;</span><span class="p">]</span>
+<span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PFILES&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="s1">&#39;marx&#39;</span><span class="p">))</span> <span class="o">+</span> <span class="s1">&#39;/../share/marx/pfiles:&#39;</span> <span class="o">+</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;PFILES&#39;</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<section id="grades-on-an-acis-bi-chip">
+<h2>Grades on an ACIS-BI chip<a class="headerlink" href="#grades-on-an-acis-bi-chip" title="Link to this heading">¶</a></h2>
+<p>This test compares the distribution of event grades between an observation of a young star observed on the back-illuminated S3 chip and the simulation. To avoid pile-up the observation used a sub-array read-out.</p>
+<p>The grade distribution depends on the energy of the incoming photons. To get things exactly right, marx thus has to run with the source spectrum as an input spectrum. However, the grade distribution changes slowly with energy, so this only matters when grade distribution over a large range of energy are compared. Here, marx is run with a constant input spectrum and the comparison between simulation and observation is done in narrow energy bands only.</p>
+<p>In this particular case, there is very little source signal above 2 keV, so the comparison is limited to low energies.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">contextlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">chdir</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pylab</span> <span class="k">as</span> <span class="n">plt</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pycrates</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">ciao_contrib.runtool</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ciao_contrib.cda.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_chandra_obsids</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Download data</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">download_chandra_obsids</span><span class="p">([</span><span class="mi">15713</span><span class="p">],</span> <span class="n">filetypes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;evt2&#39;</span><span class="p">,</span> <span class="s1">&#39;asol&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">asolfile</span> <span class="o">=</span> <span class="s1">&#39;15713/primary/pcadf15713_000N001_asol1.fits.gz&#39;</span>
+<span class="n">evt2file</span> <span class="o">=</span> <span class="s1">&#39;15713/primary/acisf15713N003_evt2.fits.gz&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Extract point source</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">evt2file</span><span class="si">}</span><span class="s2">[sky=circle(12:09:02,-51:20:41,6)]&quot;</span><span class="p">,</span> <span class="s2">&quot;obs.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;utility function that parses the fits header to set the marx parameters&#39;&#39;&#39;</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">marxpars_from_asol</span>
+
+<span class="n">pars</span> <span class="o">=</span> <span class="n">marxpars_from_asol</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">evt2file</span><span class="p">)</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;MinEnergy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;MaxEnergy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span>
+</pre></div>
+</div>
+</div>
+</div>
+<p>Here is the marx command that we will use to run the simulation, which matches the
+observation setup as closely as possible and runs the simulation in the energy band
+that we will analyze later on. This energy band is chosen, because that’s where the
+most photons in the observation are detected.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">marxcall</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;marx&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<span class="n">marxcall</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxcall</span><span class="p">)</span>
+<span class="n">marxcall</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>&#39;marx RA_Nom=182.25561765981 Dec_Nom=-51.34945070544 Roll_Nom=33.971360241142 GratingType=NONE ExposureTime=10190.8068100214 DitherModel=FILE DitherFile=15713/primary/pcadf15713_000N001_asol1.fits TStart=508966864.84768 ACIS_Exposure_Time=0.7 SourceRA=182.259167 SourceDEC=-51.344667 DetectorType=ACIS-S DetOffsetX=0.0014449422646707344 DetOffsetZ=-0.007542945902798692 MinEnergy=0.3 MaxEnergy=2.0&#39;
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Currently, MARX can only be run from the command line. So we build</span>
+<span class="sd">a command line call from the parameters dictionary and run it via</span>
+<span class="sd">subprocess.call().&#39;&#39;&#39;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">marxcall</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER point marxsim.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+                     <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Define plotting functions.</span>
+
+<span class="sd">We will want to make the same matplotlib plot for different data sets,</span>
+<span class="sd">so we define a function here that creates a 2x2 pie chart plot.&#39;&#39;&#39;</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">plotpie</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="o">**</span><span class="n">plotargs</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Bin up events data and display in pie chart&#39;&#39;&#39;</span>
+    <span class="n">counts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">bincount</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">labels</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">counts</span><span class="p">))</span>
+    <span class="n">ind</span> <span class="o">=</span> <span class="n">counts</span> <span class="o">&gt;</span> <span class="mi">0</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">pie</span><span class="p">(</span><span class="n">counts</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span> <span class="n">labels</span><span class="o">=</span><span class="n">labels</span><span class="p">[</span><span class="n">ind</span><span class="p">],</span>
+           <span class="n">autopct</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">%2i%%</span><span class="s1">&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">plotargs</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">plot22</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">sim</span><span class="p">,</span> <span class="n">colname</span><span class="p">,</span> <span class="n">energies</span><span class="o">=</span><span class="p">[[</span><span class="mi">300</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span> <span class="p">[</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">2000</span><span class="p">]]):</span>
+<span class="w">    </span><span class="sd">&#39;&#39;&#39;Place 2*2 piecharts on a figure.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    obs : `pycrates.Crate`</span>
+<span class="sd">        Observed events</span>
+<span class="sd">    sim : `pycrates.Crate`</span>
+<span class="sd">        Events simulated with MARX</span>
+<span class="sd">    energies : list</span>
+<span class="sd">        Two energy bands in eV defined as a list of lists.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    fig : `matplotlib.figure.Figure`</span>
+<span class="sd">        Figure with plot</span>
+<span class="sd">    &#39;&#39;&#39;</span>
+    <span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">obs</span><span class="p">,</span> <span class="n">sim</span><span class="p">]):</span>
+        <span class="k">for</span> <span class="n">j</span><span class="p">,</span> <span class="n">en</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">energies</span><span class="p">):</span>
+            <span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">i</span> <span class="o">*</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="s1">&#39;equal&#39;</span><span class="p">)</span>
+            <span class="n">obssimlab</span> <span class="o">=</span> <span class="s1">&#39;Obs&#39;</span> <span class="k">if</span> <span class="n">i</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="s1">&#39;MARX&#39;</span>
+            <span class="n">energylab</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> - </span><span class="si">{1}</span><span class="s1"> eV&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">en</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">en</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">: </span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">obssimlab</span><span class="p">,</span> <span class="n">energylab</span><span class="p">))</span>
+            <span class="n">energy</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;energy&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">values</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="n">colname</span><span class="p">)</span><span class="o">.</span><span class="n">values</span>
+            <span class="n">plotpie</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">values</span><span class="p">[(</span><span class="n">energy</span> <span class="o">&gt;</span> <span class="n">en</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">&amp;</span> <span class="p">(</span><span class="n">energy</span> <span class="o">&lt;</span> <span class="n">en</span><span class="p">[</span><span class="mi">1</span><span class="p">])])</span>
+    <span class="k">return</span> <span class="n">fig</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;obs.fits&#39;</span><span class="p">)</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;marxsim.fits&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot22</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">sim</span><span class="p">,</span> <span class="s1">&#39;grade&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/9fb22a1e887ea7d404c257bde6074aaba01f2259f236e532863fbeba77a08111.png" src="../_images/9fb22a1e887ea7d404c257bde6074aaba01f2259f236e532863fbeba77a08111.png" />
+</div>
+</div>
+<p>These pie charts show the distribution of grades in ASCA nomenclature (0-6) in two different energy bands.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot22</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">sim</span><span class="p">,</span> <span class="s1">&#39;fltgrade&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/4c63e6e4436b274a33519c710dd2e048ec759b262520a9136016077b6c3c194d.png" src="../_images/4c63e6e4436b274a33519c710dd2e048ec759b262520a9136016077b6c3c194d.png" />
+</div>
+</div>
+<p>Same as the above, but using the more detailed Chandra flight grade numbers.</p>
+<p>Both plots clearly show that MARX does not do a good job either at reproducing the distribution of grades in general, nor in reproducing the energy dependence.</p>
+</section>
+<section id="grades-on-an-acis-fi-chip">
+<h2>Grades on an ACIS-FI chip<a class="headerlink" href="#grades-on-an-acis-fi-chip" title="Link to this heading">¶</a></h2>
+<p>This compares the grade distribution for a front-illuminated (FI) chip.</p>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;We repeat the code from above changing just the ObsID, source coordinates, and energy range.&#39;&#39;&#39;</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">download_chandra_obsids</span><span class="p">([</span><span class="mi">4496</span><span class="p">],</span> <span class="n">filetypes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;evt2&#39;</span><span class="p">,</span> <span class="s1">&#39;asol&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">asolfile</span> <span class="o">=</span> <span class="s1">&#39;4496/primary/pcadf04496_000N001_asol1.fits.gz&#39;</span>
+<span class="n">evt2file</span> <span class="o">=</span> <span class="s1">&#39;4496/primary/acisf04496N004_evt2.fits.gz&#39;</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">evt2file</span><span class="si">}</span><span class="s2">[sky=circle(11:11:53.3,-61:18:46,4)]&quot;</span><span class="p">,</span> <span class="s2">&quot;obs.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Run in energy band, match observational setup&#39;&#39;&#39;</span>
+<span class="n">pars</span> <span class="o">=</span> <span class="n">marxpars_from_asol</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">evt2file</span><span class="p">)</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;MinEnergy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;MaxEnergy&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">4.0</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">marxcall</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;marx&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxcall</span><span class="p">),</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER point marxsim.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">obs</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;obs.fits&#39;</span><span class="p">)</span>
+<span class="n">sim</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s1">&#39;marxsim.fits&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot22</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">sim</span><span class="p">,</span> <span class="s1">&#39;grade&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/ee9d8bbbb2f51ae8fa1d7c82f39e7518f2b38a6b3efc19a32fb2d10de628ae9e.png" src="../_images/ee9d8bbbb2f51ae8fa1d7c82f39e7518f2b38a6b3efc19a32fb2d10de628ae9e.png" />
+</div>
+</div>
+<div class="cell docutils container">
+<div class="cell_input docutils container">
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plot22</span><span class="p">(</span><span class="n">obs</span><span class="p">,</span> <span class="n">sim</span><span class="p">,</span> <span class="s1">&#39;fltgrade&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="cell_output docutils container">
+<img alt="../_images/0b67903a7c4734eb43989565ea3a2333a49a16ed40cc54d92f8c9b6b0427d9b0.png" src="../_images/0b67903a7c4734eb43989565ea3a2333a49a16ed40cc54d92f8c9b6b0427d9b0.png" />
+</div>
+</div>
+<p>Again, both plots clearly show that MARX does not do a good job either at reproducing the distribution of grades in general, nor in reproducing the energy dependence.’’’</p>
+</section>
+</section>
+
+
+            <div class="clearer"></div>
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="Main">
+        <div class="sphinxsidebarwrapper">
+<form action="../search.html" method="get">
+<input type="text" name="q" placeholder="Search" />
+<input type="hidden" name="check_keywords" value="yes" />
+<input type="hidden" name="area" value="default" />
+</form>
+  <h3><a href="../index.html">Page Content</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Flight grade distribution</a><ul>
+<li><a class="reference internal" href="#grades-on-an-acis-bi-chip">Grades on an ACIS-BI chip</a></li>
+<li><a class="reference internal" href="#grades-on-an-acis-fi-chip">Grades on an ACIS-FI chip</a></li>
+</ul>
+</li>
+</ul>
+
+  <div>
+    <h4>Previous topic</h4>
+    <p class="topless"><a href="PSF_wings.html"
+                          title="previous chapter">Wings of the Chandra PSF</a></p>
+  </div>
+  <div>
+    <h4>Next topic</h4>
+    <p class="topless"><a href="spectrum.html"
+                          title="next chapter">Reproducing an input spectrum</a></p>
+  </div><hr style="color: #FFF;"></hr>
+<a href="http://cxc.harvard.edu/">
+    <img src="../_static/cxcfooterCXCicon.png" 
+	 alt="Chandra X-ray Center" class="img-logo"></img>
+</a>
+<p></p>
+<a href="http://space.mit.edu/cxc/">CXC@MIT</a>
+<p></p>
+<a href="http://space.mit.edu/">
+    <img src="../_static/logo-mit-kavli.png" 
+	 alt="MIT Kavli Institute" class="img-logo"></img>
+</a>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="Related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../std-parindex.html" title="MARX Parameter Index"
+             >MARX Parameters</a> |</li>
+        <li class="right" >
+          <a href="spectrum.html" title="Reproducing an input spectrum"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="PSF_wings.html" title="Wings of the Chandra PSF"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">MARX 6.0.1 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="index.html" ><strong>marx</strong> accuracy and testing</a> &#187;</li>
+        <li class="nav-item nav-item-this"><a href="">Flight grade distribution</a></li> 
+      </ul>
+    </div>
+    <div class="footer">
+    <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
+    <a href="https://accessibility.mit.edu/">Accessibility</a>
+        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
+    </div>
+  </body>
+</html>
