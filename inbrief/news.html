@@ -7,7 +7,7 @@
 
     <title>Highlights for each version of marx &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -71,17 +71,15 @@ bug fixes:</p>
 <li><p>The “Verbose” parameter in <code class="docutils literal notranslate"><span class="pre">marx.par</span></code> is now an integer for more fine-grained verbosity control.</p></li>
 <li><p>Fix a bug in a binary search algorithm that could lead to an off-by-one error
 and cause a 1 pix shift between input images and simulated images.</p></li>
-<li><p>No longer check for the RA/Dec set when using an IMAGE source, since the
-coordinates are taken from the image WCS, not the marx parameters anyway.</p></li>
-<li><p>When running with the “RAYFILE” source, include dither information and do not run
+<li><p>When running with <a class="reference internal" href="../indetail/models.html#parameter-SourceType"><code class="xref std std-par docutils literal notranslate"><span class="pre">SourceType=&quot;RAYFILE&quot;</span></code></a>, include dither information and do not run
 rays through the HRMA, grating, or detector, just generate the rays from the source.</p></li>
 </ul>
 <p>Most of the changes actually remove things that have been unused and deprecated for several years. In particular:</p>
 <ul class="simple">
-<li><p>marx used to ship with IDL tools to extract grating spectra. This functionality has been part of CIAO for two decades and there is no need to separate tools as part of marx.</p></li>
-<li><p>Remove binary tools such as <code class="docutils literal notranslate"><span class="pre">marx2img</span></code> - instead use CIAO tools such as <code class="docutils literal notranslate"><span class="pre">dmcopy</span></code>.</p></li>
+<li><p>marx used to ship with IDL tools to extract grating spectra. This functionality has been part of <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> for two decades and there is no need for separate tools as part of marx.</p></li>
+<li><p>Remove binary tools such as <code class="docutils literal notranslate"><span class="pre">marx2img</span></code> - instead use CIAO tools such as <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/dmcopy.html">dmcopy</a>.</p></li>
 <li><p>Remove support for other observatories such as IXO that were modelled with marx in the proposal stage but never flown.</p></li>
-<li><p>Remove the obsolete “”EA_MIRROR”” mirror model.</p></li>
+<li><p>Remove the obsolete “EA_MIRROR” mirror model.</p></li>
 <li><p>Remove support for some legacy platforms in the configuration scripts.</p></li>
 </ul>
 <p>This release also updates the CALDB files that are shipped with <strong>marx</strong>.</p>
@@ -475,7 +473,7 @@ transparent to the returning user.</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

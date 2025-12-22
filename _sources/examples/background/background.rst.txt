@@ -3,7 +3,7 @@
 Including background in a |marx| simulation
 ===========================================
 
-The data from all Chandra observations includes different background
+Chandra observations include different background
 components: Astrophysical background (e.g. unresolved sources), instrumental
 background (e.g. high-energy particles from the sun), and a read-out artifact.
 The `Proposers Observatory Guide
@@ -32,11 +32,11 @@ particles, both methods need to make approximations:
      be used for a statistical analysis if the total number of background photons
      approaches the number of photons in the file.
 
-#. We extract fit the apparent spectrum of the "blank sky" files ("apparent"
+#. We extract and fit the apparent spectrum of the "blank sky" files ("apparent"
    because the events look like X-ray photons on the CCD, but in reality many are electron
    or proton impacts) and then use |marx| to simulate an extended source that
    produces a similar spectrum (:ref:`subsect-ex-bkg-marxbkg`). This approach is
-   easier and faster, but it does  not  all details of the `spatial
+   easier and faster, but it does not include all `spatial
    variations of the background 
    <http://cxc.harvard.edu/cal/Acis/Cal_prods/bkgrnd/nonuniformity/acisbg.html>`_.
 
@@ -114,7 +114,7 @@ column) as a function of energy [keV] (first column).
 
     # Sherpa uses the convention that an energy array holds the LOWER end of the bins;
     # Marx that it holds the UPPER end of a bin.
-    # Thus, we need to shift energies and flux by one bin.
+    # Thus, we need to shift energies by one bin.
     # Also, we need to divide the flux by the bin width to obtain the flux density.
     ui.save_arrays("source_flux.tbl", [energies[1:], flux[:-1] / bin_width],
                    ["keV","photons/s/cm**2/keV"], ascii=True, clobber=True)
@@ -155,7 +155,6 @@ completed, a standard Chandra event file may be created using the
     :nofigs:
     :show-source-link: False
 
-    import subprocess
     out = subprocess.call('marx2fits diffuse diffuse_evt2.fits', shell=True)
 
 We also generate an aspect solution file that matches the simulation:
@@ -166,7 +165,6 @@ We also generate an aspect solution file that matches the simulation:
     :nofigs:
     :show-source-link: False
 
-    import subprocess
     out = subprocess.call('marxasp MarxDir="diffuse" OutputFile="diffuse_asol1.fits"', shell=True)
 
 .. _subsect-ex-bkg-blanksky:
@@ -229,39 +227,38 @@ Here is the script that we use:
 
     n_select=30000
 
-    import pycrates
     from ciao_contrib import runtool as rt
-    bkg = pycrates.read_file(caldb_bkg)
-    marx = pycrates.read_file("diffuse_evt2.fits")
 
-    n = bkg.get_nrows()
-    selected = np.random.rand(n) < n_select / n
-    selected_col = pycrates.CrateData()
-    selected_col.name = "SELECTED"
-    selected_col.values = selected
-    bkg.add_column(selected_col)
+    n = rt.dmlist(caldb_bkg, opt="counts")
 
-    tstart = marx.get_key("TSTART").value
-    tstop = marx.get_key("TSTOP").value
-    timecol = tstart + (tstop - tstart) * np.random.rand(selected.sum())
-    time_col = pycrates.CrateData()
-    time_col.name = "TIME"
-    time_col.values = timecol
-    bkg.add_column(time_col)
+    rt.dmtcalc(caldb_bkg, "temp.fits", expression=f"randnum={n}/{n_select}*#trand", clobber=True)
+    rt.dmcopy("temp.fits[randnum=0:1]" , "temp2.fits", clobber=True)
 
-    pycrates.write_file(bkg, "selected_bkg_evt2.fits", clobber=True)
+    # Assign some random time during the observation to each photon.
+    t0=float(rt.dmkeypar("diffuse_evt2.fits", "TSTART", echo=True))
+    t1=float(rt.dmkeypar("diffuse_evt2.fits", "TSTOP", echo=True))
 
-    rt.reproject_events(infile="selected_bkg_evt2.fits[selected=True]",
-                        outfile="bkg_reproj_evt2.fits",
-                        aspect="diffuse_asol1.fits", match="diffuse_evt2.fits",
-                        clobber=True)
-    # Select same set of columns for both input files
-    cols="ccd_id,node_id,chip,det,sky,pha,energy,pi,fltgrade,grade,status,time"
-    rt.dmmerge(f"diffuse_evt2.fits[cols {cols}],bkg_reproj_evt2.fits[cols {cols}]",
-               "merged.fits", clobber=True)
+    rt.dmtcalc("temp2.fits", "temp3.fits", expression=f"time={t0}+({t1}-{t0})*#trand", clobber=True)
+    rt.dmsort("temp3.fits", "temp4.fits", keys="TIME", clobber=True)
+
+    # Reproject the blank sky fields to the same position on the sky as the marx simulation.
+    rt.reproject_events.punlearn()
+    rt.reproject_events(infile="temp4.fits", outfile="acis7s_bkg_reproj.fits",
+                        aspect="diffuse_asol1.fits", match="diffuse_evt2.fits", clobber=True)
+
+    # Merge marx simulation and blank sky fields into a single fits table.
+    rt.dmmerge.punlearn()
+    cols="ccd_id,node_id,chip,det,sky,pha,energy,pi,fltgrade,grade,time"
+    rt.dmmerge(f"diffuse_evt2.fits[cols {cols}],acis7s_bkg_reproj.fits[cols {cols}]",
+                "merged.fits", clobber=True)
+    rt.dmcopy("merged.fits[energy=200:2000]", "merged_soft.fits", clobber=True)
 
 If the source in the simulation covers multiple ACIS chips, then this
 has to be repeated chip-by-chip. 
+
+Now, we make a figure to show the |marx| simulation alone, with added
+background from the "blank sky" file, and with an energy filter that we would
+probably use for real data to suppress the background.
 
 .. _fig-ex-bkg:
 
@@ -271,19 +268,21 @@ has to be repeated chip-by-chip.
     :show-source-link: False
     :alt: Images of three event files. See caption for a description.
 
+    import pycrates
+    import matplotlib.pyplot as plt
     from astropy.visualization import PercentileInterval, LogStretch, ImageNormalize
 
-    fig, axes = plt.subplots(1, 3, figsize=(10,6), subplot_kw={'aspect':'equal'},
+    fig, axes = plt.subplots(1, 3, figsize=(10, 2.5), subplot_kw={'aspect':'equal'},
                             sharex=True, sharey=True)
     bins = [400, 400]
-    bin_size = 2
+    bin_size = 4
     range = [[4096 - 0.5 * bin_size * bins[0], 4096 + 0.5 * bin_size * bins[0]],
             [4096 - 0.5 * bin_size * bins[1], 4096 + 0.5 * bin_size * bins[1]]]
-    for ax, src in zip(axes, ["diffuse_evt2.fits", "bkg_reproj_evt2.fits", "merged.fits"]):
+    for ax, src in zip(axes, ["diffuse_evt2.fits", "acis7s_bkg_reproj.fits", "merged_soft.fits"]):
         evt = pycrates.read_file(src)
         hist, x, y = np.histogram2d(evt.get_column('X').values, evt.get_column('Y').values,
                                     bins=bins, range=range)
-        norm = ImageNormalize(hist, interval=PercentileInterval(99.9), stretch=LogStretch())
+        norm = ImageNormalize(hist, interval=PercentileInterval(99), stretch=LogStretch())
         ax.imshow(hist.T, origin='lower', norm=norm, cmap='hot',
                 extent=np.array(range).flatten())
         out = ax.set_title(src)
@@ -313,7 +312,7 @@ how important it is to consider the instrumental background when simulating weak
 
 Simulating a background-like source with |marx|
 -----------------------------------------------
-An alternative approach is to extract a spectrum from the "black-sky" fields 
+An alternative approach is to extract a spectrum from the "blank-sky" fields
 and use this spectrum as input for |marx|. This spectrum does **not**
 describe the real *physical properties* such as the energy of the background events 
 (many of them are not even photons), it just provides an effective way
@@ -328,26 +327,47 @@ spectrum in a table that |marx| can read. This can be done
 with the following commands (a detailed explanation for this is at 
 http://cxc.harvard.edu/ciao/threads/extended/ ):
 
-.. literalinclude:: extract_blanksky.sh
-   :language: bash
+.. plot::
+    :include-source:
+    :context:
+    :nofigs:
+    :show-source-link: False
 
-We use `Sherpa`_ to display the spectrum on the screen (see
-:ref:`fig-ex-blankskyspectrum`) and save it in a table
+    rt.dmextract(infile=f"acis7s_bkg_reproj.fits[sky=rotbox(1:59:59,+39:59:20,3.2',3.5',0)][bin pi]",
+            outfile='blank_sky.pi', wmap="[bin tdet=8]", clobber=True)
+    rt.asphist(infile="diffuse_asol1.fits", outfile="blank_sky.asphist",
+            evtfile="diffuse_evt2.fits[ccd_id=7]", clobber=True)
+    rt.sky2tdet(infile="acis7s_bkg_reproj.fits[sky=rotbox(1:59:59,+39:59:20,3.2',3.5',0)][bin sky=8]",
+            asphistfile="blank_sky.asphist",
+            outfile="blank_sky_tdet.fits[wmap]", clobber=True)
+    rt.mkwarf(infile="blank_sky_tdet.fits[wmap]", outfile='blank_sky.arf',
+            weightfile='blank_sky.wfef', egridspec="0.3:11.0:0.1",
+            mskfile=None, spectrumfile=None, pbkfile=None, clobber=True)
+    rt.mkrmf(infile="CALDB", outfile="blank_sky.rmf",
+            axis1="energy=0:1", axis2="pi=1:1024:1", weights="blank_sky.wfef", clobber=True)
+
+
+We use `Sherpa`_ to display the spectrum on the screen and save it in a table
 with columns energy and count rate density (see :par:`SpectrumFile` for details
 of the input spectrum format for |marx|):
 
-.. sourceinclude:: blank_sky.py
-   :indent: "sherpa> "
-   :language: python 
+.. plot::
+    :include-source:
+    :context: close-figs
+    :show-source-link: False
+    :alt: Mostly flat spectrum, rising at large energies. There are a few emission features on top of the spectrum.
+    :caption: Spectrum of the "blank-sky" background.
 
-.. _fig-ex-blankskyspectrum:
+    from sherpa.astro import ui
 
-.. figure:: extracted_bkgspec.*
-   :alt: Mostly flat spectrum, rising at large energies. There are a few
-       emission features on top of the spectrum.
-   :align: center
+    ui.load_data('blank_sky.pi')
+    ui.load_rmf('blank_sky.rmf')
+    ui.load_arf('blank_sky.arf')
+    ui.plot_data()
 
-   Extracted "blank-sky" spectrum.
+    pl = ui.get_data_plot()
+    ui.save_arrays('bkgspec.tbl', [pl.x, pl.y], ['Energy', pl.ylabel],
+                   ascii=True, clobber=True)
 
 
 Again, we want a source flux of about 0.3 counts/s over the entire detector. 
@@ -356,19 +376,25 @@ by *Chandra*'s effective area. Alternatively, we can just set the
 exact number of photons we want to detect with :par:`ExposureTime=0` and :par:`NumRays`
 set to a negative number. We set :par:`SpectrumFile` to the spectrum of
 the background. Now we only need to specify the shape of the
-source. Figure :ref:`fig-ex-bkgonchip` shows regions with higher or
+source. :ref:`The figure with the chip backgorund <fig-ex-bkgonchip>` shows regions with higher or
 lower background level in the input "blank sky" file.
 
-.. literalinclude:: dmcopy.sh
-   :language: bash
 
-.. _fig-ex-bkgonchip:
+.. plot::
+    :include-source:
+    :context: close-figs
+    :show-source-link: False
+    :alt: Image with rough blocks almost like a checkerboard, but with very little contrast.
+    :caption: Binned "blank sky" file for chip 7
 
-.. figure:: chip-shape.*
-   :align: center
-   :alt: Image with rough blocks almost like a checkerboard, but with very little contrast.
+    rt.dmcopy(f"{caldb_bkg}[EVENTS][bin x=3850:4930:32,y=3550:4650:32]",
+              "chip-shape.fits", clobber=True)
 
-   Binned "blank sky" file for chip 7
+    im = pycrates.read_file("chip-shape.fits")
+    fig, ax = plt.subplots(figsize=(6,6), subplot_kw={'aspect':'equal'})
+    ax.imshow(im.get_image().values, origin='lower', cmap='gist_heat')
+    ax.set_axis_off()
+
 
 To reproduce this pattern, we use |marx| with :par:`SourceType="IMAGE"`. 
 There is a trade-off here: If we bin the image too much, we smooth out the
@@ -382,33 +408,69 @@ image.
 All remaining |marx| parameters (:par:`RA_Nom`, :par:`Dec_Nom` etc.) are the
 same as in the simulation of the astrophysical source of interest above.
 
-.. literalinclude:: marx4bkg.sh
-   :language: bash
+.. _fig-ex-bkgonchip:
+
+.. plot::
+    :include-source:
+    :context:
+    :nofigs:
+    :show-source-link: False
+
+    out = subprocess.call('marx SourceFlux=3. SpectrumType="FILE" SpectrumFile="bkgspec.tbl" ' + \
+       'ExposureTime=0 NumRays=-30000 TStart=2012.5 OutputDir=bkg ' + \
+       'DetectorType="ACIS-S" DitherModel="INTERNAL" RA_Nom=30 Dec_Nom=40 ' + \
+       'Roll_Nom=0 SourceRA=30 SourceDEC=40 GratingType="NONE" ' + \
+       'SourceType="IMAGE" S-ImageFile="chip-shape.fits"', shell=True)
+
 
 Now, we can use :marxtool:`marxcat` to merge the simulation of the diffuse
 source and the background and :marxtool:`marx2fits` to convert the merged
 results into a fits file.
 
-.. literalinclude:: marxcat.sh
-   :language: bash
+.. plot::
+    :include-source:
+    :context:
+    :nofigs:
+    :show-source-link: False
+
+    out = subprocess.call('marxcat diffuse bkg diffuse_with_bkg', shell=True)
+    out = subprocess.call('marx2fits diffuse_with_bkg diffuse_with_bkg.fits', shell=True)
+    rt.dmcopy("diffuse_with_bkg.fits[energy=200:2000]", "diffuse_with_bkg_soft.fits", clobber=True)
 
 .. _fig-ex-bkg2:
 
-.. figure:: bkg2.*
-   :align: center
-   :alt: Images of three event files. See caption for a description.
+.. plot::
+    :include-source:
+    :context: close-figs
+    :show-source-link: False
+    :alt: Images of three event files. See caption for a description.
+    :caption: Images of the event files with |marx| simulated background
 
-   Images of the event files with |marx| simulated background
+    fig, axes = plt.subplots(1, 3, figsize=(10, 2.5), subplot_kw={'aspect':'equal'},
+                            sharex=True, sharey=True)
+    bins = [400, 400]
+    bin_size = 4
+    range = [[4096 - 0.5 * bin_size * bins[0], 4096 + 0.5 * bin_size * bins[0]],
+            [4096 - 0.5 * bin_size * bins[1], 4096 + 0.5 * bin_size * bins[1]]]
+    for ax, src in zip(axes, ["diffuse_evt2.fits", "diffuse_with_bkg.fits", "diffuse_with_bkg_soft.fits"]):
+        evt = pycrates.read_file(src)
+        hist, x, y = np.histogram2d(evt.get_column('X').values, evt.get_column('Y').values,
+                                    bins=bins, range=range)
+        norm = ImageNormalize(hist, interval=PercentileInterval(99.), stretch=LogStretch())
+        ax.imshow(hist.T, origin='lower', norm=norm, cmap='hot',
+                extent=np.array(range).flatten())
+        out = ax.set_title(src)
+        ax.set_axis_off()
 
-   This figure has the same panels as :ref:`fig-ex-bkg2`, except that the background is
-   simulated with |marx| instead of taking photons directly from the "blank
-   sky" file.
+This figure has the same panels as
+:ref:`the figure for adding photons directly from the background file<fig-ex-bkg>`,
+except that the background is simulated with |marx| here.
 
-Looking at :ref:`fig-ex-bkg2` we again see that the background makes it much
+Looking at :ref:`the figure here <fig-ex-bkg2>` we again see that the background makes it much
 harder to discern the source. The images look very similar to first method, indicating that both approaches to describe the background
 give similar results. The main difference is that in the |marx| simulation the
 edge of the chip is more fuzzy. That's because pixel boundaries in
-:ref:`fig-ex-bkgonchip` do not coincide exactly with the chip
+:ref:`the image of the chip background <fig-ex-bkgonchip>` do not coincide exactly with the chip
 boundaries and thus we simulate the "background" for a region slightly larger
 than the chip. However, this is not important for our purpose: Finding how well we
 can fit the source position, size and spectrum in the presence of background.

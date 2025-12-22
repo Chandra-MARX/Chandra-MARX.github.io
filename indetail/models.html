@@ -7,7 +7,7 @@
 
     <title>The spectrum and the spatial shape of the X-ray source &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -313,7 +313,7 @@ The probability that a ray starts at a given position is proportional to the pix
 Within a pixel, the position is randomized.
 <strong>marx</strong> inspects the header of the file for a WCS specification and extracts the pixel scale.
 However, it does <strong>not</strong> extract the position or orientation on the sky.
-<strong>marx</strong> will place the center of the image on the <a class="reference internal" href="../inbrief/simsetup.html#parameter-SourceRA"><code class="xref std std-par docutils literal notranslate"><span class="pre">SourceRA</span></code></a> and <code class="xref std std-par docutils literal notranslate"><span class="pre">SourceDec</span></code> parameters.
+<strong>marx</strong> will place the center of the image on the <a class="reference internal" href="../inbrief/simsetup.html#parameter-SourceRA"><code class="xref std std-par docutils literal notranslate"><span class="pre">SourceRA</span></code></a> and <a class="reference internal" href="../inbrief/simsetup.html#parameter-SourceDEC"><code class="xref std std-par docutils literal notranslate"><span class="pre">SourceDEC</span></code></a> parameters.
 It does not make use of the orientation of the image. Instead, the axes directions
 are aligned with the detector axes. This means that the simulated image may appear to be rotated (if
 the WCS in the input image contains rotations which are ignored by <strong>marx</strong>) or flipped (if the WCS in the
@@ -690,7 +690,7 @@ saved and used in <code class="docutils literal notranslate"><span class="pre">u
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

@@ -1,0 +1,90 @@
+Traceback (most recent call last):
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/nbclient/client.py", line 1319, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+'''Extract spectra
+
+Use special settings to account for steps that |marx| does not include:
+ACIS QE maps and current (non FEF) rmfs.
+
+We warp this into a function because we are going to use the same steps
+for more examples further down in the notebook and thus would be a fairly long
+piece of code to copy and paste.
+'''
+import ciao_contrib.runtool as rt
+from coords.chandra import sky_to_chandra
+from astropy.io import fits
+
+def special_extraction(x, y, radius):
+    phagrid="pi=1:1024:1"
+
+    evtfile="marx_evt2.fits"
+    asolfile="marx_asol1.fits"
+    phafile="marx_pha.fits"
+    rmffile="marx_rmf.fits"
+    arffile="marx_arf.fits"
+    asphistfile="marx_asp.fits"
+
+    rt.asphist(infile=asolfile, outfile=asphistfile, evtfile=evtfile, clobber=True)
+
+    rt.dmextract(infile=f"{evtfile}[sky=circle({x},{y},{radius})][bin {phagrid}]", 
+                outfile=phafile, clobber=True)
+    coos = sky_to_chandra(fits.getheader(evtfile, 1), x, y)
+    ccdid = coos['chip_id'][0]
+    chipx = coos['chipx'][0]
+    chipy = coos['chipy'][0]
+
+    detname=f"ACIS-{ccdid};UNIFORM;bpmask=0"
+    # For ACIS-I, use engrid="0.3:11.0:0.003". This reflects a limitation of mkrmf.
+    engrid="0.3:12.0:0.003"
+
+    rt.mkarf(mirror="hrma", detsubsys=detname, grating="NONE",
+    outfile=arffile, obsfile=evtfile, engrid=engrid, asphistfile=asphistfile,
+    sourcepixelx=x, sourcepixely=y, maskfile="NONE", pbkfile="NONE", dafile="NONE", clobber=True, verbose=0)
+
+    fef=os.environ['CALDB'] + "/data/chandra/acis/fef_pha/acisD2000-01-29fef_phaN0005.fits"
+
+    cxfilter=f"chipx_hi>={chipx},chipx_lo<={chipx}"
+    cyfilter=f"chipy_hi>={chipy},chipy_lo<={chipy}"
+    rt.mkrmf(infile=f"{fef}[ccd_id={ccdid},{cxfilter},{cyfilter}]", outfile=rmffile,
+            axis1=f"energy={engrid}", axis2=phagrid, thresh=1e-8, clobber=True, verbose=0)
+    
+special_extraction(4096.4, 4096.4, 20.0)
+------------------
+
+
+[31m---------------------------------------------------------------------------[39m
+[31mNameError[39m                                 Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[4][39m[32m, line 48[39m
+[32m     44[39m     cyfilter=[33mf[39m[33m"[39m[33mchipy_hi>=[39m[38;5;132;01m{[39;00mchipy[38;5;132;01m}[39;00m[33m,chipy_lo<=[39m[38;5;132;01m{[39;00mchipy[38;5;132;01m}[39;00m[33m"[39m
+[32m     45[39m     rt.mkrmf(infile=[33mf[39m[33m"[39m[38;5;132;01m{[39;00mfef[38;5;132;01m}[39;00m[33m[ccd_id=[39m[38;5;132;01m{[39;00mccdid[38;5;132;01m}[39;00m[33m,[39m[38;5;132;01m{[39;00mcxfilter[38;5;132;01m}[39;00m[33m,[39m[38;5;132;01m{[39;00mcyfilter[38;5;132;01m}[39;00m[33m][39m[33m"[39m, outfile=rmffile,
+[32m     46[39m             axis1=[33mf[39m[33m"[39m[33menergy=[39m[38;5;132;01m{[39;00mengrid[38;5;132;01m}[39;00m[33m"[39m, axis2=phagrid, thresh=[32m1e-8[39m, clobber=[38;5;28;01mTrue[39;00m, verbose=[32m0[39m)
+[32m---> [39m[32m48[39m [43mspecial_extraction[49m[43m([49m[32;43m4096.4[39;49m[43m,[49m[43m [49m[32;43m4096.4[39;49m[43m,[49m[43m [49m[32;43m20.0[39;49m[43m)[49m
+
+[36mCell[39m[36m [39m[32mIn[4][39m[32m, line 41[39m, in [36mspecial_extraction[39m[34m(x, y, radius)[39m
+[32m     35[39m engrid=[33m"[39m[33m0.3:12.0:0.003[39m[33m"[39m
+[32m     37[39m rt.mkarf(mirror=[33m"[39m[33mhrma[39m[33m"[39m, detsubsys=detname, grating=[33m"[39m[33mNONE[39m[33m"[39m,
+[32m     38[39m outfile=arffile, obsfile=evtfile, engrid=engrid, asphistfile=asphistfile,
+[32m     39[39m sourcepixelx=x, sourcepixely=y, maskfile=[33m"[39m[33mNONE[39m[33m"[39m, pbkfile=[33m"[39m[33mNONE[39m[33m"[39m, dafile=[33m"[39m[33mNONE[39m[33m"[39m, clobber=[38;5;28;01mTrue[39;00m, verbose=[32m0[39m)
+[32m---> [39m[32m41[39m fef=[43mos[49m.environ[[33m'[39m[33mCALDB[39m[33m'[39m] + [33m"[39m[33m/data/chandra/acis/fef_pha/acisD2000-01-29fef_phaN0005.fits[39m[33m"[39m
+[32m     43[39m cxfilter=[33mf[39m[33m"[39m[33mchipx_hi>=[39m[38;5;132;01m{[39;00mchipx[38;5;132;01m}[39;00m[33m,chipx_lo<=[39m[38;5;132;01m{[39;00mchipx[38;5;132;01m}[39;00m[33m"[39m
+[32m     44[39m cyfilter=[33mf[39m[33m"[39m[33mchipy_hi>=[39m[38;5;132;01m{[39;00mchipy[38;5;132;01m}[39;00m[33m,chipy_lo<=[39m[38;5;132;01m{[39;00mchipy[38;5;132;01m}[39;00m[33m"[39m
+
+[31mNameError[39m: name 'os' is not defined
+

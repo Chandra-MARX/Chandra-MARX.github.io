@@ -7,7 +7,7 @@
 
     <title>Using marx with SAOSAC &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -51,42 +51,38 @@
             
   <section id="using-marx-with-saosac">
 <span id="saosac"></span><h1>Using <strong>marx</strong> with SAOSAC<a class="headerlink" href="#using-marx-with-saosac" title="Link to this heading">¶</a></h1>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>Out of date.</p>
-<p>Some information in section might be out of date. It will be rewritten soon.</p>
-</div>
 <p>For calibration purposes, the Mission Support Team (MST) has developed
 an extremely high-fidelity raytrace of the HRMA onboard Chandra called
-SAOSAC. SAOSAC is the definitive CXC mirror model and includes many of
+SAOSAC (now renamed to <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a>). SAOTrace is the definitive CXC mirror model and includes many of
 the details of the HRMA’s physical construction such as the stray light
 baffles and support structures as well as a detailed model of the
 reflective properties of the mirror surface. Using XRCF and, ultimately,
-on-orbit calibration data, SAOSAC will be “tuned” to reproduce actual
-HRMA performance to a high degree of accuracy. SAOSAC serves as baseline
+on-orbit calibration data, SAOTrace has been “tuned” to reproduce actual
+HRMA performance to a high degree of accuracy. SAOTrace serves as baseline
 for the HRMA model contained within <strong>marx</strong>. In fact, the <strong>marx</strong> HRMA
-model is a simplified version of SAOSAC and includes as many of SAOSAC’s
+model is a simplified version of SAOTrace and includes as many of SAOTrace’s
 features as can be reasonably be reproduced while still maintaining
 <strong>marx</strong> ‘s speed and portability.</p>
-<section id="using-saosac-rayfiles-in-marx">
-<h2>Using SAOSAC Rayfiles in <strong>marx</strong><a class="headerlink" href="#using-saosac-rayfiles-in-marx" title="Link to this heading">¶</a></h2>
+<section id="using-saotrace-rayfiles-in-marx">
+<h2>Using <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> Rayfiles in <strong>marx</strong><a class="headerlink" href="#using-saotrace-rayfiles-in-marx" title="Link to this heading">¶</a></h2>
 <p>For many purposes, the HRMA model within <strong>marx</strong> will be sufficiently
 accurate. However, users wishing to study very subtle effects caused by
 fine details in the HRMA may wish to run simulations utilizing the
-SAOSAC mirror model. Users involved in analysis of calibration data are
+SAOTrace mirror model. Users involved in analysis of calibration data are
 one obvious example. In such a situation, the user might wish to use
-SAOSAC in combination with the detector models or grating models
+SAOTrace in combination with the detector models or grating models
 available within <strong>marx</strong>. The <strong>marx</strong> package provides this capability
-by ingesting SAOSAC FITS format rayfiles.</p>
-<p>At the current time, it is not planned to distribute the SAOSAC mirror
-model to the user community. Instead, SAOSAC rayfiles will be
-pre-computed and distributed as needed. These rayfiles take the form of
+by ingesting SAOTrace FITS format rayfiles.</p>
+<p>Users can install <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> from <a class="reference external" href="https://cxc.cfa.harvard.edu/cal/Hrma/SAOTrace.html">https://cxc.cfa.harvard.edu/cal/Hrma/SAOTrace.html</a>
+or upload their source specification to <a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/PSFs/chart2/index.html">https://cxc.cfa.harvard.edu/ciao/PSFs/chart2/index.html</a>
+which will then run <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> on a server and provide the user with the resulting rayfile.</p>
+<p>These rayfiles take the form of
 FITS files containing binary tables of photon or “ray” properties. In
-order to provide users with the option of using the SAOSAC mirror model,
-<strong>marx</strong> is capable of ingesting standard SAOSAC FITS rayfiles.</p>
-<p>The interface to SAOSAC rayfiles is implemented in <strong>marx</strong> by setting
+order to provide users with the option of using the SAOTrace mirror model,
+<strong>marx</strong> is capable of ingesting standard SAOTrace FITS rayfiles.</p>
+<p>The interface to SAOTrace rayfiles is implemented in <strong>marx</strong> by setting
 the value of the <a class="reference internal" href="models.html#parameter-SourceType"><code class="xref std std-par docutils literal notranslate"><span class="pre">SourceType</span></code></a> parameter to <code class="docutils literal notranslate"><span class="pre">SAOSAC</span></code>. The path to the
-SAOSAC rayfile to be accessed is specified using the <a class="reference internal" href="models.html#parameter-SAOSACFile"><code class="xref std std-par docutils literal notranslate"><span class="pre">SAOSACFile</span></code></a>
+SAOTrace rayfile to be accessed is specified using the <a class="reference internal" href="models.html#parameter-SAOSACFile"><code class="xref std std-par docutils literal notranslate"><span class="pre">SAOSACFile</span></code></a>
 parameter. For example, if we wanted to run a <strong>marx</strong> simulation of the
 HSI first light test at XRCF, we might use a command similar to:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>unix% marx SourceType=&quot;SAOSAC&quot; SAOSACFile=&quot;C-IXH-PI-3.001.fits&quot;
@@ -121,7 +117,7 @@ focus and this defocus value is reproduced in the simulation.</span><a class="he
   <h3><a href="../index.html">Page Content</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Using <strong>marx</strong> with SAOSAC</a><ul>
-<li><a class="reference internal" href="#using-saosac-rayfiles-in-marx">Using SAOSAC Rayfiles in <strong>marx</strong></a></li>
+<li><a class="reference internal" href="#using-saotrace-rayfiles-in-marx">Using SAOTrace Rayfiles in <strong>marx</strong></a></li>
 </ul>
 </li>
 </ul>
@@ -174,7 +170,7 @@ focus and this defocus value is reproduced in the simulation.</span><a class="he
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

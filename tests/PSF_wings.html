@@ -7,7 +7,7 @@
 
     <title>Wings of the Chandra PSF &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -49,20 +49,11 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_marx</span><span class="p">,</span> <span class="n">setup_saotrace</span>
-<span class="n">setup_marx</span><span class="p">()</span>
-<span class="n">trace_nest</span> <span class="o">=</span> <span class="n">setup_saotrace</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-<section id="wings-of-the-chandra-psf">
+  <section id="wings-of-the-chandra-psf">
 <h1>Wings of the Chandra PSF<a class="headerlink" href="#wings-of-the-chandra-psf" title="Link to this heading">¶</a></h1>
 <p>The Chandra PSF falls in two regimes: The shape of the core is set by quasi-specular
 reflection from low-frequency surface errors. This component is strongly peaked and dominates
-in the innermost few arcseconds (for and on-axis source). The out part of the PSF has the shape of a powerlaw with a spectral index close to two and is caused by micro-roughness on the mirror surfaces. The <a class="reference external" href="http://cxc.harvard.edu/proposer/POG/html/chap4.html#tth_sEc4.2.3">Proposer’s Observatory Guide</a> and <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/rsrc/Publish/Optics/PSFWings/wing_analysis_rev1b.pdf">a memo by T.J. Gaetz</a> discuss this in a lot more detail. The memo is based on a very detailed analysis of a deep Her-X1 observation. In this test we replicate that observation in marx and SAOTrace simulations.</p>
+in the innermost few arcseconds (for an on-axis source). The outer part of the PSF has the shape of a powerlaw with a spectral index close to two and is caused by micro-roughness on the mirror surfaces. The <a class="reference external" href="http://cxc.harvard.edu/proposer/POG/html/chap4.html#tth_sEc4.2.3">Proposer’s Observatory Guide</a> and <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/rsrc/Publish/Optics/PSFWings/wing_analysis_rev1b.pdf">a memo by T.J. Gaetz</a> discuss this in a lot more detail. The memo is based on a very detailed analysis of a deep Her-X1 observation. In this test we replicate that observation in marx and SAOTrace simulations.</p>
 <p>In the memo, T.J. Gaetz goes to great lengths to separate the effect of the intrinsic Chandra PSF on the data from other influences such as the ACIS contamination. When we compare data and marx simulation below, we chose a somewhat simpler approach. We perform steps to mitigate the impact of other astrophysical sources (which are not part of the marx simulation) and background (which is not part of the marx simulation). On the other hand, we just compare the observed count rates with no correction for the ACIS contamination, dithering near chip edges etc. because those effects are included in both the observed and the simulated data.</p>
 <p>Read the code for this test to see all details of the data extraction, but here are the most
 important points:</p>
@@ -70,9 +61,16 @@ important points:</p>
 <li><p>The source is heavily piled-up, thus the source spectrum is taken from the read-out streak.</p></li>
 <li><p>Because of pile-up in the data, all fitting is restricted to radii above 15 arcsec.</p></li>
 </ul>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkyCoord</span>
+<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkyCoord</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
@@ -81,28 +79,13 @@ important points:</p>
 <span class="kn">from</span><span class="w"> </span><span class="nn">coords.chandra</span><span class="w"> </span><span class="kn">import</span> <span class="n">cel_to_chandra</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">marxpars_from_asol</span><span class="p">,</span> <span class="n">write_spectrum_from_fluxcorrection</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">download_chandra_obsids</span><span class="p">([</span><span class="mi">3662</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">asolfile</span> <span class="o">=</span> <span class="s1">&#39;3662/primary/pcadf03662_000N001_asol1.fits.gz&#39;</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">download_chandra_obsids</span><span class="p">([</span><span class="mi">3662</span><span class="p">])</span>
+
+<span class="n">asolfile</span> <span class="o">=</span> <span class="s1">&#39;3662/primary/pcadf03662_000N001_asol1.fits.gz&#39;</span>
 <span class="n">evt2file</span> <span class="o">=</span> <span class="s1">&#39;3662/primary/acisf03662N004_evt2.fits.gz&#39;</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Source is heavily piled-up so we extract the source spectrum from the read-out streak.&#39;&#39;&#39;</span>
+
+<span class="sd">&#39;&#39;&#39;Source is heavily piled-up so we extract the source spectrum from the read-out streak.&#39;&#39;&#39;</span>
 <span class="n">source_reg</span> <span class="o">=</span> <span class="s1">&#39;rotbox(3922.6168,3556.9146,12,512,332.71498)&#39;</span>
 
 <span class="sd">&#39;&#39;&#39;The analysis makes narrow band count rate images.</span>
@@ -114,44 +97,16 @@ important points:</p>
                     <span class="mf">3.5</span><span class="p">,</span> <span class="mf">4.</span><span class="p">,</span> <span class="mf">4.5</span><span class="p">,</span> <span class="mf">5.</span><span class="p">,</span> <span class="mf">5.5</span><span class="p">,</span> <span class="mf">6.</span><span class="p">,</span> <span class="mf">6.5</span><span class="p">,</span> <span class="mf">7.</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">,</span> <span class="mf">8.</span><span class="p">])</span>
 <span class="n">mid_bins</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">energy_bins</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">energy_bins</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
     
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">sky_coos</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="o">.</span><span class="n">from_name</span><span class="p">(</span><span class="s1">&#39;Her X-1&#39;</span><span class="p">)</span>
+<span class="n">sky_coos</span> <span class="o">=</span> <span class="n">SkyCoord</span><span class="o">.</span><span class="n">from_name</span><span class="p">(</span><span class="s1">&#39;Her X-1&#39;</span><span class="p">)</span>
 <span class="n">coos</span> <span class="o">=</span> <span class="n">cel_to_chandra</span><span class="p">(</span><span class="n">fits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">evt2file</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">sky_coos</span><span class="o">.</span><span class="n">ra</span><span class="o">.</span><span class="n">degree</span><span class="p">,</span> <span class="n">sky_coos</span><span class="o">.</span><span class="n">dec</span><span class="o">.</span><span class="n">degree</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">coos</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">coos</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">coos</span><span class="p">[</span><span class="s1">&#39;y&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">write_spectrum_from_fluxcorrection</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">evt2file</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">source_reg</span><span class="p">,</span> 
+<span class="n">write_spectrum_from_fluxcorrection</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">evt2file</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">source_reg</span><span class="p">,</span> 
                                                 <span class="c1"># Rough estimate of normalization</span>
                                                 <span class="c1"># Read-out streak region is 512 pix long</span>
                                                 <span class="mf">0.00004</span><span class="o">*</span><span class="mi">512</span><span class="o">/</span><span class="mf">3.2</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING: UnitsWarning: &#39;channel&#39; did not parse as fits unit: At col 0, Unit &#39;channel&#39; not supported by the FITS standard.  If this is meant to be a custom unit, define it with &#39;u.def_unit&#39;. To have it recognized inside a file reader or other code, enable it with &#39;u.add_enabled_units&#39;. For details, see https://docs.astropy.org/en/latest/units/combining_and_defining.html [astropy.units.core]
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+
+
 <span class="n">pars</span> <span class="o">=</span> <span class="n">marxpars_from_asol</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">evt2file</span><span class="p">)</span>
 <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;SpectrumType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;FILE&#39;</span>
 <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;SpectrumFile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;input_spec_marx.tbl&#39;</span>
@@ -161,13 +116,7 @@ important points:</p>
 <span class="n">marxcall</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;marx&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
 <span class="n">marxcall</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxcall</span><span class="p">)</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">marxcall</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">asolh</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">asolh</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">evth</span> <span class="o">=</span> <span class="n">fits</span><span class="o">.</span><span class="n">getheader</span><span class="p">(</span><span class="n">evt2file</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
 <span class="n">lua_text</span> <span class="o">=</span> <span class="sa">f</span><span class="s1">&#39;&#39;&#39;</span>
@@ -202,30 +151,11 @@ important points:</p>
 <span class="sd">&#39;&#39;&#39;</span>
 <span class="n">limit</span> <span class="o">=</span> <span class="n">asolh</span><span class="p">[</span><span class="s1">&#39;TSTOP&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="n">asolh</span><span class="p">[</span><span class="s1">&#39;TSTART&#39;</span><span class="p">]</span>
 <span class="n">limit</span> <span class="o">=</span> <span class="n">limit</span> <span class="o">-</span> <span class="mf">0.02</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">trace_nest</span> <span class="o">+</span>
+
+<span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">trace_nest</span> <span class="o">+</span>
                <span class="sa">f</span><span class="s1">&#39; tag=saotrace srcpars=saotrace_source.lua tstart=</span><span class="si">{</span><span class="n">asolh</span><span class="p">[</span><span class="s2">&quot;TSTART&quot;</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.01</span><span class="si">}</span><span class="s1"> limit=</span><span class="si">{</span><span class="n">limit</span><span class="si">}</span><span class="s1"> limit_type=sec&#39;</span><span class="p">,</span>
                <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-<div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING: image platform (linux/amd64) does not match the expected platform (linux/arm64)
-</pre></div>
-</div>
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>CompletedProcess(args=&#39;/Users/guenther/code/saotrace-2.0.6.1/run-saotrace trace-nest  tag=saotrace srcpars=saotrace_source.lua tstart=141954141.92872 limit=51150.81333998919 limit_type=sec&#39;, returncode=0)
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pars</span><span class="p">[</span><span class="s1">&#39;OutputDir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;marx_saotrace&#39;</span>
+<span class="n">pars</span><span class="p">[</span><span class="s1">&#39;OutputDir&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;marx_saotrace&#39;</span>
 <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;SourceType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SAOSAC&#39;</span>
 <span class="n">pars</span><span class="p">[</span><span class="s1">&#39;SAOSACFile&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;saotrace.fits&#39;</span>
 
@@ -233,21 +163,23 @@ important points:</p>
 <span class="n">marxcall</span> <span class="o">=</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">marxcall</span><span class="p">)</span>
 
 <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">marxcall</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER marx_only marx_only.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER marx_only marx_only.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
                      <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER marx_saotrace marx_saotrace.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> 
                      <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</details>
+<div class="cell_output docutils container">
 </div>
-<div class="cell docutils container">
+</div>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Make image and run cell detect to find exclusion regions for extraction.&#39;&#39;&#39;</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="n">evt2file</span><span class="o">+</span><span class="s2">&quot;[bin x=3700:4300:1,y=3700:4300:1][opt type=i4]&quot;</span><span class="p">,</span>
@@ -255,13 +187,7 @@ important points:</p>
 <span class="n">rt</span><span class="o">.</span><span class="n">mkpsfmap</span><span class="p">(</span><span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;psf.map&quot;</span><span class="p">,</span> <span class="mf">1.4</span><span class="p">,</span> <span class="n">ecf</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">celldetect</span><span class="p">(</span><span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;im_src.fits&quot;</span><span class="p">,</span> <span class="n">psffile</span><span class="o">=</span><span class="s2">&quot;psf.map&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">asphist</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="s2">&quot;asphist_7.fits&quot;</span><span class="p">,</span> <span class="n">evtfile</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">evt2file</span><span class="si">}</span><span class="s2">[ccd_id=7]&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Create exposure maps</span>
+<span class="sd">&#39;&#39;&#39;Create exposure maps</span>
 
 <span class="sd">Also, make exposure map for S-3 chip to correct for dither etc. Mirror effective</span>
 <span class="sd">area is not included in that calculation, because all the photons we care for come</span>
@@ -289,8 +215,14 @@ important points:</p>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy.table</span><span class="w"> </span><span class="kn">import</span> <span class="n">Table</span>
 <span class="sd">&#39;&#39;&#39;Clean bogus sources from src file and write regions</span>
@@ -331,13 +263,7 @@ important points:</p>
         <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">src_intersect</span><span class="p">:</span>
             <span class="n">reg</span> <span class="o">+=</span> <span class="sa">f</span><span class="s1">&#39;-ellipse(</span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="s2">&quot;X&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="s2">&quot;Y&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="s2">&quot;R&quot;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="s2">&quot;R&quot;</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span><span class="si">}</span><span class="s1">, </span><span class="si">{</span><span class="n">s</span><span class="p">[</span><span class="s2">&quot;ROTANG&quot;</span><span class="p">]</span><span class="si">}</span><span class="s1">)&#39;</span>
         <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">reg</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">efile</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">outname</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">evt2file</span><span class="p">,</span> <span class="s1">&#39;marx_only.fits&#39;</span><span class="p">,</span> <span class="s1">&#39;marx_saotrace.fits&#39;</span><span class="p">],</span>
+<span class="k">for</span> <span class="n">efile</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">outname</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">([</span><span class="n">evt2file</span><span class="p">,</span> <span class="s1">&#39;marx_only.fits&#39;</span><span class="p">,</span> <span class="s1">&#39;marx_saotrace.fits&#39;</span><span class="p">],</span>
                                 <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;_marx&#39;</span><span class="p">,</span> <span class="s1">&#39;_marx&#39;</span><span class="p">],</span>
                                 <span class="p">[</span><span class="s1">&#39;_obs&#39;</span><span class="p">,</span> <span class="s1">&#39;_marx&#39;</span><span class="p">,</span> <span class="s1">&#39;_saotrace&#39;</span><span class="p">]):</span>
     <span class="c1"># Energy in fits file in in eV not, keV, thus a factor of 1000 here</span>
@@ -349,8 +275,14 @@ important points:</p>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Analyze and plot results - Plot 1&#39;&#39;&#39;</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pycrates</span>
@@ -410,14 +342,20 @@ important points:</p>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
-<img alt="../_images/6660eaeea42699a9d4b952d3855b1baed03f029eef72a8c6da9540c4ea4f4fab.png" src="../_images/6660eaeea42699a9d4b952d3855b1baed03f029eef72a8c6da9540c4ea4f4fab.png" />
+<img alt="../_images/71472846049091435f10c56b8ae046110cb817d7008256a658a9153907a2c6ab.png" src="../_images/71472846049091435f10c56b8ae046110cb817d7008256a658a9153907a2c6ab.png" />
 </div>
 </div>
 <p>The flux in the scattering halo drops as a powerlaw with increasing distance from the source.
 <strong>In these plots, we should look only at the slope, not the absolute normalization</strong> because the total count rate is uncertain in the observation due to the severe pile-up, so the input flux to the simulations might be lower than the true flux.</p>
 <p>The plots show the data (with purely statistical uncertainties) and powerlaw fits. Due to the background that is part of the observations but not the simulated data, the powerlaw flattens out for the observed data at high and low energies, where the total count number is low and thus the background more important.  We add a constant to the powerlaw model to account for this. SAOTrace simulations produce a fairly smooth powerlaw similar to the observations. The pure marx simulations have much larger deviations due to marx’s simplified mirror model.</p>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Analyze and plot results - Plot 2&#39;&#39;&#39;</span>
 <span class="n">slopes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">energy_bins</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
@@ -445,22 +383,20 @@ important points:</p>
     <span class="n">ax</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;energy [keV]&#39;</span><span class="p">)</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;slope of powerlaw&#39;</span><span class="p">)</span>
-<span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
-<div class="output text_plain highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>(0.0, 8.115)
-</pre></div>
-</div>
-<img alt="../_images/6467f762a3658896aa248ca6a6c5e7493934ca457bfb519ed2b79dcae281c8f8.png" src="../_images/6467f762a3658896aa248ca6a6c5e7493934ca457bfb519ed2b79dcae281c8f8.png" />
+<img alt="../_images/5d1d65b23ef1f0d56b1b6c73d5998e64e9a7ccb51ff045a23c265d300f612fd4.png" src="../_images/5d1d65b23ef1f0d56b1b6c73d5998e64e9a7ccb51ff045a23c265d300f612fd4.png" />
 </div>
 </div>
 <p>The surface brightness falls off with increasing distance from the source position as a powerlaw. The exponent of this powerlaw depends on the photon energy as shown in the figure. If spectra are extracted in the scattering halo the observed spectrum will thus change with distance from the source. For the observed data, the low energy end (below about 1 keV) has to be taken with a grain of salt. We applied a correction for the ACIS contamination in the data reduction, but the distribution of the contaminant over the detector area is not well known, leading to systematic uncertainties. For energies above 5 keV, the outer mirror shell does not contribute much effective area any longer. This shell has the roughest surface, which explains why we observe steeper powerlaw slopes for higher energies. Both the marx and the SAOTrace mirror model also have energy dependent exponents.</p>
-</section>
 <section id="summary">
-<h1>Summary<a class="headerlink" href="#summary" title="Link to this heading">¶</a></h1>
+<h2>Summary<a class="headerlink" href="#summary" title="Link to this heading">¶</a></h2>
 <p>Both marx and SAOTrace simulations reproduce the wings of the Chandra PSF reasonably well. There are differences in the details, but there is also some uncertainty in the observed data, which, unlike the simulations, contains background events and some detector effects not modeled in marx. It is important to remember though that we study the wings out to several arcminutes here. In all but the brightest sources on the sky, the wings will be undetectable this far out, simply because the total count rate out in the wings is orders of magnitude lower than the in the center of the PSF and will be lost in the background.</p>
+</section>
 </section>
 
 
@@ -477,8 +413,10 @@ important points:</p>
 </form>
   <h3><a href="../index.html">Page Content</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Wings of the Chandra PSF</a></li>
+<li><a class="reference internal" href="#">Wings of the Chandra PSF</a><ul>
 <li><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
 </ul>
 
   <div>
@@ -529,7 +467,7 @@ important points:</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

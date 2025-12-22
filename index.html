@@ -7,7 +7,7 @@
 
     <title>Welcome to MARX’s documentation! &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -49,17 +49,14 @@
 <div class="admonition-current-version-of-marx-is-release admonition">
 <p class="admonition-title">Current version of <strong>marx</strong> is 6.0.1</p>
 <p>We now recommend to install <strong>marx</strong> together with CIAO as described in
-<a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/download/">https://cxc.cfa.harvard.edu/ciao/download/</a>
+<a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/download/">https://cxc.cfa.harvard.edu/ciao/download/</a> .
 Of course, it is still possible to install <strong>marx</strong> from
 source as described in <a class="reference internal" href="inbrief/install.html#installing"><span class="std std-ref">Downloading and Installing Marx</span></a>.</p>
 </div>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
-<p>Marx 6.0 improves error checking and user feedback in case of parameters errors
-as well as some bug fixes. It is <strong>not</strong> fully backward compatible with version
-5.x. In particular,</p>
-<blockquote>
-<div><ul class="simple">
+<p>Marx 6.0 is <strong>not</strong> fully backward compatible with version 5.x. In particular,</p>
+<ul class="simple">
 <li><p>The <a class="reference internal" href="inbrief/simsetup.html#parameter-Verbose"><code class="xref std std-par docutils literal notranslate"><span class="pre">Verbose</span></code></a> parameter now requires an integer for finer control of
 the verbosity level.</p></li>
 <li><p>We removed obsolete tools that convert marx binary
@@ -67,15 +64,16 @@ results into other formats. Going forward, the only supported tool for
 this purpose is <a class="reference internal" href="Reference/tools.html#marx2fits"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marx2fits</span></code></a>, followed by standard <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a>
 procedures to make images or extract spectra.</p></li>
 </ul>
-<p>See <a class="reference internal" href="inbrief/news.html#highlights"><span class="std std-ref">Highlights for each version of marx</span></a> for a full list of changes.</p>
-</div></blockquote>
+<p>This version also improves error checking and user feedback in case of parameters errors
+as well as some bug fixes.
+See <a class="reference internal" href="inbrief/news.html#highlights"><span class="std std-ref">Highlights for each version of marx</span></a> for a full list of changes.</p>
 </div>
 <p><strong>marx</strong> is a suite of programs created and maintained by the
 <a class="reference external" href="http://space.mit.edu/cxc/">MIT/CXC/HETG group</a> group and is designed
 to enable the user to simulate the on-orbit performance of the Chandra
 X-ray Observatory. <strong>marx</strong> provides a detailed ray-trace
 simulation of how Chandra responds to a variety of astrophysical
-sources and can generate standard FITS event files and images as
+sources and can generate standard FITS event files as
 output. It contains detailed models for Chandra’s High Resolution
 Mirror Assembly (HRMA), the HETG and LETG gratings, and all the focal
 plane detectors.</p>
@@ -116,7 +114,6 @@ with MARX: x-ray observatory design, calibration, and support (Davis et al. 2012
 <li class="toctree-l1"><a class="reference internal" href="tests/index.html"><strong>marx</strong> accuracy and testing</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="tests/PSF.html">Point Spread Function (PSF)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tests/PSF_wings.html">Wings of the Chandra PSF</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tests/PSF_wings.html#summary">Summary</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tests/Grades.html">Flight grade distribution</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tests/spectrum.html">Reproducing an input spectrum</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tests/source.html">Source shapes in MARX</a></li>
@@ -214,7 +211,7 @@ with MARX: x-ray observatory design, calibration, and support (Davis et al. 2012
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

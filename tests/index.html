@@ -7,7 +7,7 @@
 
     <title>marx accuracy and testing &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -57,10 +57,10 @@ trusted. Anybody using <strong>marx</strong> for scientific analysis needs to co
 following pages to determine if the simulations are realistic enough for
 their purpose.</p>
 <p>For example, the <strong>marx</strong> HRMA module uses a simplified geometry to speed up
-simulations so that the user can simulate millions of rays in just
-a few minutes on a typical desktop computer. Thus, the simulated PSF will
+simulations so that the user can simulate millions of rays in less than a
+minute on a typical desktop computer. Thus, the simulated PSF will
 certainly differ from the observed PSF. <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> has more details, but does
-not the
+not explain the
 <a class="reference external" href="http://cxc.harvard.edu/ciao/caveats/psf_artifact.html">“hook” feature of the PSF</a> seen on very small
 scales either. Only a comparison between simulations and observed data can tell
 how well the simulations are doing.</p>
@@ -75,8 +75,10 @@ how well the simulations are doing.</p>
 <li class="toctree-l2"><a class="reference internal" href="PSF.html#simulated-off-axis-psf">Simulated off-axis PSF</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="PSF_wings.html">Wings of the Chandra PSF</a></li>
-<li class="toctree-l1"><a class="reference internal" href="PSF_wings.html#summary">Summary</a></li>
+<li class="toctree-l1"><a class="reference internal" href="PSF_wings.html">Wings of the Chandra PSF</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="PSF_wings.html#summary">Summary</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="Grades.html">Flight grade distribution</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="Grades.html#grades-on-an-acis-bi-chip">Grades on an ACIS-BI chip</a></li>
 <li class="toctree-l2"><a class="reference internal" href="Grades.html#grades-on-an-acis-fi-chip">Grades on an ACIS-FI chip</a></li>
@@ -106,11 +108,10 @@ how well the simulations are doing.</p>
 </div>
 <p>The code to run all these tests is available in the notebooks. Advanced users
 may wish to inspect the code of the tests for some more ideas on how to use
-<strong>marx</strong>. The code is lightly commented, but not in as much details as <a class="reference internal" href="../examples/examples.html#examples"><span class="std std-ref">Examples of MARX in use</span></a>.
-It will not execute as-is on your computer because it depends on the
-local <code class="docutils literal notranslate"><span class="pre">$PATH</span></code> and other environment variables. For example, we use Python
-scripts to set up a directory structure, download Chandra
-data, initialize <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> etc.</p>
+<strong>marx</strong>. The code is lightly commented, but not in as much detail as <a class="reference internal" href="../examples/examples.html#examples"><span class="std std-ref">Examples of MARX in use</span></a>.
+To execute the notebooks, you will need to be in a <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> environment with
+<strong>marx</strong> and <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> installed. We also use <code class="docutils literal notranslate"><span class="pre">astropy</span></code>, a Python package that
+is not part of <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> by default. You can install it using <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">astropy</span></code>.</p>
 </section>
 
 
@@ -172,7 +173,7 @@ data, initialize <a class="reference external" href="http://cxc.harvard.edu/ciao
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

@@ -7,7 +7,7 @@
 
     <title>Simulating a thermal plasma with the HETGS grating &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -87,14 +87,14 @@ with 16384 bins.</p>
 <span class="n">wavelength</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mf">1.</span><span class="p">,</span> <span class="mf">30.</span><span class="p">,</span> <span class="mi">16384</span><span class="p">)</span>  <span class="c1"># in Angstrom</span>
 <span class="c1"># convert to keV</span>
 <span class="n">energies</span> <span class="o">=</span> <span class="mf">12.39842</span> <span class="o">/</span> <span class="n">wavelength</span>  <span class="c1"># keV</span>
-<span class="c1"># for simplicity, reverse to be array ascending in energy</span>
+<span class="c1"># for simplicity, reverse to have array ascending in energy</span>
 <span class="n">energies</span> <span class="o">=</span> <span class="n">energies</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
 <span class="c1"># evaluate source on energy grid with lower and upper bin edges</span>
 <span class="n">flux</span> <span class="o">=</span> <span class="n">my_src</span><span class="p">(</span><span class="n">energies</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
 
-<span class="c1"># MARX input files only have one energy column, and the conventions is that</span>
-<span class="c1"># this hold the UPPER edge of the bin.</span>
+<span class="c1"># MARX input files only have one energy column, and the convention is that</span>
+<span class="c1"># this holds the UPPER edge of the bin.</span>
 <span class="c1"># Also, we need to divide the flux by the bin width to obtain the flux density.</span>
 <span class="n">bin_width</span> <span class="o">=</span> <span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">energies</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">save_arrays</span><span class="p">(</span><span class="s2">&quot;apedflux.tbl&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">],</span>
@@ -149,13 +149,12 @@ extraction region mask file must be created using
 <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/tg_resolve_events.html">tg_resolve_events</a>.  The first step is to determine the
 source position, which is used by
 <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/tg_create_mask.html">tg_create_mask</a>.  There are many ways to do this; the easiest might be
-to open the event file in <a class="reference external" href="http://ds9.si.edu/">ds9</a>, put a circles on the source
-position and use the ds9 functions to center it. Another way would be to use
+to open the event file in <a class="reference external" href="http://ds9.si.edu/">ds9</a>, put a circle on the source
+position and use the ds9 functions to center it. In this example use
 the <em>find zero-order</em> algorithm of
 <a class="reference external" href="http://space.mit.edu/cxc/analysis/findzo/">findzo</a> ,
 which is robust enough to work on heavily piled-up sources with read-out
-streaks. For this particular example, the
-position of the zeroth order in sky coordinates is (4017.88, 4141.43).</p>
+streaks, which is implemented in <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/tgdetect.html">tgdetect</a>.</p>
 <p>We are using a <a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/scripting/runtool.html">Python interface to CIAO</a> to run the CIAO tools to
 create a PHA2 file called <code class="docutils literal notranslate"><span class="pre">aped_pha2.fits</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ciao_contrib.runtool</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
@@ -186,7 +185,7 @@ those columns to create the PHA2.</p>
 the PHA2 file contains four spectra, MEG and HEG, each with positive and negative
 orders.  Here, we will create the RMF and ARF for the MEG +1 order only. Note that
 we set the <code class="docutils literal notranslate"><span class="pre">ardlibqual=&quot;;UNIFORM;bpmask=0&quot;</span></code> for the <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/fullgarf.html">fullgarf</a> call
-to get a uniform ARF without any bad pixel masking ans assuming a uniform quantum
+to get a uniform ARF without any bad pixel masking and assuming a uniform quantum
 efficiency across the detector because those are the assumptions that <strong>marx</strong> makes
 in the simulation.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rt</span><span class="o">.</span><span class="n">mkgrmf</span><span class="p">(</span><span class="n">grating_arm</span><span class="o">=</span><span class="s2">&quot;MEG&quot;</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;meg1.rmf&quot;</span><span class="p">,</span> <span class="n">srcid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">detsubsys</span><span class="o">=</span><span class="s2">&quot;ACIS-S3&quot;</span><span class="p">,</span> <span class="n">obsfile</span><span class="o">=</span><span class="n">evtfile</span><span class="p">,</span>
@@ -285,7 +284,7 @@ spectrum, which we will plot here:</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

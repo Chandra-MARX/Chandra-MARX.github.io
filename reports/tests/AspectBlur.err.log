@@ -1,0 +1,84 @@
+Traceback (most recent call last):
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/jupyter_cache/executors/utils.py", line 58, in single_nb_execution
+    executenb(
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/nbclient/client.py", line 1319, in execute
+    return NotebookClient(nb=nb, resources=resources, km=km, **kwargs).execute()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/jupyter_core/utils/__init__.py", line 165, in wrapped
+    return loop.run_until_complete(inner)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/asyncio/base_events.py", line 691, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/nbclient/client.py", line 709, in async_execute
+    await self.async_execute_cell(
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/nbclient/client.py", line 1062, in async_execute_cell
+    await self._check_raise_for_error(cell, cell_index, exec_reply)
+  File "/Users/guenther/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/nbclient/client.py", line 918, in _check_raise_for_error
+    raise CellExecutionError.from_cell_and_msg(cell, exec_reply_content)
+nbclient.exceptions.CellExecutionError: An error occurred while executing the following cell:
+------------------
+fig = plot44('edser')
+------------------
+
+
+[31m---------------------------------------------------------------------------[39m
+[31mFileNotFoundError[39m                         Traceback (most recent call last)
+[36mCell[39m[36m [39m[32mIn[9][39m[32m, line 1[39m
+[32m----> [39m[32m1[39m fig = [43mplot44[49m[43m([49m[33;43m'[39;49m[33;43medser[39;49m[33;43m'[39;49m[43m)[49m
+
+[36mCell[39m[36m [39m[32mIn[7][39m[32m, line 4[39m, in [36mplot44[39m[34m(opt)[39m
+[32m      1[39m [38;5;28;01mdef[39;00m[38;5;250m [39m[34mplot44[39m(opt):
+[32m      2[39m 
+[32m      3[39m     [38;5;66;03m# Read the observed data[39;00m
+[32m----> [39m[32m4[39m     obs = [43mread_evttable[49m[43m([49m[33;43m'[39;49m[33;43mobs[39;49m[33;43m'[39;49m[43m,[49m[43m [49m[43mpix_adj[49m[43m=[49m[43mopt[49m[43m)[49m
+[32m      5[39m     obsfiltered = filter_data(obs)
+[32m      6[39m     obshistval, obshistedges = bin_to_radial_histogram(obsfiltered)
+
+[36mCell[39m[36m [39m[32mIn[6][39m[32m, line 12[39m, in [36mread_evttable[39m[34m(data, pix_adj, a_p_e, mirror)[39m
+[32m     10[39m [38;5;28;01mif[39;00m data == [33m'[39m[33mobs[39m[33m'[39m:
+[32m     11[39m     [38;5;28;01mif[39;00m pix_adj.lower() == [33m'[39m[33medser[39m[33m'[39m:
+[32m---> [39m[32m12[39m         [38;5;28;01mreturn[39;00m [43mTable[49m[43m.[49m[43mread[49m[43m([49m[43mos[49m[43m.[49m[43mpath[49m[43m.[49m[43mjoin[49m[43m([49m[43mdata_dir[49m[43m,[49m[43m [49m[33;43m'[39;49m[33;43m15713[39;49m[33;43m'[39;49m[43m,[49m[43m [49m[33;43m'[39;49m[33;43mprimary[39;49m[33;43m'[39;49m[43m,[49m[43m [49m[33;43m'[39;49m[33;43macisf15713N002_evt2.fits[39;49m[33;43m'[39;49m[43m)[49m[43m)[49m
+[32m     13[39m     [38;5;28;01melse[39;00m:
+[32m     14[39m         [38;5;28;01mreturn[39;00m Table.read(os.path.join(data_dir, [33m'[39m[33m15713[39m[33m'[39m, [33m'[39m[33mrandomize[39m[33m'[39m, [33m'[39m[33macisf15713_repro_evt2.fits[39m[33m'[39m))
+
+[36mFile [39m[32m~/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/astropy/table/connect.py:62[39m, in [36mTableRead.__call__[39m[34m(self, *args, **kwargs)[39m
+[32m     59[39m units = kwargs.pop([33m"[39m[33munits[39m[33m"[39m, [38;5;28;01mNone[39;00m)
+[32m     60[39m descriptions = kwargs.pop([33m"[39m[33mdescriptions[39m[33m"[39m, [38;5;28;01mNone[39;00m)
+[32m---> [39m[32m62[39m out = [38;5;28;43mself[39;49m[43m.[49m[43mregistry[49m[43m.[49m[43mread[49m[43m([49m[38;5;28;43mcls[39;49m[43m,[49m[43m [49m[43m*[49m[43margs[49m[43m,[49m[43m [49m[43m*[49m[43m*[49m[43mkwargs[49m[43m)[49m
+[32m     64[39m [38;5;66;03m# For some readers (e.g., ascii.ecsv), the returned `out` class is not[39;00m
+[32m     65[39m [38;5;66;03m# guaranteed to be the same as the desired output `cls`.  If so,[39;00m
+[32m     66[39m [38;5;66;03m# try coercing to desired class without copying (io.registry.read[39;00m
+[32m     67[39m [38;5;66;03m# would normally do a copy).  The normal case here is swapping[39;00m
+[32m     68[39m [38;5;66;03m# Table <=> QTable.[39;00m
+[32m     69[39m [38;5;28;01mif[39;00m [38;5;28mcls[39m [38;5;129;01mis[39;00m [38;5;129;01mnot[39;00m out.[34m__class__[39m:
+
+[36mFile [39m[32m~/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/astropy/io/registry/core.py:200[39m, in [36mUnifiedInputRegistry.read[39m[34m(self, cls, format, cache, *args, **kwargs)[39m
+[32m    196[39m [38;5;28;01mtry[39;00m:
+[32m    197[39m     ctx = get_readable_fileobj(
+[32m    198[39m         args[[32m0[39m], encoding=[33m"[39m[33mbinary[39m[33m"[39m, cache=cache
+[32m    199[39m     )
+[32m--> [39m[32m200[39m     fileobj = [43mctx[49m[43m.[49m[34;43m__enter__[39;49m[43m([49m[43m)[49m
+[32m    201[39m [38;5;28;01mexcept[39;00m [38;5;167;01mOSError[39;00m:
+[32m    202[39m     [38;5;28;01mraise[39;00m
+
+[36mFile [39m[32m~/miniforge3/envs/ciao-4.18.b2/lib/python3.12/contextlib.py:137[39m, in [36m_GeneratorContextManager.__enter__[39m[34m(self)[39m
+[32m    135[39m [38;5;28;01mdel[39;00m [38;5;28mself[39m.args, [38;5;28mself[39m.kwds, [38;5;28mself[39m.func
+[32m    136[39m [38;5;28;01mtry[39;00m:
+[32m--> [39m[32m137[39m     [38;5;28;01mreturn[39;00m [38;5;28;43mnext[39;49m[43m([49m[38;5;28;43mself[39;49m[43m.[49m[43mgen[49m[43m)[49m
+[32m    138[39m [38;5;28;01mexcept[39;00m [38;5;167;01mStopIteration[39;00m:
+[32m    139[39m     [38;5;28;01mraise[39;00m [38;5;167;01mRuntimeError[39;00m([33m"[39m[33mgenerator didn[39m[33m'[39m[33mt yield[39m[33m"[39m) [38;5;28;01mfrom[39;00m[38;5;250m [39m[38;5;28;01mNone[39;00m
+
+[36mFile [39m[32m~/miniforge3/envs/ciao-4.18.b2/lib/python3.12/site-packages/astropy/utils/data.py:364[39m, in [36mget_readable_fileobj[39m[34m(name_or_obj, encoding, cache, show_progress, remote_timeout, sources, http_headers, use_fsspec, fsspec_kwargs, close_files)[39m
+[32m    355[39m [38;5;28;01mif[39;00m is_url:
+[32m    356[39m     name_or_obj = download_file(
+[32m    357[39m         name_or_obj,
+[32m    358[39m         cache=cache,
+[32m   (...)[39m[32m    362[39m         http_headers=http_headers,
+[32m    363[39m     )
+[32m--> [39m[32m364[39m fileobj = [43mio[49m[43m.[49m[43mFileIO[49m[43m([49m[43mname_or_obj[49m[43m,[49m[43m [49m[33;43m"[39;49m[33;43mr[39;49m[33;43m"[39;49m[43m)[49m
+[32m    365[39m [38;5;28;01mif[39;00m is_url [38;5;129;01mand[39;00m [38;5;129;01mnot[39;00m cache:
+[32m    366[39m     delete_fds.append(fileobj)
+
+[31mFileNotFoundError[39m: [Errno 2] No such file or directory: '../../aspectblur/15713/primary/acisf15713N002_evt2.fits'
+

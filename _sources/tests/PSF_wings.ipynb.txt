@@ -4,7 +4,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "dc04ddc7",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "remove-cell"
+    ]
+   },
    "outputs": [],
    "source": [
     "from utils import setup_marx, setup_saotrace\n",
@@ -17,10 +21,10 @@
    "id": "41bf6772",
    "metadata": {},
    "source": [
-    "## Wings of the Chandra PSF\n",
+    "# Wings of the Chandra PSF\n",
     "The Chandra PSF falls in two regimes: The shape of the core is set by quasi-specular\n",
     "reflection from low-frequency surface errors. This component is strongly peaked and dominates\n",
-    "in the innermost few arcseconds (for and on-axis source). The out part of the PSF has the shape of a powerlaw with a spectral index close to two and is caused by micro-roughness on the mirror surfaces. The [Proposer's Observatory Guide](http://cxc.harvard.edu/proposer/POG/html/chap4.html#tth_sEc4.2.3) and [a memo by T.J. Gaetz](http://cxc.harvard.edu/cal/Hrma/rsrc/Publish/Optics/PSFWings/wing_analysis_rev1b.pdf) discuss this in a lot more detail. The memo is based on a very detailed analysis of a deep Her-X1 observation. In this test we replicate that observation in marx and SAOTrace simulations.\n",
+    "in the innermost few arcseconds (for an on-axis source). The outer part of the PSF has the shape of a powerlaw with a spectral index close to two and is caused by micro-roughness on the mirror surfaces. The [Proposer's Observatory Guide](http://cxc.harvard.edu/proposer/POG/html/chap4.html#tth_sEc4.2.3) and [a memo by T.J. Gaetz](http://cxc.harvard.edu/cal/Hrma/rsrc/Publish/Optics/PSFWings/wing_analysis_rev1b.pdf) discuss this in a lot more detail. The memo is based on a very detailed analysis of a deep Her-X1 observation. In this test we replicate that observation in marx and SAOTrace simulations.\n",
     "\n",
     "In the memo, T.J. Gaetz goes to great lengths to separate the effect of the intrinsic Chandra PSF on the data from other influences such as the ACIS contamination. When we compare data and marx simulation below, we chose a somewhat simpler approach. We perform steps to mitigate the impact of other astrophysical sources (which are not part of the marx simulation) and background (which is not part of the marx simulation). On the other hand, we just compare the observed count rates with no correction for the ACIS contamination, dithering near chip edges etc. because those effects are included in both the observed and the simulated data.\n",
     "\n",
@@ -35,9 +39,15 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "a9de312c",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
+    "import subprocess\n",
+    "\n",
     "from astropy.coordinates import SkyCoord\n",
     "from astropy.io import fits\n",
     "import numpy as np\n",
@@ -46,37 +56,13 @@
     "from ciao_contrib.cda.data import download_chandra_obsids\n",
     "from coords.chandra import cel_to_chandra\n",
     "\n",
-    "from utils import marxpars_from_asol, write_spectrum_from_fluxcorrection\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "cff69c8c",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "out = download_chandra_obsids([3662])"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "91c3635e",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "from utils import marxpars_from_asol, write_spectrum_from_fluxcorrection\n",
+    "\n",
+    "out = download_chandra_obsids([3662])\n",
+    "\n",
     "asolfile = '3662/primary/pcadf03662_000N001_asol1.fits.gz'\n",
-    "evt2file = '3662/primary/acisf03662N004_evt2.fits.gz'"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "9edc53a4",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "evt2file = '3662/primary/acisf03662N004_evt2.fits.gz'\n",
+    "\n",
     "'''Source is heavily piled-up so we extract the source spectrum from the read-out streak.'''\n",
     "source_reg = 'rotbox(3922.6168,3556.9146,12,512,332.71498)'\n",
     "\n",
@@ -88,52 +74,17 @@
     "energy_bins = np.array([.4, .5, .6, .7, .9, 1., 1.2, 1.4, 1.6, 1.8, 2.0, 2.2, 2.4, 2.6, 2.8, 3.,\n",
     "                    3.5, 4., 4.5, 5., 5.5, 6., 6.5, 7., 7.5, 8.])\n",
     "mid_bins = 0.5 * (energy_bins[:-1] + energy_bins[1:])\n",
-    "    "
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "97c549c0",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    \n",
     "sky_coos = SkyCoord.from_name('Her X-1')\n",
-    "coos = cel_to_chandra(fits.getheader(evt2file, 1), sky_coos.ra.degree, sky_coos.dec.degree)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "21d1176f",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "coos = cel_to_chandra(fits.getheader(evt2file, 1), sky_coos.ra.degree, sky_coos.dec.degree)\n",
     "x = coos['x'][0]\n",
-    "y = coos['y'][0]"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "1568dafc",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "y = coos['y'][0]\n",
     "write_spectrum_from_fluxcorrection(asolfile, evt2file, x, y, source_reg, \n",
     "                                                # Rough estimate of normalization\n",
     "                                                # Read-out streak region is 512 pix long\n",
-    "                                                0.00004*512/3.2)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "81d40a39",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import subprocess\n",
+    "                                                0.00004*512/3.2)\n",
+    "\n",
+    "\n",
     "pars = marxpars_from_asol(asolfile, evt2file)\n",
     "pars['SpectrumType'] = 'FILE'\n",
     "pars['SpectrumFile'] = 'input_spec_marx.tbl'\n",
@@ -142,16 +93,7 @@
     "\n",
     "marxcall = ['marx'] + ['{0}={1}'.format(k, v) for k, v in pars.items()]\n",
     "marxcall = ' '.join(marxcall)\n",
-    "out = subprocess.run(marxcall, shell=True, capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "dbb2470b",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "out = subprocess.run(marxcall, shell=True, capture_output=True)\n",
     "asolh = fits.getheader(asolfile, 1)\n",
     "evth = fits.getheader(evt2file, 1)\n",
     "\n",
@@ -186,29 +128,11 @@
     "Therefore, shorten all times by about 0.01 sec to make sure.\n",
     "'''\n",
     "limit = asolh['TSTOP'] - asolh['TSTART']\n",
-    "limit = limit - 0.02"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "4a00d7b9",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "limit = limit - 0.02\n",
     "\n",
     "subprocess.run(trace_nest +\n",
     "               f' tag=saotrace srcpars=saotrace_source.lua tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec',\n",
-    "               shell=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "3d9f04d1",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "               shell=True)\n",
     "pars['OutputDir'] = 'marx_saotrace'\n",
     "pars['SourceType'] = 'SAOSAC'\n",
     "pars['SAOSACFile'] = 'saotrace.fits'\n",
@@ -216,16 +140,7 @@
     "marxcall = ['marx'] + ['{0}={1}'.format(k, v) for k, v in pars.items()]\n",
     "marxcall = ' '.join(marxcall)\n",
     "\n",
-    "out = subprocess.run(marxcall, shell=True, capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "f4345cbd",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "out = subprocess.run(marxcall, shell=True, capture_output=True)\n",
     "out = subprocess.run('marx2fits --pixadj=EDSER marx_only marx_only.fits', shell=True, \n",
     "                     capture_output=True)\n",
     "out2 = subprocess.run('marx2fits --pixadj=EDSER marx_saotrace marx_saotrace.fits', shell=True, \n",
@@ -236,7 +151,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "74e26fad",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "'''Make image and run cell detect to find exclusion regions for extraction.'''\n",
@@ -244,16 +163,7 @@
     "            \"im.fits\", option=\"image\", clobber=True)\n",
     "rt.mkpsfmap(\"im.fits\", \"psf.map\", 1.4, ecf=0.5, clobber=True)\n",
     "rt.celldetect(\"im.fits\", \"im_src.fits\", psffile=\"psf.map\", clobber=True)\n",
-    "rt.asphist(asolfile, \"asphist_7.fits\", evtfile=f\"{evt2file}[ccd_id=7]\", clobber=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "81dc04c9",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "rt.asphist(asolfile, \"asphist_7.fits\", evtfile=f\"{evt2file}[ccd_id=7]\", clobber=True)\n",
     "'''Create exposure maps\n",
     "\n",
     "Also, make exposure map for S-3 chip to correct for dither etc. Mirror effective\n",
@@ -285,7 +195,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "2175791a",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "from astropy.table import Table\n",
@@ -326,16 +240,7 @@
     "        src_intersect = src[ind1 & ind2]\n",
     "        for s in src_intersect:\n",
     "            reg += f'-ellipse({s[\"X\"]}, {s[\"Y\"]}, {s[\"R\"][0]}, {s[\"R\"][1]}, {s[\"ROTANG\"]})'\n",
-    "        f.write(reg + '\\n')"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "63f65664",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "        f.write(reg + '\\n')\n",
     "for efile, name, outname in zip([evt2file, 'marx_only.fits', 'marx_saotrace.fits'],\n",
     "                                ['', '_marx', '_marx'],\n",
     "                                ['_obs', '_marx', '_saotrace']):\n",
@@ -351,7 +256,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "af63424a",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "'''Analyze and plot results - Plot 1'''\n",
@@ -426,7 +335,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "0645a598",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "'''Analyze and plot results - Plot 2'''\n",
@@ -455,7 +368,7 @@
     "    ax.legend()\n",
     "    ax.set_xlabel('energy [keV]')\n",
     "    ax.set_ylabel('slope of powerlaw')\n",
-    "ax.set_xlim(0, None)"
+    "_ = ax.set_xlim(0, None)"
    ]
   },
   {

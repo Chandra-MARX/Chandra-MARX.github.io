@@ -7,7 +7,7 @@
 
     <title>Including background in a marx simulation &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -51,7 +51,7 @@
             
   <section id="including-background-in-a-marx-simulation">
 <span id="sect-ex-bkg"></span><h1>Including background in a <strong>marx</strong> simulation<a class="headerlink" href="#including-background-in-a-marx-simulation" title="Link to this heading">¶</a></h1>
-<p>The data from all Chandra observations includes different background
+<p>Chandra observations include different background
 components: Astrophysical background (e.g. unresolved sources), instrumental
 background (e.g. high-energy particles from the sun), and a read-out artifact.
 The <a class="reference external" href="http://cxc.harvard.edu/proposer/POG/html/chap6.html#tth_sEc6.16">Proposers Observatory Guide</a> describes
@@ -79,11 +79,11 @@ be used for a statistical analysis if the total number of background photons
 approaches the number of photons in the file.</p></li>
 </ul>
 </li>
-<li><p>We extract fit the apparent spectrum of the “blank sky” files (“apparent”
+<li><p>We extract and fit the apparent spectrum of the “blank sky” files (“apparent”
 because the events look like X-ray photons on the CCD, but in reality many are electron
 or proton impacts) and then use <strong>marx</strong> to simulate an extended source that
 produces a similar spectrum (<a class="reference internal" href="#subsect-ex-bkg-marxbkg"><span class="std std-ref">Simulating a background-like source with marx</span></a>). This approach is
-easier and faster, but it does  not  all details of the <a class="reference external" href="http://cxc.harvard.edu/cal/Acis/Cal_prods/bkgrnd/nonuniformity/acisbg.html">spatial
+easier and faster, but it does not include all <a class="reference external" href="http://cxc.harvard.edu/cal/Acis/Cal_prods/bkgrnd/nonuniformity/acisbg.html">spatial
 variations of the background</a>.</p></li>
 </ol>
 <div class="admonition warning">
@@ -150,7 +150,7 @@ column) as a function of energy [keV] (first column).</p>
 
 <span class="c1"># Sherpa uses the convention that an energy array holds the LOWER end of the bins;</span>
 <span class="c1"># Marx that it holds the UPPER end of a bin.</span>
-<span class="c1"># Thus, we need to shift energies and flux by one bin.</span>
+<span class="c1"># Thus, we need to shift energies by one bin.</span>
 <span class="c1"># Also, we need to divide the flux by the bin width to obtain the flux density.</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">save_arrays</span><span class="p">(</span><span class="s2">&quot;source_flux.tbl&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">energies</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="n">flux</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">],</span>
                <span class="p">[</span><span class="s2">&quot;keV&quot;</span><span class="p">,</span><span class="s2">&quot;photons/s/cm**2/keV&quot;</span><span class="p">],</span> <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -177,13 +177,11 @@ simulation will be written to a subdirectory called <code class="docutils litera
 specified by the <a class="reference internal" href="../../inbrief/simsetup.html#parameter-OutputDir"><code class="xref std std-par docutils literal notranslate"><span class="pre">OutputDir</span></code></a> parameter.  After the simulation has
 completed, a standard Chandra event file may be created using the
 <a class="reference internal" href="../../Reference/tools.html#marx2fits"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marx2fits</span></code></a> program:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
-<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marx2fits diffuse diffuse_evt2.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marx2fits diffuse diffuse_evt2.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We also generate an aspect solution file that matches the simulation:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
-<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marxasp MarxDir=&quot;diffuse&quot; OutputFile=&quot;diffuse_asol1.fits&quot;&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marxasp MarxDir=&quot;diffuse&quot; OutputFile=&quot;diffuse_asol1.fits&quot;&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -233,53 +231,53 @@ that they can be merged with <a class="reference external" href="http://cxc.harv
 <p>Here is the script that we use:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n_select</span><span class="o">=</span><span class="mi">30000</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">pycrates</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ciao_contrib</span><span class="w"> </span><span class="kn">import</span> <span class="n">runtool</span> <span class="k">as</span> <span class="n">rt</span>
-<span class="n">bkg</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">caldb_bkg</span><span class="p">)</span>
-<span class="n">marx</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s2">&quot;diffuse_evt2.fits&quot;</span><span class="p">)</span>
 
-<span class="n">n</span> <span class="o">=</span> <span class="n">bkg</span><span class="o">.</span><span class="n">get_nrows</span><span class="p">()</span>
-<span class="n">selected</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">n</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">n_select</span> <span class="o">/</span> <span class="n">n</span>
-<span class="n">selected_col</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">CrateData</span><span class="p">()</span>
-<span class="n">selected_col</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;SELECTED&quot;</span>
-<span class="n">selected_col</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">selected</span>
-<span class="n">bkg</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="n">selected_col</span><span class="p">)</span>
+<span class="n">n</span> <span class="o">=</span> <span class="n">rt</span><span class="o">.</span><span class="n">dmlist</span><span class="p">(</span><span class="n">caldb_bkg</span><span class="p">,</span> <span class="n">opt</span><span class="o">=</span><span class="s2">&quot;counts&quot;</span><span class="p">)</span>
 
-<span class="n">tstart</span> <span class="o">=</span> <span class="n">marx</span><span class="o">.</span><span class="n">get_key</span><span class="p">(</span><span class="s2">&quot;TSTART&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
-<span class="n">tstop</span> <span class="o">=</span> <span class="n">marx</span><span class="o">.</span><span class="n">get_key</span><span class="p">(</span><span class="s2">&quot;TSTOP&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span>
-<span class="n">timecol</span> <span class="o">=</span> <span class="n">tstart</span> <span class="o">+</span> <span class="p">(</span><span class="n">tstop</span> <span class="o">-</span> <span class="n">tstart</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="n">selected</span><span class="o">.</span><span class="n">sum</span><span class="p">())</span>
-<span class="n">time_col</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">CrateData</span><span class="p">()</span>
-<span class="n">time_col</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;TIME&quot;</span>
-<span class="n">time_col</span><span class="o">.</span><span class="n">values</span> <span class="o">=</span> <span class="n">timecol</span>
-<span class="n">bkg</span><span class="o">.</span><span class="n">add_column</span><span class="p">(</span><span class="n">time_col</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmtcalc</span><span class="p">(</span><span class="n">caldb_bkg</span><span class="p">,</span> <span class="s2">&quot;temp.fits&quot;</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;randnum=</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">/</span><span class="si">{</span><span class="n">n_select</span><span class="si">}</span><span class="s2">*#trand&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="s2">&quot;temp.fits[randnum=0:1]&quot;</span> <span class="p">,</span> <span class="s2">&quot;temp2.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-<span class="n">pycrates</span><span class="o">.</span><span class="n">write_file</span><span class="p">(</span><span class="n">bkg</span><span class="p">,</span> <span class="s2">&quot;selected_bkg_evt2.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="c1"># Assign some random time during the observation to each photon.</span>
+<span class="n">t0</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">rt</span><span class="o">.</span><span class="n">dmkeypar</span><span class="p">(</span><span class="s2">&quot;diffuse_evt2.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;TSTART&quot;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">t1</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">rt</span><span class="o">.</span><span class="n">dmkeypar</span><span class="p">(</span><span class="s2">&quot;diffuse_evt2.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;TSTOP&quot;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 
-<span class="n">rt</span><span class="o">.</span><span class="n">reproject_events</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="s2">&quot;selected_bkg_evt2.fits[selected=True]&quot;</span><span class="p">,</span>
-                    <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;bkg_reproj_evt2.fits&quot;</span><span class="p">,</span>
-                    <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;diffuse_asol1.fits&quot;</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s2">&quot;diffuse_evt2.fits&quot;</span><span class="p">,</span>
-                    <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-<span class="c1"># Select same set of columns for both input files</span>
-<span class="n">cols</span><span class="o">=</span><span class="s2">&quot;ccd_id,node_id,chip,det,sky,pha,energy,pi,fltgrade,grade,status,time&quot;</span>
-<span class="n">rt</span><span class="o">.</span><span class="n">dmmerge</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;diffuse_evt2.fits[cols </span><span class="si">{</span><span class="n">cols</span><span class="si">}</span><span class="s2">],bkg_reproj_evt2.fits[cols </span><span class="si">{</span><span class="n">cols</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
-           <span class="s2">&quot;merged.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmtcalc</span><span class="p">(</span><span class="s2">&quot;temp2.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;temp3.fits&quot;</span><span class="p">,</span> <span class="n">expression</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;time=</span><span class="si">{</span><span class="n">t0</span><span class="si">}</span><span class="s2">+(</span><span class="si">{</span><span class="n">t1</span><span class="si">}</span><span class="s2">-</span><span class="si">{</span><span class="n">t0</span><span class="si">}</span><span class="s2">)*#trand&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmsort</span><span class="p">(</span><span class="s2">&quot;temp3.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;temp4.fits&quot;</span><span class="p">,</span> <span class="n">keys</span><span class="o">=</span><span class="s2">&quot;TIME&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Reproject the blank sky fields to the same position on the sky as the marx simulation.</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">reproject_events</span><span class="o">.</span><span class="n">punlearn</span><span class="p">()</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">reproject_events</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="s2">&quot;temp4.fits&quot;</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;acis7s_bkg_reproj.fits&quot;</span><span class="p">,</span>
+                    <span class="n">aspect</span><span class="o">=</span><span class="s2">&quot;diffuse_asol1.fits&quot;</span><span class="p">,</span> <span class="n">match</span><span class="o">=</span><span class="s2">&quot;diffuse_evt2.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="c1"># Merge marx simulation and blank sky fields into a single fits table.</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmmerge</span><span class="o">.</span><span class="n">punlearn</span><span class="p">()</span>
+<span class="n">cols</span><span class="o">=</span><span class="s2">&quot;ccd_id,node_id,chip,det,sky,pha,energy,pi,fltgrade,grade,time&quot;</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmmerge</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;diffuse_evt2.fits[cols </span><span class="si">{</span><span class="n">cols</span><span class="si">}</span><span class="s2">],acis7s_bkg_reproj.fits[cols </span><span class="si">{</span><span class="n">cols</span><span class="si">}</span><span class="s2">]&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;merged.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="s2">&quot;merged.fits[energy=200:2000]&quot;</span><span class="p">,</span> <span class="s2">&quot;merged_soft.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>If the source in the simulation covers multiple ACIS chips, then this
 has to be repeated chip-by-chip.</p>
-<div class="highlight-python notranslate" id="fig-ex-bkg"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">PercentileInterval</span><span class="p">,</span> <span class="n">LogStretch</span><span class="p">,</span> <span class="n">ImageNormalize</span>
+<p>Now, we make a figure to show the <strong>marx</strong> simulation alone, with added
+background from the “blank sky” file, and with an energy filter that we would
+probably use for real data to suppress the background.</p>
+<div class="highlight-python notranslate" id="fig-ex-bkg"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">pycrates</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">astropy.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">PercentileInterval</span><span class="p">,</span> <span class="n">LogStretch</span><span class="p">,</span> <span class="n">ImageNormalize</span>
 
-<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aspect&#39;</span><span class="p">:</span><span class="s1">&#39;equal&#39;</span><span class="p">},</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aspect&#39;</span><span class="p">:</span><span class="s1">&#39;equal&#39;</span><span class="p">},</span>
                         <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">bins</span> <span class="o">=</span> <span class="p">[</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">]</span>
-<span class="n">bin_size</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">bin_size</span> <span class="o">=</span> <span class="mi">4</span>
 <span class="nb">range</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">4096</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">4096</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
         <span class="p">[</span><span class="mi">4096</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">4096</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">]]]</span>
-<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;diffuse_evt2.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;bkg_reproj_evt2.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;merged.fits&quot;</span><span class="p">]):</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;diffuse_evt2.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;acis7s_bkg_reproj.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;merged_soft.fits&quot;</span><span class="p">]):</span>
     <span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
     <span class="n">hist</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
                                 <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="nb">range</span><span class="p">)</span>
-    <span class="n">norm</span> <span class="o">=</span> <span class="n">ImageNormalize</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">PercentileInterval</span><span class="p">(</span><span class="mf">99.9</span><span class="p">),</span> <span class="n">stretch</span><span class="o">=</span><span class="n">LogStretch</span><span class="p">())</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">ImageNormalize</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">PercentileInterval</span><span class="p">(</span><span class="mi">99</span><span class="p">),</span> <span class="n">stretch</span><span class="o">=</span><span class="n">LogStretch</span><span class="p">())</span>
     <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">hist</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;hot&#39;</span><span class="p">,</span>
             <span class="n">extent</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
     <span class="n">out</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
@@ -310,7 +308,7 @@ how important it is to consider the instrumental background when simulating weak
 </section>
 <section id="simulating-a-background-like-source-with-marx">
 <span id="subsect-ex-bkg-marxbkg"></span><h2>Simulating a background-like source with <strong>marx</strong><a class="headerlink" href="#simulating-a-background-like-source-with-marx" title="Link to this heading">¶</a></h2>
-<p>An alternative approach is to extract a spectrum from the “black-sky” fields
+<p>An alternative approach is to extract a spectrum from the “blank-sky” fields
 and use this spectrum as input for <strong>marx</strong>. This spectrum does <strong>not</strong>
 describe the real <em>physical properties</em> such as the energy of the background events
 (many of them are not even photons), it just provides an effective way
@@ -322,36 +320,40 @@ than the original “blank-sky” file has without repeating photons.</p>
 spectrum in a table that <strong>marx</strong> can read. This can be done
 with the following commands (a detailed explanation for this is at
 <a class="reference external" href="http://cxc.harvard.edu/ciao/threads/extended/">http://cxc.harvard.edu/ciao/threads/extended/</a> ):</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dmextract<span class="w"> </span><span class="nv">infile</span><span class="o">=</span><span class="s2">&quot;acis7s_bkg_reproj.fits[sky=rotbox(1:59:59,+39:59:20,3.2&#39;,3.5&#39;,0)][bin pi]&quot;</span><span class="w"> </span><span class="nv">outfile</span><span class="o">=</span><span class="s1">&#39;blank_sky.pi&#39;</span><span class="w"> </span><span class="nv">wmap</span><span class="o">=</span><span class="s2">&quot;[bin tdet=8]&quot;</span><span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-
-asphist<span class="w"> </span><span class="nv">infile</span><span class="o">=</span>diffuse_asol1.fits<span class="w"> </span><span class="nv">outfile</span><span class="o">=</span>blank_sky.asphist<span class="w"> </span><span class="nv">evtfile</span><span class="o">=</span><span class="s2">&quot;diffuse_evt2.fits[ccd_id=7]&quot;</span><span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-
-sky2tdet<span class="w"> </span><span class="nv">infile</span><span class="o">=</span><span class="s2">&quot;acis7s_bkg_reproj.fits[sky=rotbox(1:59:59,+39:59:20,3.2&#39;,3.5&#39;,0)][bin sky=8]&quot;</span><span class="w"> </span><span class="nv">asphistfile</span><span class="o">=</span><span class="s2">&quot;blank_sky.asphist&quot;</span><span class="w"> </span><span class="nv">outfile</span><span class="o">=</span><span class="s2">&quot;blank_sky_tdet.fits[wmap]&quot;</span><span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-
-mkwarf<span class="w"> </span><span class="nv">infile</span><span class="o">=</span><span class="s2">&quot;blank_sky_tdet.fits[wmap]&quot;</span><span class="w"> </span><span class="nv">outfile</span><span class="o">=</span>blank_sky.arf<span class="w"> </span><span class="nv">weightfile</span><span class="o">=</span>blank_sky.wfef<span class="w"> </span><span class="nv">egridspec</span><span class="o">=</span><span class="m">0</span>.3:11.0:0.1<span class="w">  </span><span class="nv">mskfile</span><span class="o">=</span>NONE<span class="w"> </span><span class="nv">spectrumfile</span><span class="o">=</span>NONE<span class="w"> </span><span class="nv">pbkfile</span><span class="o">=</span>NONE<span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-
-mkrmf<span class="w"> </span><span class="nv">infile</span><span class="o">=</span>CALDB<span class="w"> </span><span class="nv">outfile</span><span class="o">=</span>blank_sky.rmf<span class="w"> </span><span class="nv">axis1</span><span class="o">=</span><span class="s2">&quot;energy=0:1&quot;</span><span class="w"> </span><span class="nv">axis2</span><span class="o">=</span><span class="s2">&quot;pi=1:1024:1&quot;</span><span class="w"> </span><span class="nv">weights</span><span class="o">=</span>blank_sky.wfef<span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rt</span><span class="o">.</span><span class="n">dmextract</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;acis7s_bkg_reproj.fits[sky=rotbox(1:59:59,+39:59:20,3.2&#39;,3.5&#39;,0)][bin pi]&quot;</span><span class="p">,</span>
+        <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;blank_sky.pi&#39;</span><span class="p">,</span> <span class="n">wmap</span><span class="o">=</span><span class="s2">&quot;[bin tdet=8]&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">asphist</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="s2">&quot;diffuse_asol1.fits&quot;</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;blank_sky.asphist&quot;</span><span class="p">,</span>
+        <span class="n">evtfile</span><span class="o">=</span><span class="s2">&quot;diffuse_evt2.fits[ccd_id=7]&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">sky2tdet</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="s2">&quot;acis7s_bkg_reproj.fits[sky=rotbox(1:59:59,+39:59:20,3.2&#39;,3.5&#39;,0)][bin sky=8]&quot;</span><span class="p">,</span>
+        <span class="n">asphistfile</span><span class="o">=</span><span class="s2">&quot;blank_sky.asphist&quot;</span><span class="p">,</span>
+        <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;blank_sky_tdet.fits[wmap]&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">mkwarf</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="s2">&quot;blank_sky_tdet.fits[wmap]&quot;</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s1">&#39;blank_sky.arf&#39;</span><span class="p">,</span>
+        <span class="n">weightfile</span><span class="o">=</span><span class="s1">&#39;blank_sky.wfef&#39;</span><span class="p">,</span> <span class="n">egridspec</span><span class="o">=</span><span class="s2">&quot;0.3:11.0:0.1&quot;</span><span class="p">,</span>
+        <span class="n">mskfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spectrumfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">pbkfile</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">mkrmf</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="s2">&quot;CALDB&quot;</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="s2">&quot;blank_sky.rmf&quot;</span><span class="p">,</span>
+        <span class="n">axis1</span><span class="o">=</span><span class="s2">&quot;energy=0:1&quot;</span><span class="p">,</span> <span class="n">axis2</span><span class="o">=</span><span class="s2">&quot;pi=1:1024:1&quot;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="s2">&quot;blank_sky.wfef&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>We use <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> to display the spectrum on the screen (see
-<a class="reference internal" href="#fig-ex-blankskyspectrum"><span class="std std-ref">Extracted “blank-sky” spectrum.</span></a>) and save it in a table
+<p>We use <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> to display the spectrum on the screen and save it in a table
 with columns energy and count rate density (see <a class="reference internal" href="../../indetail/models.html#parameter-SpectrumFile"><code class="xref std std-par docutils literal notranslate"><span class="pre">SpectrumFile</span></code></a> for details
 of the input spectrum format for <strong>marx</strong>):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">load_data</span><span class="p">(</span><span class="s1">&#39;blank_sky.pi&#39;</span><span class="p">)</span>
-<span class="n">load_rmf</span><span class="p">(</span><span class="s1">&#39;blank_sky.rmf&#39;</span><span class="p">)</span>
-<span class="n">load_arf</span><span class="p">(</span><span class="s1">&#39;blank_sky.arf&#39;</span><span class="p">)</span>
-<span class="n">plot_data</span><span class="p">()</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;extracted_bkgspec.png&#39;</span><span class="p">)</span>
-<span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s1">&#39;extracted_bkgspec.eps&#39;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sherpa.astro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ui</span>
 
-<span class="n">pl</span> <span class="o">=</span> <span class="n">get_data_plot</span><span class="p">()</span>
-<span class="n">save_arrays</span><span class="p">(</span><span class="s1">&#39;bkgspec.tbl&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">y</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;Energy&#39;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">ylabel</span><span class="p">],</span> <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_data</span><span class="p">(</span><span class="s1">&#39;blank_sky.pi&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_rmf</span><span class="p">(</span><span class="s1">&#39;blank_sky.rmf&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="s1">&#39;blank_sky.arf&#39;</span><span class="p">)</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">plot_data</span><span class="p">()</span>
+
+<span class="n">pl</span> <span class="o">=</span> <span class="n">ui</span><span class="o">.</span><span class="n">get_data_plot</span><span class="p">()</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">save_arrays</span><span class="p">(</span><span class="s1">&#39;bkgspec.tbl&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">pl</span><span class="o">.</span><span class="n">x</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">y</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;Energy&#39;</span><span class="p">,</span> <span class="n">pl</span><span class="o">.</span><span class="n">ylabel</span><span class="p">],</span>
+               <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<figure class="align-center" id="id2">
-<span id="fig-ex-blankskyspectrum"></span><img alt="Mostly flat spectrum, rising at large energies. There are a few emission features on top of the spectrum." src="../../_images/extracted_bkgspec.png" />
+<p>(<a class="reference download internal" download="" href="../../_downloads/66b789c3834d496dce27c9bad5e47634/background-9.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/0917f89eeb4f2efbf744f67182819f9e/background-9.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/f44329a95cf1639cdb0c34141f1fe03f/background-9.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id2">
+<img alt="Mostly flat spectrum, rising at large energies. There are a few emission features on top of the spectrum." class="plot-directive" src="../../_images/background-9.png" />
 <figcaption>
-<p><span class="caption-text">Extracted “blank-sky” spectrum.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
+<p><span class="caption-text">Spectrum of the “blank-sky” background.</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Again, we want a source flux of about 0.3 counts/s over the entire detector.
@@ -360,15 +362,22 @@ by <em>Chandra</em>’s effective area. Alternatively, we can just set the
 exact number of photons we want to detect with <a class="reference internal" href="../../inbrief/simsetup.html#parameter-ExposureTime"><code class="xref std std-par docutils literal notranslate"><span class="pre">ExposureTime=0</span></code></a> and <a class="reference internal" href="../../inbrief/simsetup.html#parameter-NumRays"><code class="xref std std-par docutils literal notranslate"><span class="pre">NumRays</span></code></a>
 set to a negative number. We set <a class="reference internal" href="../../indetail/models.html#parameter-SpectrumFile"><code class="xref std std-par docutils literal notranslate"><span class="pre">SpectrumFile</span></code></a> to the spectrum of
 the background. Now we only need to specify the shape of the
-source. Figure <a class="reference internal" href="#fig-ex-bkgonchip"><span class="std std-ref">Binned “blank sky” file for chip 7</span></a> shows regions with higher or
+source. <a class="reference internal" href="#fig-ex-bkgonchip"><span class="std std-ref">The figure with the chip backgorund</span></a> shows regions with higher or
 lower background level in the input “blank sky” file.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dmcopy<span class="w"> </span><span class="s2">&quot;acis7sbkg.fits[EVENTS][bin x=::32,y=::32]&quot;</span><span class="w"> </span>chip-shape.fits<span class="w"> </span><span class="nv">option</span><span class="o">=</span>image
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">caldb_bkg</span><span class="si">}</span><span class="s2">[EVENTS][bin x=3850:4930:32,y=3550:4650:32]&quot;</span><span class="p">,</span>
+          <span class="s2">&quot;chip-shape.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">im</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s2">&quot;chip-shape.fits&quot;</span><span class="p">)</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aspect&#39;</span><span class="p">:</span><span class="s1">&#39;equal&#39;</span><span class="p">})</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">im</span><span class="o">.</span><span class="n">get_image</span><span class="p">()</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;gist_heat&#39;</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
 </pre></div>
 </div>
-<figure class="align-center" id="id3">
-<span id="fig-ex-bkgonchip"></span><img alt="Image with rough blocks almost like a checkerboard, but with very little contrast." src="../../_images/chip-shape.png" />
+<p>(<a class="reference download internal" download="" href="../../_downloads/53cb8d39dbea3ef5f6515b2368dec897/background-10.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/d471c5e3071d4241841b4c90d38ae9de/background-10.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/71957b9f6b4a367d084e4eed86870b0d/background-10.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id4">
+<img alt="Image with rough blocks almost like a checkerboard, but with very little contrast." class="plot-directive" src="../../_images/background-10.png" />
 <figcaption>
-<p><span class="caption-text">Binned “blank sky” file for chip 7</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
+<p><span class="caption-text">Binned “blank sky” file for chip 7</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>To reproduce this pattern, we use <strong>marx</strong> with <a class="reference internal" href="../../indetail/models.html#parameter-SourceType"><code class="xref std std-par docutils literal notranslate"><span class="pre">SourceType=&quot;IMAGE&quot;</span></code></a>.
@@ -381,37 +390,53 @@ binning is chosen such that we find a few thousand events in every pixel of the
 image.</p>
 <p>All remaining <strong>marx</strong> parameters (<a class="reference internal" href="../../inbrief/simsetup.html#parameter-RA_Nom"><code class="xref std std-par docutils literal notranslate"><span class="pre">RA_Nom</span></code></a>, <a class="reference internal" href="../../inbrief/simsetup.html#parameter-Dec_Nom"><code class="xref std std-par docutils literal notranslate"><span class="pre">Dec_Nom</span></code></a> etc.) are the
 same as in the simulation of the astrophysical source of interest above.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>marx<span class="w"> </span><span class="nv">SourceFlux</span><span class="o">=</span><span class="m">3</span>.<span class="w"> </span><span class="nv">SpectrumType</span><span class="o">=</span><span class="s2">&quot;FILE&quot;</span><span class="w"> </span><span class="nv">SpectrumFile</span><span class="o">=</span><span class="s2">&quot;bkgspec.tbl&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">       </span><span class="nv">ExposureTime</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">NumRays</span><span class="o">=</span>-30000<span class="w"> </span><span class="nv">TStart</span><span class="o">=</span><span class="m">2012</span>.5<span class="w"> </span><span class="nv">OutputDir</span><span class="o">=</span>bkg<span class="w"> </span><span class="se">\</span>
-<span class="w">       </span><span class="nv">DetectorType</span><span class="o">=</span><span class="s2">&quot;ACIS-S&quot;</span><span class="w"> </span><span class="nv">DitherModel</span><span class="o">=</span><span class="s2">&quot;INTERNAL&quot;</span><span class="w"> </span><span class="nv">RA_Nom</span><span class="o">=</span><span class="m">30</span><span class="w"> </span><span class="nv">Dec_Nom</span><span class="o">=</span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
-<span class="w">       </span><span class="nv">Roll_Nom</span><span class="o">=</span><span class="m">0</span><span class="w"> </span><span class="nv">SourceRA</span><span class="o">=</span><span class="m">30</span><span class="w"> </span><span class="nv">SourceDEC</span><span class="o">=</span><span class="m">40</span><span class="w"> </span><span class="se">\</span>
-<span class="w">       </span><span class="nv">SourceType</span><span class="o">=</span><span class="s2">&quot;IMAGE&quot;</span><span class="w"> </span>S-ImageFile<span class="o">=</span><span class="s2">&quot;chip-shape.fits&quot;</span>
+<div class="highlight-python notranslate" id="fig-ex-bkgonchip"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marx SourceFlux=3. SpectrumType=&quot;FILE&quot; SpectrumFile=&quot;bkgspec.tbl&quot; &#39;</span> <span class="o">+</span> \
+   <span class="s1">&#39;ExposureTime=0 NumRays=-30000 TStart=2012.5 OutputDir=bkg &#39;</span> <span class="o">+</span> \
+   <span class="s1">&#39;DetectorType=&quot;ACIS-S&quot; DitherModel=&quot;INTERNAL&quot; RA_Nom=30 Dec_Nom=40 &#39;</span> <span class="o">+</span> \
+   <span class="s1">&#39;Roll_Nom=0 SourceRA=30 SourceDEC=40 GratingType=&quot;NONE&quot; &#39;</span> <span class="o">+</span> \
+   <span class="s1">&#39;SourceType=&quot;IMAGE&quot; S-ImageFile=&quot;chip-shape.fits&quot;&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now, we can use <a class="reference internal" href="../../Reference/tools.html#marxcat"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marxcat</span></code></a> to merge the simulation of the diffuse
 source and the background and <a class="reference internal" href="../../Reference/tools.html#marx2fits"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marx2fits</span></code></a> to convert the merged
 results into a fits file.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>marxcat<span class="w"> </span>diffuse<span class="w"> </span>bkg<span class="w"> </span>diffuse_with_bkg
-
-marx2fits<span class="w"> </span>diffuse_with_bkg<span class="w"> </span>diffuse_with_bkg.fits
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marxcat diffuse bkg diffuse_with_bkg&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s1">&#39;marx2fits diffuse_with_bkg diffuse_with_bkg.fits&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="s2">&quot;diffuse_with_bkg.fits[energy=200:2000]&quot;</span><span class="p">,</span> <span class="s2">&quot;diffuse_with_bkg_soft.fits&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
-<figure class="align-center" id="id4">
-<span id="fig-ex-bkg2"></span><img alt="Images of three event files. See caption for a description." src="../../_images/bkg2.png" />
-<figcaption>
-<p><span class="caption-text">Images of the event files with <strong>marx</strong> simulated background</span><a class="headerlink" href="#id4" title="Link to this image">¶</a></p>
-<div class="legend">
-<p>This figure has the same panels as <a class="reference internal" href="#fig-ex-bkg2"><span class="std std-ref">Images of the event files with marx simulated background</span></a>, except that the background is
-simulated with <strong>marx</strong> instead of taking photons directly from the “blank
-sky” file.</p>
+<div class="highlight-python notranslate" id="fig-ex-bkg2"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mf">2.5</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aspect&#39;</span><span class="p">:</span><span class="s1">&#39;equal&#39;</span><span class="p">},</span>
+                        <span class="n">sharex</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">sharey</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">bins</span> <span class="o">=</span> <span class="p">[</span><span class="mi">400</span><span class="p">,</span> <span class="mi">400</span><span class="p">]</span>
+<span class="n">bin_size</span> <span class="o">=</span> <span class="mi">4</span>
+<span class="nb">range</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">4096</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">4096</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+        <span class="p">[</span><span class="mi">4096</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">4096</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">bin_size</span> <span class="o">*</span> <span class="n">bins</span><span class="p">[</span><span class="mi">1</span><span class="p">]]]</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;diffuse_evt2.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;diffuse_with_bkg.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;diffuse_with_bkg_soft.fits&quot;</span><span class="p">]):</span>
+    <span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="n">hist</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                                <span class="n">bins</span><span class="o">=</span><span class="n">bins</span><span class="p">,</span> <span class="nb">range</span><span class="o">=</span><span class="nb">range</span><span class="p">)</span>
+    <span class="n">norm</span> <span class="o">=</span> <span class="n">ImageNormalize</span><span class="p">(</span><span class="n">hist</span><span class="p">,</span> <span class="n">interval</span><span class="o">=</span><span class="n">PercentileInterval</span><span class="p">(</span><span class="mf">99.</span><span class="p">),</span> <span class="n">stretch</span><span class="o">=</span><span class="n">LogStretch</span><span class="p">())</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">hist</span><span class="o">.</span><span class="n">T</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">norm</span><span class="p">,</span> <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;hot&#39;</span><span class="p">,</span>
+            <span class="n">extent</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">range</span><span class="p">)</span><span class="o">.</span><span class="n">flatten</span><span class="p">())</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+</pre></div>
 </div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/e16790207597b609a5f968e6af78f3a5/background-13.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/11735c403b5048798b8f564c6565b1bb/background-13.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/872e292cf4ca7aab54a7e4197cdf1fdd/background-13.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id6">
+<img alt="Images of three event files. See caption for a description." class="plot-directive" src="../../_images/background-13.png" />
+<figcaption>
+<p><span class="caption-text">Images of the event files with <strong>marx</strong> simulated background</span><a class="headerlink" href="#id6" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<p>Looking at <a class="reference internal" href="#fig-ex-bkg2"><span class="std std-ref">Images of the event files with marx simulated background</span></a> we again see that the background makes it much
+<p>This figure has the same panels as
+<a class="reference internal" href="#fig-ex-bkg"><span class="std std-ref">the figure for adding photons directly from the background file</span></a>,
+except that the background is simulated with <strong>marx</strong> here.</p>
+<p>Looking at <a class="reference internal" href="#fig-ex-bkg2"><span class="std std-ref">the figure here</span></a> we again see that the background makes it much
 harder to discern the source. The images look very similar to first method, indicating that both approaches to describe the background
 give similar results. The main difference is that in the <strong>marx</strong> simulation the
 edge of the chip is more fuzzy. That’s because pixel boundaries in
-<a class="reference internal" href="#fig-ex-bkgonchip"><span class="std std-ref">Binned “blank sky” file for chip 7</span></a> do not coincide exactly with the chip
+<a class="reference internal" href="#fig-ex-bkgonchip"><span class="std std-ref">the image of the chip background</span></a> do not coincide exactly with the chip
 boundaries and thus we simulate the “background” for a region slightly larger
 than the chip. However, this is not important for our purpose: Finding how well we
 can fit the source position, size and spectrum in the presence of background.</p>
@@ -506,7 +531,7 @@ modeling, but that is beyond the scope of this <strong>marx</strong> example.</p
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

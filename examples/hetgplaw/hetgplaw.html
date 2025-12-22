@@ -7,7 +7,7 @@
 
     <title>HETG simulation of an extended source &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -54,12 +54,12 @@
 <p>The purpose of this example, contributed by Dan Dewey, is to show how to use
 <strong>marx</strong> to simulate an HETG observation of a point and a
 simple extended source with a user-specified spectrum. This example, like many
-of the other examples, uses <strong>marx</strong>, <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> and <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a>, which should be
+of the other examples, uses <strong>marx</strong>, <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a>, and <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a>, which should be
 installed on your system to run this example.</p>
 <section id="create-the-spectral-file">
 <h2>Create the spectral file<a class="headerlink" href="#create-the-spectral-file" title="Link to this heading">¶</a></h2>
 <p>Use MARX to simulate an HETG observation of a powerlaw with two added lines
-(For example, this could be Fe and Ne fluorescence lines).
+(for example, this could be Fe and Ne fluorescence lines).
 We will use <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> to create a file with model fluxes.
 This is similar to <a class="reference internal" href="../ACISpowerpileup/powerlaw.html#sect-ex-acisccd"><span class="std std-ref">Simulating a user-defined CCD spectrum with ACIS</span></a> except that the source is brighter
 and has a less steep powerlaw.</p>
@@ -89,22 +89,22 @@ and has a less steep powerlaw.</p>
 <span class="c1"># evaluate source on energy grid with lower and upper bin edges</span>
 <span class="n">flux</span> <span class="o">=</span> <span class="n">my_src</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="n">energies</span> <span class="o">+</span> <span class="n">bin_width</span><span class="p">)</span>
 
-<span class="c1"># MARX input files only have one energy column, and the conventions is that</span>
-<span class="c1"># this hold the UPPER edge of the bin.</span>
+<span class="c1"># MARX input files only have one energy column, and the convention is that</span>
+<span class="c1"># this holds the UPPER edge of the bin.</span>
 <span class="c1"># Also, we need to divide the flux by the bin width to obtain the flux density.</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">save_arrays</span><span class="p">(</span><span class="s2">&quot;source_flux.tbl&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">energies</span> <span class="o">+</span> <span class="n">bin_width</span><span class="p">,</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">],</span>
                <span class="p">[</span><span class="s2">&quot;keV&quot;</span><span class="p">,</span><span class="s2">&quot;photons/s/cm**2/keV&quot;</span><span class="p">],</span> <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Here a fine binning is used having bins with dE/E = 0.0003 (v_bin = 90 km/s).
-This gives a high resolution spectrum across the whole 1 to 40 A
+This gives a high resolution spectrum across the whole 1 to 40 Å
 (0.31 to 12.4 keV) range suitable for use with the HETG as well as, e.g.,
 future microcalorimeter instruments.</p>
 <p>The file <cite>source_flux.tbl</cite> can now be used by <strong>marx</strong> to define the spectrum.</p>
 </section>
 <section id="setup-and-run-marx">
 <h2>Setup and run <strong>marx</strong><a class="headerlink" href="#setup-and-run-marx" title="Link to this heading">¶</a></h2>
-<p>Roughly these steps are the same as for the previous examples, except that
+<p>Roughly, these steps are the same as for the previous examples, except that
 the HETG is inserted by using <a class="reference internal" href="../../inbrief/simsetup.html#parameter-GratingType"><code class="xref std std-par docutils literal notranslate"><span class="pre">GratingType=&quot;HETG&quot;</span></code></a>.</p>
 <p>It can be convenient to use <a class="reference internal" href="../../Reference/tools.html#pset"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">pset</span></code></a> to set the parameters in a
 local par file, but in this case we put together a Python dictionary with options
@@ -116,7 +116,7 @@ your <strong>marx</strong> simulations.</p>
 <p>Either way, the first simulation
 here is for a <a class="reference internal" href="../../indetail/models.html#sect-models-point"><span class="std std-ref">POINT Source</span></a>; it is followed by a few additional
 lines to do a second simulation with a <a class="reference internal" href="../../indetail/models.html#sect-models-disk"><span class="std std-ref">DISK Source</span></a>.</p>
-<p>In the working directory paste these sets of lines to the unix prompt to run
+<p>In the working directory paste these sets of lines to the Python prompt to run
 a first simulation using a point source:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 
@@ -234,9 +234,8 @@ shows both event files side-by-side and sets up some useful display options is:<
 <img alt="../../_images/hetgplaw-5.png" class="plot-directive" src="../../_images/hetgplaw-5.png" />
 </figure>
 <p>The simulation of the point source is shown on the left, the extended source
-on the right. The extended source has a much wider zeroth order, but the
-scaling of the image is chosen to bring out the faint features so this is
-hard to see. Above and below the zeroth order the read-out streak is
+on the right. The extended source has a much wider zeroth order.
+Above and below the zeroth order the read-out streak is
 visible. In both images the X-shape of the grating spectra can be seen. The
 spectra are much wider in the right image due to the source
 extension. Still, the grating extraction area that we will calculate below is large
@@ -293,7 +292,7 @@ significantly. Extraction of the HEG grating works in a similar way, see the
 </section>
 <section id="perform-spectral-analysis">
 <h2>Perform spectral analysis<a class="headerlink" href="#perform-spectral-analysis" title="Link to this heading">¶</a></h2>
-<p>As an examples of the spectra analysis, we will fit an absorbed powerlaw to the
+<p>As an example of spectral analysis, we will fit an absorbed powerlaw to the
 point-like source spectrum. The spectral regions where the extra lines are
 located are ignored in the fit. Fitting the spectrum of the extended source
 works in the similar way. Naturally, a lot more analysis could be done on the
@@ -304,7 +303,12 @@ of this example. Please check the manual of your preferred X-ray spectral
 fitting software. In this example below, we use <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a>, but <a class="reference external" href="http://heasarc.nasa.gov/xanadu/xspec/">XSPEC</a> and
 <a class="reference external" href="http://space.mit.edu/cxc/isis/">ISIS</a> work very similar.</p>
 <p>This is <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> code to fit an absorbed powerlaw to the simulated spectrum:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ui</span><span class="o">.</span><span class="n">load_pha</span><span class="p">(</span><span class="n">pha2file</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sherpa.astro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ui</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">ticker</span>
+
+<span class="n">ui</span><span class="o">.</span><span class="n">load_pha</span><span class="p">(</span><span class="n">pha2file</span><span class="p">)</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;MEG_-1_garf.fits&#39;</span><span class="p">)</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">load_rmf</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="s1">&#39;meg-1_rmf.fits&#39;</span><span class="p">)</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;MEG_1_garf.fits&#39;</span><span class="p">)</span>
@@ -335,8 +339,6 @@ fitting software. In this example below, we use <a class="reference external" hr
 <span class="c1"># That would give us only a single xlabel on this plot.</span>
 <span class="c1"># The following lines change the matplotlib settings for the formatting</span>
 <span class="c1"># of the x-axis to show more ticks.</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpl</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">ticker</span>
 <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
 <span class="n">mpl</span><span class="o">.</span><span class="n">rcParams</span><span class="p">[</span><span class="s1">&#39;axes.formatter.min_exponent&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
 <span class="n">ax</span><span class="o">.</span><span class="n">get_xaxis</span><span class="p">()</span><span class="o">.</span><span class="n">set_minor_formatter</span><span class="p">(</span><span class="n">ticker</span><span class="o">.</span><span class="n">LogFormatterMathtext</span><span class="p">(</span><span class="n">labelOnlyBase</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -428,7 +430,7 @@ e.g. the gaps between the ACIS chips fall on different wavelengths.</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

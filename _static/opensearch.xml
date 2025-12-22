@@ -4,7 +4,7 @@
   <Description>Search MARX 6.0.1 documentation</Description>
   <InputEncoding>utf-8</InputEncoding>
   <Url type="text/html" method="get"
-       template="http://space.mit.edu/cxc/marx/search.html?q={searchTerms}"/>
+       template="https://chandra-marx.github.io/search.html?q={searchTerms}"/>
   <LongName>MARX 6.0.1 documentation</LongName>
   
 </OpenSearchDescription>

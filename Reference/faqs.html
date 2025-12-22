@@ -7,7 +7,7 @@
 
     <title>MARX Frequently Asked Questions &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -56,20 +56,10 @@
 <p><strong>marx</strong> specific questions should be sent to <a class="reference external" href="mailto:marx-help&#37;&#52;&#48;space&#46;mit&#46;edu">marx-help<span>&#64;</span>space<span>&#46;</span>mit<span>&#46;</span>edu</a>.  If
 your question is related to <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a>, then you should contact the <a class="reference external" href="http://asc.harvard.edu/helpdesk/index.html">CXC helpdesk</a>.</p>
 </section>
-<section id="i-m-using-marx-on-mac-os-x-and-something-does-not-work">
-<h2>I’m using <strong>marx</strong> on Mac OS X and something does not work.<a class="headerlink" href="#i-m-using-marx-on-mac-os-x-and-something-does-not-work" title="Link to this heading">¶</a></h2>
-<p>Over half of all user queries we receive are related to the broken compiler that ships with XCode on Mac OS X. Please see <a class="reference internal" href="../inbrief/install.html#knownbugs"><span class="std std-ref">Known Bugs and Limitations</span></a>.</p>
-</section>
 <section id="do-you-distribute-marx-binaries">
 <h2>Do you distribute marx binaries?<a class="headerlink" href="#do-you-distribute-marx-binaries" title="Link to this heading">¶</a></h2>
-<p>No.  There are several reasons for this including the lack of
-resources.  Rather, we have tried to make the installation process as
-simple as possible so that even the most inexperienced user can do it.
-Step by step instructions for compiling <strong>marx</strong> are available on the
-<a class="reference internal" href="../inbrief/install.html#installing"><span class="std std-ref">Downloading and Installing Marx</span></a>.  The reward for compiling it
-yourself is that you can be sure that <strong>marx</strong> was built explicitly for
-your system, and as such, no incompatibilities should arise.  One
-cannot make this guarantee for a precompiled binary version.</p>
+<p>Yes, see <a class="reference internal" href="../inbrief/install.html#installing"><span class="std std-ref">Downloading and Installing Marx</span></a> for details on how to obtain pre-compiled
+binaries via conda.</p>
 </section>
 <section id="how-do-i-create-an-arf-and-rmf-that-match-my-marx-simulation">
 <h2>How do I create an ARF and RMF that match my marx simulation?<a class="headerlink" href="#how-do-i-create-an-arf-and-rmf-that-match-my-marx-simulation" title="Link to this heading">¶</a></h2>
@@ -101,7 +91,7 @@ would be:</p>
 DetOffsetZ=43.4590
 </pre></div>
 </div>
-<p>Note that the <a class="reference internal" href="othermarxpars.html#parameter-DetOffsetY"><code class="xref std std-par docutils literal notranslate"><span class="pre">DetOffsetY</span></code></a> parameter is not modified since SIM motion
+<p>Note that the <a class="reference internal" href="../inbrief/simsetup.html#parameter-DetOffsetY"><code class="xref std std-par docutils literal notranslate"><span class="pre">DetOffsetY</span></code></a> parameter is not modified since SIM motion
 along the Y axis is not permitted. For simulations using the default
 ACIS-I aimpoint, the ACIS-S simulation would need to be offset
 using the values:</p>
@@ -165,7 +155,6 @@ the mirror and not hit the detector, fall in detector gaps, etc.</p>
   <ul>
 <li><a class="reference internal" href="#">MARX Frequently Asked Questions</a><ul>
 <li><a class="reference internal" href="#i-have-a-question-about-marx-that-is-not-addressed-here-where-can-i-get-additional-help">I have a question about marx that is not addressed here. Where can I get additional help?</a></li>
-<li><a class="reference internal" href="#i-m-using-marx-on-mac-os-x-and-something-does-not-work">I’m using <strong>marx</strong> on Mac OS X and something does not work.</a></li>
 <li><a class="reference internal" href="#do-you-distribute-marx-binaries">Do you distribute marx binaries?</a></li>
 <li><a class="reference internal" href="#how-do-i-create-an-arf-and-rmf-that-match-my-marx-simulation">How do I create an ARF and RMF that match my marx simulation?</a></li>
 <li><a class="reference internal" href="#can-i-simulate-arbitrary-combinations-of-acis-ccds-in-marx">Can I simulate arbitrary combinations of ACIS CCDs in marx?</a></li>
@@ -223,7 +212,7 @@ the mirror and not hit the detector, fall in detector gaps, etc.</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

@@ -7,7 +7,7 @@
 
     <title>The marx Models for the Spacecraft &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -95,19 +95,6 @@ taken from those documents.</p>
 </section>
 <section id="hrma-model">
 <span id="sect-hrma"></span><span id="index-0"></span><h2>HRMA model<a class="headerlink" href="#hrma-model" title="Link to this heading">¶</a></h2>
-<p><strong>marx</strong> implements two different models for the HRMA onboard Chandra.
-Selection between these two models is accomplished using the <a class="reference internal" href="../inbrief/simsetup.html#parameter-MirrorType"><code class="xref std std-par docutils literal notranslate"><span class="pre">MirrorType</span></code></a>
-parameter. The first of these models, the <code class="docutils literal notranslate"><span class="pre">EA-MIRROR</span></code> model, is a simpler
-representation of the <code class="docutils literal notranslate"><span class="pre">HRMA</span></code> based on effective area and point spread
-function tables. This model does not include any of the detailed
-characterization of the mirror such as misalignments, tilts, etc.
-present in the either the <code class="docutils literal notranslate"><span class="pre">HRMA</span></code> model or SAOSAC. The <code class="docutils literal notranslate"><span class="pre">EA-MIRROR</span></code> is limited
-to simulation of on-axis point sources. Use of the various spatial
-models listed in <a class="reference internal" href="models.html#sect-sourcemodels"><span class="std std-ref">The spectrum and the spatial shape of the X-ray source</span></a> requires the <code class="docutils literal notranslate"><span class="pre">HRMA</span></code> model in
-<strong>marx</strong> . The remainder of this discussion refers to the <code class="docutils literal notranslate"><span class="pre">HRMA</span></code> model
-which is the default model.</p>
-<section id="hrma-geometric-model">
-<h3>HRMA Geometric Model<a class="headerlink" href="#hrma-geometric-model" title="Link to this heading">¶</a></h3>
 <p>The HRMA onboard Chandra consists of four Wolter Type I mirrors. These
 mirrors are nested and each shell consists of a paraboloid at the front
 and a hyperboloid at the back. The physical geometry of the HRMA is
@@ -118,12 +105,11 @@ elements. This information includes the offsets and rotations of the
 various mirror shells relative to the optical axis. During the
 simulation, the paths of individual photons are traced through this
 geometric structure.</p>
-<p>The mirror support structure is not currently modeled as part of the
-HRMA raytrace. The vignetting effects of these structures is instead
-included as a uniform reduction in the total effective area of the HRMA.
-The degree of vignetting can be adjusted via the HRMAVig parameter. In
+<p>The mirror support structure of the HRMA is modeled by default with
+<a class="reference internal" href="../Reference/othermarxpars.html#parameter-HRMA_Use_Struts"><code class="xref std std-par docutils literal notranslate"><span class="pre">HRMA_Use_Struts=yes</span></code></a>. It can be disabled and <strong>marx</strong> could instead
+include a uniform reduction in the total effective area of the HRMA.
+The degree of vignetting can be adjusted via the <a class="reference internal" href="../Reference/othermarxpars.html#parameter-HRMAVig"><code class="xref std std-par docutils literal notranslate"><span class="pre">HRMAVig</span></code></a> parameter. In
 general, this parameter should not be modified.</p>
-</section>
 <section id="hrma-reflectivity-model">
 <h3>HRMA Reflectivity Model<a class="headerlink" href="#hrma-reflectivity-model" title="Link to this heading">¶</a></h3>
 <p>When a ray encounters a mirror surface, <strong>marx</strong> calculates the
@@ -149,7 +135,8 @@ reflection. This simple model assumes that the direction of the normal
 can vary from its ideal direction according to a Gaussian probability
 distribution whose standard deviation is given by the HRMABlur
 parameters. Blur parameters are specified for each of the parabolic and
-hyperbolic HRMA elements. This model produces a reasonable approximation
+hyperbolic HRMA elements (e.g. <a class="reference internal" href="../Reference/othermarxpars.html#parameter-H1Blur"><code class="xref std std-par docutils literal notranslate"><span class="pre">H1Blur</span></code></a> for hyperbolic mirror of shell 1).
+This model produces a reasonable approximation
 to the measured core of the HRMA PSF.</p>
 <p>In addition to a Gaussian core, the HRMA PSF exhibits energy–dependent
 extended tails as seen in SAOSAC simulations. By default, <strong>marx</strong> uses
@@ -158,17 +145,16 @@ MST’s high fidelity raytrace SAOSAC. The probability that a photon’s
 scattered direction is displaced from a perfect reflection is determined
 using the results of WFOLD scattering tables which specify the
 probability that a photon of a given energy is scattered into a given
-angle. Since the previous release, the HRMA raytrace in <strong>marx</strong> has
-been improved to account for the individual scattering properties of the
+angle. The HRMA raytrace in <strong>marx</strong> accounts for the individual scattering properties of the
 various mirror components. For reference, SAOSAC breaks the HRMA P and H
-optics into many different segments with an associated WFOLD scattering
+optics into many segments with an associated WFOLD scattering
 table for each to better treat the changes in surface properties along
-the mirror surfaces. The files listed in Table [tab:hrma] and used by
+the mirror surfaces. The files used by
 <strong>marx</strong> represent the scattering properties for the midpoint of each
 hyperbolic and parabolic section of the HRMA. They do not include any
 alignment or gravity induced errors which are handled by the physical
-model of the HRMA. The normalizations of the various WFOLD scattering
-tables can be adjusted using the ScatFactor parameters. The WFOLD
+model of the HRMA. The normalization of the various WFOLD scattering
+tables can be adjusted using the ScatFactor parameters (e.g. <a class="reference internal" href="../Reference/othermarxpars.html#parameter-H1ScatFactor"><code class="xref std std-par docutils literal notranslate"><span class="pre">H1ScatFactor</span></code></a>). The WFOLD
 scattering model can be disabled in <strong>marx</strong> by setting the parameter
 <a class="reference internal" href="../Reference/othermarxpars.html#parameter-HRMA_Use_WFold"><code class="xref std std-par docutils literal notranslate"><span class="pre">HRMA_Use_WFold=&quot;no&quot;</span></code></a>.</p>
 </section>
@@ -631,11 +617,9 @@ the photon was detected.</p>
 <p>Unique quantum efficiency curves are used for the MCPs in the HRC–I and
 HRC-S; however, all three HRC-S MCPs are currently assumed to have the
 same quantum efficiency. As the Chandra calibration effort progresses,
-these curves will be replaced by specific curves for each MCP.</p>
-<p>Quantum efficiency (QE) files are available for the 10 CCDs
-comprising the ACIS-I and ACIS-S detectors. In the previous version of
-<strong>marx</strong> , QE files where available only for generic front-illuminated
-and back-illuminated CCDs.</p>
+these curves will be replaced by specific curves for each MCP.
+Quantum efficiency (QE) files are available for the 10 CCDs
+comprising the ACIS-I and ACIS-S detectors.</p>
 <p>If the parameter <a class="reference internal" href="../inbrief/simsetup.html#parameter-DetIdeal"><code class="xref std std-par docutils literal notranslate"><span class="pre">DetIdeal=&quot;yes&quot;</span></code></a>, the QE of the selected focal plane
 detector (including any filter transmission) will be set to unity.</p>
 </section>
@@ -671,10 +655,12 @@ internal <strong>marx</strong> redistribution function reproduces <em>only</em> 
 peak of the ACIS response, assuming a single Gaussian whose width is
 determined by the CXC CCD Calibration data mentioned above.</p>
 <p>The gain and spectral response of the ACIS CCDs are also functions of
-focal plane temperature. At the time of this release, complete
-calibration data is available for a focal plane temperature of -110 C. A
-<strong>marx</strong> gain map will be released for -120 C when this data becomes
-available.</p>
+focal plane temperature and change over time both over years as the
+spacecraft and the detectors age, and also within an observation as the
+focal plane temperature changes. In recent years, temperature changes
+within an observation increased as Chandra’s thermal insulation
+degraded. <strong>marx</strong> cannot predict the temperature of the focal plane and
+simulations assume nominal gain files from the CXC Calibration group.</p>
 <p>More information on the ACIS energy resolution can be found at
 <a class="reference external" href="http://cxc.harvard.edu/proposer/POG/html/chap6.html#tth_sEc6.7">http://cxc.harvard.edu/proposer/POG/html/chap6.html#tth_sEc6.7</a> .</p>
 </section>
@@ -730,8 +716,8 @@ in <a class="reference internal" href="../Reference/othermarxpars.html#hrciparam
 <section id="hesf">
 <span id="index-1"></span><h4>HESF<a class="headerlink" href="#hesf" title="Link to this heading">¶</a></h4>
 <p>Due to the poor intrinsic energy resolution of the HRC-S, order sorting
-for astrophysical spectra obtained with the LETG+HRC-S combination will
-be difficult. In an attempt to ameliorate this problem, the High Energy
+for astrophysical spectra obtained with the LETG+HRC-S combination
+not possible in practice. In an attempt to ameliorate this problem, the High Energy
 Reflection Filter (HESF) was added to the original HRC-S design. The
 HESF (a.k.a. Drake Flat) is a two facet filter coated with Cr and C
 which can be inserted into the Chandra beam by a translation of the SIM
@@ -899,7 +885,6 @@ shown in the <a class="reference internal" href="#fig-xrcf"><span class="std std
 <li><a class="reference internal" href="#">The <strong>marx</strong> Models for the Spacecraft</a><ul>
 <li><a class="reference internal" href="#the-marx-coordinate-system">The <strong>marx</strong> Coordinate System</a></li>
 <li><a class="reference internal" href="#hrma-model">HRMA model</a><ul>
-<li><a class="reference internal" href="#hrma-geometric-model">HRMA Geometric Model</a></li>
 <li><a class="reference internal" href="#hrma-reflectivity-model">HRMA Reflectivity Model</a></li>
 <li><a class="reference internal" href="#hrma-scattering-model">HRMA Scattering Model</a></li>
 </ul>
@@ -985,7 +970,7 @@ shown in the <a class="reference internal" href="#fig-xrcf"><span class="std std
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

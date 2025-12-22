@@ -14,8 +14,7 @@
     "If everything works well and all detector effects are treated consistently,\n",
     "we should recover the same spectral parameters (up to Poisson noise).\n",
     "On the other hand, if marx and\n",
-    "`CIAO`_ are inconsistent the fit parameters will deviate from the input\n",
-    "parameters.\n",
+    "CIAO are inconsistent the fit parameters will deviate from the input parameters.\n",
     "\n",
     "In the past, this has happened after the release of marx 5.0, which contains\n",
     "some files to describe the ACIS contamination. This contamination changes with\n",
@@ -31,7 +30,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "1256993f",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "remove-cell"
+    ]
+   },
    "outputs": [],
    "source": [
     "# Load marx in local environment and set up pfiles for tests\n",
@@ -45,7 +48,7 @@
    "metadata": {},
    "source": [
     "## Absorbed powerlaw on ACIS-S\n",
-    "This test checks the internal consistency of a marx spectral simulation\n",
+    "This test checks the internal consistency of a simulated marx spectrum\n",
     "by simulating a source placed on a back-illuminated chip of ACIS-S.\n",
     "The input spectrum is an absorbed powerlaw."
    ]
@@ -54,7 +57,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "744f4aea",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "'''Set up a Sherpa model and use that to generate an spectrum as input for Marx.'''\n",
@@ -79,16 +86,7 @@
     "\n",
     "ui.save_arrays(\"marx_input.tbl\", [energies[1:], flux / bin_width], \n",
     "               [\"keV\",\"photons/s/cm**2/keV\"], ascii=True, clobber=True)\n",
-    " "
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "8c159348",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    " \n",
     "import subprocess\n",
     "\n",
     "out = subprocess.run('marx SourceFlux=-1 SpectrumType=FILE SpectrumFile=marx_input.tbl ExposureTime=30000 ' + \n",
@@ -112,7 +110,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "4c790856",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "'''Extract spectra\n",
@@ -171,7 +173,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "f853cc48",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "from sherpa.utils.logging import SherpaVerbosity\n",
@@ -179,16 +185,8 @@
     "with SherpaVerbosity('ERROR'):\n",
     "    rt.specextract(f\"marx_evt2.fits[sky=circle(4096.5,4096.5,20)]\", \"spec\", asp=\"marx_asp.fits\", weight=False,\n",
     "                clobber=True, mskfile=\"NONE\", badpixfile=\"NONE\")\n",
-    "       \n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "fb9d6ed2",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "       \n",
+    "\n",
     "with SherpaVerbosity('ERROR'):\n",
     "    ui.load_pha(\"special extraction\", 'marx_pha.fits')\n",
     "    ui.load_rmf(\"special extraction\", 'marx_rmf.fits')\n",
@@ -200,29 +198,13 @@
     "    ui.ignore(7, None)\n",
     "    # set source properties\n",
     "    ui.set_source(\"special extraction\", ui.xsphabs.a1 * ui.xspowerlaw.p1)\n",
-    "    ui.set_source(\"specextract\", ui.xsphabs.a2 * ui.xspowerlaw.p2)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "4ed0fd8f",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    ui.set_source(\"specextract\", ui.xsphabs.a2 * ui.xspowerlaw.p2)\n",
+    "\n",
     "with SherpaVerbosity('ERROR'):\n",
     "    ui.fit(\"special extraction\")\n",
     "    ui.conf(\"special extraction\")\n",
-    "    conf_special = ui.get_confidence_results()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "7e27cda6",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    conf_special = ui.get_confidence_results()\n",
+    "    \n",
     "with SherpaVerbosity('ERROR'):\n",
     "    ui.fit(\"specextract\")\n",
     "    ui.conf(\"specextract\")\n",
@@ -233,7 +215,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "bed065c3",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "import matplotlib.pyplot as plt\n",
@@ -285,14 +271,18 @@
    "id": "6b90e0f9",
    "metadata": {},
    "source": [
-    "#### Input parameters"
+    "### Input parameters"
    ]
   },
   {
    "cell_type": "code",
    "execution_count": null,
    "id": "fad42d86",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "my_src"
@@ -303,14 +293,18 @@
    "id": "fd958842",
    "metadata": {},
    "source": [
-    "#### Fit with special extraction"
+    "### Fit with special extraction"
    ]
   },
   {
    "cell_type": "code",
    "execution_count": null,
    "id": "4de2ce67",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "conf_special"
@@ -321,14 +315,18 @@
    "id": "fc9ab96f",
    "metadata": {},
    "source": [
-    "#### Fit with CIAO default extraction"
+    "### Fit with CIAO default extraction"
    ]
   },
   {
    "cell_type": "code",
    "execution_count": null,
    "id": "2f249c7a",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "conf_specextract"
@@ -355,7 +353,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "7d7ce551",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "out = subprocess.run('marx SourceFlux=-1 SpectrumType=FILE SpectrumFile=marx_input.tbl ExposureTime=60000 ' + \n",
@@ -369,31 +371,20 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "6abb6a83",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
-    "special_extraction(4200, 5200, 200)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "1ade033e",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "special_extraction(4200, 5200, 200)\n",
+    "\n",
+    "\n",
     "with SherpaVerbosity('ERROR'):\n",
     "    rt.specextract(f\"marx_evt2.fits[sky=circle(4200,5200,200)]\", \"spec\", asp=\"marx_asp.fits\", weight=False,\n",
-    "                clobber=True, mskfile=\"NONE\", badpixfile=\"NONE\")"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "ee7f88be",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "                clobber=True, mskfile=\"NONE\", badpixfile=\"NONE\")\n",
+    "\n",
     "with SherpaVerbosity('ERROR'):\n",
     "    ui.load_pha(\"special extraction\", 'marx_pha.fits')\n",
     "    ui.load_rmf(\"special extraction\", 'marx_rmf.fits')\n",
@@ -405,29 +396,12 @@
     "    ui.ignore(7, None)\n",
     "    # set source properties\n",
     "    ui.set_source(\"special extraction\", ui.xsphabs.a1 * ui.xspowerlaw.p1)\n",
-    "    ui.set_source(\"specextract\", ui.xsphabs.a2 * ui.xspowerlaw.p2)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "56b70ed0",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    ui.set_source(\"specextract\", ui.xsphabs.a2 * ui.xspowerlaw.p2)\n",
+    "\n",
     "with SherpaVerbosity('ERROR'):\n",
     "    ui.fit(\"special extraction\")\n",
     "    ui.conf(\"special extraction\")\n",
-    "    conf_special = ui.get_confidence_results()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "778801db",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    conf_special = ui.get_confidence_results()\n",
     "with SherpaVerbosity('ERROR'):\n",
     "    ui.fit(\"specextract\")\n",
     "    ui.conf(\"specextract\")\n",
@@ -438,7 +412,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "524bc166",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "a1 = ui.get_arf(\"special extraction\")\n",
@@ -474,7 +452,7 @@
    "id": "29e6b5f3",
    "metadata": {},
    "source": [
-    "#### Input parameters\n",
+    "### Input parameters\n",
     "(some as above, but printed here again)"
    ]
   },
@@ -482,7 +460,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "796c0bd0",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "my_src"
@@ -493,14 +475,18 @@
    "id": "d941a832",
    "metadata": {},
    "source": [
-    "#### Fit with special extraction"
+    "### Fit with special extraction"
    ]
   },
   {
    "cell_type": "code",
    "execution_count": null,
    "id": "1f2429fb",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "conf_special"
@@ -511,14 +497,18 @@
    "id": "e759efb7",
    "metadata": {},
    "source": [
-    "#### Fit with CIAO default extraction"
+    "### Fit with CIAO default extraction"
    ]
   },
   {
    "cell_type": "code",
    "execution_count": null,
    "id": "12ef1db8",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "conf_specextract"
@@ -546,7 +536,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "22eeed57",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "ui.set_source(1, ui.xsvapec.apec1 + ui.xsvapec.apec2)\n",
@@ -570,17 +564,6 @@
     "\n",
     "ui.save_arrays(\"marx_input.tbl\", [energies[1:], flux / bin_width], \n",
     "               [\"keV\",\"photons/s/cm**2/keV\"], ascii=True, clobber=True)\n",
-    " "
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "7730b400",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import subprocess\n",
     "\n",
     "out = subprocess.run('marx SourceFlux=-1 SpectrumType=FILE SpectrumFile=marx_input.tbl ExposureTime=30000 ' + \n",
     "                     'TStart=2015.5 OutputDir=marx GratingType=NONE DetectorType=ACIS-I DitherModel=INTERNAL ' +\n",
@@ -593,32 +576,19 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "ec99f144",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
-    "special_extraction(4096.4, 4096.4, 20.0)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "112643d1",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "special_extraction(4096.4, 4096.4, 20.0)\n",
     "with SherpaVerbosity('ERROR'):\n",
     "    rt.specextract(f\"marx_evt2.fits[sky=circle(4096.5,4096.5,20)]\", \"spec\", asp=\"marx_asp.fits\", weight=False,\n",
     "                clobber=True, mskfile=\"NONE\", badpixfile=\"NONE\")\n",
-    "       \n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "02e32aa2",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "       \n",
+    "\n",
     "with SherpaVerbosity('ERROR'):\n",
     "    ui.load_pha(\"special extraction\", 'marx_pha.fits')\n",
     "    ui.load_rmf(\"special extraction\", 'marx_rmf.fits')\n",
@@ -647,29 +617,11 @@
     "    apec1_2.Ne = 1.5\n",
     "    apec1_2.norm = 0.00015\n",
     "    apec2_2.kT = 1.8\n",
-    "    apec2_2.norm = 0.00035  "
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "9e480e17",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    apec2_2.norm = 0.00035  \n",
     "with SherpaVerbosity('ERROR'):\n",
     "    ui.fit(\"special extraction\")\n",
     "    ui.conf(\"special extraction\")\n",
-    "    conf_special = ui.get_confidence_results()"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "65687174",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    conf_special = ui.get_confidence_results()\n",
     "with SherpaVerbosity('ERROR'):\n",
     "    ui.fit(\"specextract\")\n",
     "    ui.conf(\"specextract\")\n",
@@ -680,7 +632,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "0e8eb39d",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "a1 = ui.get_arf(\"special extraction\")\n",
@@ -726,14 +682,18 @@
    "id": "eee12ccc",
    "metadata": {},
    "source": [
-    "#### Input parameters"
+    "### Input parameters"
    ]
   },
   {
    "cell_type": "code",
    "execution_count": null,
    "id": "e6f9d377",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "my_src"
@@ -744,14 +704,18 @@
    "id": "aa8df6ae",
    "metadata": {},
    "source": [
-    "#### Fit with special extraction"
+    "### Fit with special extraction"
    ]
   },
   {
    "cell_type": "code",
    "execution_count": null,
    "id": "a2c53d75",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "conf_special"
@@ -762,14 +726,18 @@
    "id": "25775017",
    "metadata": {},
    "source": [
-    "#### Fit with CIAO default extraction"
+    "### Fit with CIAO default extraction"
    ]
   },
   {
    "cell_type": "code",
    "execution_count": null,
    "id": "cd7a634f",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "conf_specextract"

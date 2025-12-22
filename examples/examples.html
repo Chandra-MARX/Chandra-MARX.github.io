@@ -7,7 +7,7 @@
 
     <title>Examples of MARX in use &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -50,13 +50,16 @@
             
   <section id="examples-of-marx-in-use">
 <span id="examples"></span><h1>Examples of MARX in use<a class="headerlink" href="#examples-of-marx-in-use" title="Link to this heading">¶</a></h1>
-<p>This section contains examples of <strong>marx</strong> in use from rather trivial use cases to complex and demanding analysis scripts. Going through these examples is the best way to discover the power of <strong>marx</strong>. They also provide a great starting point for developing your own analysis.</p>
-<p>All of the examples assume
-that you are working in a directory where you have write permission
+<p>This section contains examples of <strong>marx</strong> in use from rather trivial use cases
+to complex and demanding analysis scripts. Going through these examples is the
+best way to discover the power of <strong>marx</strong>. They also provide a great starting point
+for developing your own analysis.</p>
+<p>All examples assume that you are working in a directory where you have write permission
 and enough disk space for the simulation.  It is also assumed that the
 <strong>marx</strong> executables are on the search path and that the <strong>marx</strong> parameter
-files <code class="docutils literal notranslate"><span class="pre">marx.par</span></code>, <code class="docutils literal notranslate"><span class="pre">marxasp.par</span></code>, and
-<code class="docutils literal notranslate"><span class="pre">marxpileup.par</span></code>) are located in the current directory.  Assuming you installed <strong>marx</strong> as described in <a class="reference internal" href="../inbrief/install.html#installing"><span class="std std-ref">Downloading and Installing Marx</span></a>, the
+files <code class="docutils literal notranslate"><span class="pre">marx.par</span></code>, <code class="docutils literal notranslate"><span class="pre">marxasp.par</span></code>, and <code class="docutils literal notranslate"><span class="pre">marxpileup.par</span></code> are located in the
+current directory or in the path of your <code class="docutils literal notranslate"><span class="pre">PFILES</span></code> environment variable.
+If you installed <strong>marx</strong> as described in <a class="reference internal" href="../inbrief/install.html#installing"><span class="std std-ref">Downloading and Installing Marx</span></a>, the
 latter requirement may be accomplished by running:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>unix% marx --help
   .
@@ -71,12 +74,38 @@ marx parameter files may be found in:
 </div>
 <p>In most examples, <strong>marx</strong> is used together with a spectral analysis program to
 write the input spectrum or to analyze the results. The most
-common programs are <a class="reference external" href="http://heasarc.nasa.gov/xanadu/xspec/">Xspec</a>, <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a>, and <a class="reference external" href="http://space.mit.edu/cxc/isis/">ISIS</a>. For each example, we pick
-one of those programs and provide instructions, but it should be easy to adapt
-the examples for other spectral analysis systems as well.
-(Note that in some installations it can happen that <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> and <a class="reference external" href="http://space.mit.edu/cxc/isis/">ISIS</a> have conflicts.  In these cases it is
-useful to setup <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> only when needed and open a new terminal after
-that.)</p>
+common programs are <a class="reference external" href="http://heasarc.nasa.gov/xanadu/xspec/">Xspec</a>, <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a>, and <a class="reference external" href="http://space.mit.edu/cxc/isis/">ISIS</a>. Our examples use
+<a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a>, because it is typically installed when you install <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a>.
+It should be easy to adapt the examples for other spectral analysis systems as well.</p>
+<p>We use Python as a scripting language and the
+<a class="reference external" href="https://cxc.cfa.harvard.edu/ciao/scripting/runtool.html">Python interface to CIAO</a>
+to call <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> tools. Even if you are not familiar with Python, it should not be
+difficult to convert the examples to shell scripts. For example:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>rt.dmcopy(f&quot;marx_saotrace.fits[@{evt2file}[GTI4]]&quot;, &quot;marx_saotrace-filtered.fits&quot;, clobber=True)
+</pre></div>
+</div>
+<p>translates to a command line of:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>unix% dmcopy &quot;marx_saotrace.fits[@${evt2file}[GTI4]]&quot; marx_saotrace-filtered.fits clobber=yes
+</pre></div>
+</div>
+<p><strong>marx</strong> itself currently does not have a nice Python interface, so to call <strong>marx</strong> we simply
+pass a string directly from Python to the shell, such as:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>import subprocess
+out = subprocess.call(&#39;marx SourceType=&quot;point&quot; OutputDir=&quot;result&quot;&#39;, shell=True)
+</pre></div>
+</div>
+<p>which is the equivalent of the shell command:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>unix% marx SourceType=&quot;point&quot; OutputDir=&quot;result&quot;
+</pre></div>
+</div>
+<p>If we run <strong>marx</strong> multiple times in one example, we can use Python to parameterize that:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>for i in range(5):
+    out = subprocess.call(f&#39;marx MinEnergy={i} MaxEnergy={i+1} OutputDir=&quot;result_{i}&quot;&#39;, shell=True)
+</pre></div>
+</div>
+<p>Still, it should not be difficult to convert these examples to shell scripts so that
+they can be pasted directly on the command line.</p>
+<p>We present the following examples:</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="ACISpowerpileup/powerlaw.html">Simulating a user-defined CCD spectrum with ACIS</a></li>
@@ -160,7 +189,7 @@ Observation</a></p></li>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

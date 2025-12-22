@@ -7,7 +7,7 @@
 
     <title>Simulating a user-defined CCD spectrum with ACIS &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -54,20 +54,18 @@
 <span id="sect-ex-acisccd"></span><h1>Simulating a user-defined CCD spectrum with ACIS<a class="headerlink" href="#simulating-a-user-defined-ccd-spectrum-with-acis" title="Link to this heading">¶</a></h1>
 <p>The purpose of this example is to show how to use <strong>marx</strong> to simulate an ACIS
 observation of a point source with a user-specified spectrum.  For
-simplicity, suppose that we wish to simulate a 3000 ksec observation of
+simplicity, suppose that we wish to simulate a 100 ksec observation of
 an on-axis point source whose spectrum is represented by an absorbed powerlaw,
 with a spectral index of 1.8, and a column density of <span class="math notranslate nohighlight">\(10^{22}\)</span> atoms/cm^2.
 The normalization of the powerlaw will be set to 0.001
-photons/keV/cm^2/s at 1 keV.  The large exposure time was chosen to
-illustrate the consistency of the <strong>marx</strong> ray trace with that of the
-underlying calibration data.</p>
+photons/keV/cm^2/s at 1 keV.</p>
 <section id="creating-the-spectral-file">
 <h2>Creating the spectral file<a class="headerlink" href="#creating-the-spectral-file" title="Link to this heading">¶</a></h2>
 <p>The first step is to create a 2-column text file that tabulates
 the flux [photons/sec/keV/cm^2] (second column) as a
 function of energy [keV] (first column).  The easiest way to create
 such a file is to make use of a spectral modeling program such as <a class="reference external" href="http://space.mit.edu/cxc/isis/">ISIS</a>,
-<a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> or <a class="reference external" href="http://heasarc.nasa.gov/xanadu/xspec/">XSpec</a>.   The rest of this tutorial is given in the context of
+<a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> or <a class="reference external" href="http://heasarc.nasa.gov/xanadu/xspec/">XSpec</a>.  The rest of this tutorial is given in the context of
 <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a>.</p>
 <p>In <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> the absorbed powerlaw model is specified using:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sherpa.astro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ui</span>
@@ -82,7 +80,7 @@ such a file is to make use of a spectral modeling program such as <a class="refe
 <span class="nb">print</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">my_src</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>The model parameters lists by <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> should look like this:</p>
+<p>The model parameters listed by <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> should look like this:</p>
 <div class="code highlight-none notranslate"><div class="highlight"><pre><span></span>xsphabs.a * xspowerlaw.p
    Param        Type          Value          Min          Max      Units
    -----        ----          -----          ---          ---      -----
@@ -91,7 +89,7 @@ such a file is to make use of a spectral modeling program such as <a class="refe
    p.norm       thawed        0.001            0        1e+24
 </pre></div>
 </div>
-<p>The next step is to convert the parameter file <code class="docutils literal notranslate"><span class="pre">plaw.p</span></code> to the
+<p>The next step is to convert the model to the
 spectrum file that <strong>marx</strong> expects. We can use the commands below (see also the <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> thread
 <a class="reference external" href="http://cxc.harvard.edu/sherpa/threads/marx/">http://cxc.harvard.edu/sherpa/threads/marx/</a> for another example):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -102,8 +100,8 @@ spectrum file that <strong>marx</strong> expects. We can use the commands below 
 <span class="c1"># evaluate source on energy grid with lower and upper bin edges</span>
 <span class="n">flux</span> <span class="o">=</span> <span class="n">my_src</span><span class="p">(</span><span class="n">energies</span><span class="p">,</span> <span class="n">energies</span> <span class="o">+</span> <span class="n">bin_width</span><span class="p">)</span>
 
-<span class="c1"># MARX input files only have one energy column, and the conventions is that</span>
-<span class="c1"># this hold the UPPER edge of the bin.</span>
+<span class="c1"># MARX input files only have one energy column, and the convention is that</span>
+<span class="c1"># this holds the UPPER edge of the bin.</span>
 <span class="c1"># Also, we need to divide the flux by the bin width to obtain the flux density.</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">save_arrays</span><span class="p">(</span><span class="s2">&quot;plawflux.tbl&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">energies</span> <span class="o">+</span> <span class="n">bin_width</span><span class="p">,</span> <span class="n">flux</span> <span class="o">/</span> <span class="n">bin_width</span><span class="p">],</span>
             <span class="p">[</span><span class="s2">&quot;keV&quot;</span><span class="p">,</span><span class="s2">&quot;photons/s/cm**2/keV&quot;</span><span class="p">],</span> <span class="n">ascii</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -132,7 +130,8 @@ file.</p>
 prefer to use tools such as <a class="reference internal" href="../../Reference/tools.html#pset"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">pset</span></code></a> to update the <code class="docutils literal notranslate"><span class="pre">marx.par</span></code>
 file and then run <strong>marx</strong> or to pass the arguments via the command line
 in a shell. Here, we will wrap the <strong>marx</strong> call into a Python script. Since
-<strong>marx</strong> currently does not have a “nice” Python interface, we run it via
+<strong>marx</strong> currently does not have a “nice” Python interface, we pass the exact
+string we would use on the command line to the shell using
 <a class="reference external" href="https://docs.python.org/3/library/subprocess.html#subprocess.call" title="(in Python v3.14)"><code class="xref py py-func docutils literal notranslate"><span class="pre">subprocess.call()</span></code></a>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 
@@ -149,10 +148,16 @@ level-2 fits file by the <a class="reference internal" href="../../Reference/too
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;marx2fits plaw plaw_evt2.fits&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Again, one could just paste the string on the command line instead of using
+Python to get the same result:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>unix% marx2fits plaw plaw_evt2.fits
+</pre></div>
+</div>
 <p>The resulting fits file <code class="docutils literal notranslate"><span class="pre">plaw_evt2.fits</span></code> may be further processed
 with standard <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> tools.  As some of these tools require the aspect
 history, the <a class="reference internal" href="../../Reference/tools.html#marxasp"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marxasp</span></code></a> program will be used to create an aspect
-solution file that matches the simulation:</p>
+solution file that matches the simulation (and, of course, this could also
+be done on the command line instead):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;marxasp MarxDir=&#39;plaw&#39; OutputFile=&#39;plaw_asol1.fits&#39;&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -237,7 +242,7 @@ may be used for this purpose.  The <code class="docutils literal notranslate"><s
 coordinates are important for the creation of the filter that will be
 passed to <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/mkrmf.html">mkrmf</a> to select the appropriate FEF tile.  For simplicity
 suppose that the mean point source detector location is at (308,494)
-on ACIS-7.  Then run <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/mkrmf.html">mkrmf</a> using (continuing the shell script form above):</p>
+on ACIS-7.  Then run <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/mkrmf.html">mkrmf</a> using (continuing the script from above):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="c1"># Mean chip position</span>
 <span class="n">chipx</span><span class="o">=</span><span class="mi">221</span>
@@ -270,7 +275,8 @@ simulation is consistent with the input spectrum.  To this end, <a class="refere
 will be used to fit an absorbed powerlaw to the pha spectrum.  The
 figure below showing the resulting fit was created via the following
 script:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ui</span><span class="o">.</span><span class="n">load_pha</span><span class="p">(</span><span class="n">phafile</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">sherpa.astro</span><span class="w"> </span><span class="kn">import</span> <span class="n">ui</span>
+<span class="n">ui</span><span class="o">.</span><span class="n">load_pha</span><span class="p">(</span><span class="n">phafile</span><span class="p">)</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">load_rmf</span><span class="p">(</span><span class="n">rmffile</span><span class="p">)</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">load_arf</span><span class="p">(</span><span class="n">arffile</span><span class="p">)</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">group_counts</span><span class="p">(</span><span class="mi">25</span><span class="p">)</span>
@@ -292,16 +298,16 @@ methodname     = levmar
 statname       = chi2gehrels
 succeeded      = True
 parnames       = (&#39;a.nH&#39;, &#39;p.PhoIndex&#39;, &#39;p.norm&#39;)
-parvals        = (1.0056518439746143, 1.8249105691365235, 0.0009957222213215742)
-statval        = 250.83362547852525
-istatval       = 8228197308.198434
-dstatval       = 8228197057.364808
-numpoints      = 354
-dof            = 351
-qval           = 0.99998601702262
-rstat          = 0.714625713614032
+parvals        = (1.008238467342707, 1.851566098580335, 0.0010115510749117442)
+statval        = 277.39412826244575
+istatval       = 11752995789.59782
+dstatval       = 11752995512.203691
+numpoints      = 348
+dof            = 345
+qval           = 0.9969121018746456
+rstat          = 0.80404095148535
 message        = successful termination
-nfev           = 78
+nfev           = 86
 </pre></div>
 </div>
 <p>The <code class="docutils literal notranslate"><span class="pre">rplot_counts</span></code> may be used to produce a plot of the resulting
@@ -320,13 +326,13 @@ fit.</p>
 energies.  The reason for this can be traced back to energy-dependent
 scattering where photons are scattered outside the extraction region.
 The CIAO effective area does not include this loss factor, and as a
-result, this omission appears in the residuals.  This effect is
-apparant because of the enormous number of counts in this simulation.</p>
+result, this omission appears in the residuals.  This effect could be seen
+better if we run the simulation 10 or 100 times longer.</p>
 </section>
 </section>
 <section id="simulating-pile-up-in-an-acis-ccd-spectrum">
 <h1>Simulating pile-up in an ACIS CCD spectrum<a class="headerlink" href="#simulating-pile-up-in-an-acis-ccd-spectrum" title="Link to this heading">¶</a></h1>
-<p>The purpose of this example is to show how to to use the <a class="reference internal" href="../../Reference/tools.html#marxpileup"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marxpileup</span></code></a>
+<p>The purpose of this example is to show how to use the <a class="reference internal" href="../../Reference/tools.html#marxpileup"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marxpileup</span></code></a>
 program to simulate the effects of pileup.
 <a class="reference internal" href="../../indetail/pileup.html#pileup"><span class="std std-ref">Pileup</span></a> occurs when two or more photons land in the same pixel location in a given
 ACIS readout time.
@@ -396,16 +402,16 @@ methodname     = levmar
 statname       = chi2gehrels
 succeeded      = True
 parnames       = (&#39;apileup.nH&#39;, &#39;pileup.PhoIndex&#39;, &#39;pileup.norm&#39;)
-parvals        = (0.8278883441194863, 1.4482348891214787, 0.0003778956786769391)
-statval        = 291.04582161109454
-istatval       = 168746129070.67175
-dstatval       = 168746128779.62595
-numpoints      = 316
-dof            = 313
-qval           = 0.808410809336432
-rstat          = 0.9298588549875225
+parvals        = (0.8585956409485702, 1.4831271103032238, 0.00039434742697988924)
+statval        = 275.22533625885035
+istatval       = 169454952634.7215
+dstatval       = 169454952359.49615
+numpoints      = 315
+dof            = 312
+qval           = 0.9341428013500872
+rstat          = 0.8821324880091357
 message        = successful termination
-nfev           = 33
+nfev           = 25
 </pre></div>
 </div>
 <p>Note that the parameters are different
@@ -429,13 +435,14 @@ powerlaw index is somewhat low compared to the expected value of 1.8.</p>
 <p>Given the fact that the PSF fraction varies with
 off-axis angle and spectral shape, we will allow it to vary during the
 fit.</p>
-<p>As before, the <code class="docutils literal notranslate"><span class="pre">fit</span></code> command may be used to compute the best
+<p>As before, the <a class="reference external" href="https://sherpa.readthedocs.io/en/latest/ui/api/sherpa.astro.ui.fit.html#sherpa.astro.ui.fit" title="(in Sherpa v4.18.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sherpa.astro.ui.fit()</span></code></a> command may be used to compute the best
 fit parameters.  However, the parameter space in the context of the
 pileup kernel can be complex with many local minima, even for a
 function as simple as an absorbed powerlaw.  For this reason it
 might be useful to start the fit multiple times from different
-starting points or use an ompimizer such as a Monte-Carlo algorithm
-to explore the parameter space more fully.:</p>
+starting points or use an optimizer such as a Monte-Carlo algorithm
+to explore the parameter space more fully, but here we begin with the
+fastest method, using the default optimizer.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ui</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="s2">&quot;pileup&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -448,26 +455,26 @@ methodname     = levmar
 statname       = chi2gehrels
 succeeded      = True
 parnames       = (&#39;jdp.alpha&#39;, &#39;jdp.f&#39;, &#39;apileup.nH&#39;, &#39;pileup.PhoIndex&#39;, &#39;pileup.norm&#39;)
-parvals        = (0.204790003483574, 0.9336190568894115, 0.9756775711805925, 1.800359678118324, 0.0012576164479282882)
-statval        = 225.68345370560232
-istatval       = 1192.623686707686
-dstatval       = 966.9402330020836
-numpoints      = 316
-dof            = 311
-qval           = 0.9999178701372992
-rstat          = 0.7256702691498467
+parvals        = (0.33365112932727603, 0.9073770263942982, 1.0471344833861749, 1.9162174662548832, 0.0011267173327421196)
+statval        = 208.6955072371393
+istatval       = 1157.9658971633373
+dstatval       = 949.270389926198
+numpoints      = 315
+dof            = 310
+qval           = 0.9999978282647793
+rstat          = 0.6732113136681913
 message        = successful termination
-nfev           = 47
+nfev           = 267
 </pre></div>
 </div>
 <p>We see that the reduced chi-square is near what one would expect for a
 good fit and that the powerlaw index is very close to the expected
-value.  We can use the <code class="docutils literal notranslate"><span class="pre">ui.conf()</span></code> function to obtain its confidence
+value.  We can use the <a class="reference external" href="https://sherpa.readthedocs.io/en/latest/ui/api/sherpa.astro.ui.conf.html#sherpa.astro.ui.conf" title="(in Sherpa v4.18.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sherpa.astro.ui.conf()</span></code></a> function to obtain its confidence
 interval if we want to.</p>
 <p>Here is a plot of the resulting fit. We use the <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> plotting function
-<code class="docutils literal notranslate"><span class="pre">ui.plot_data</span></code> and pass several options to customize the plot. Options that
+<a class="reference external" href="https://sherpa.readthedocs.io/en/latest/ui/api/sherpa.astro.ui.plot_data.html#sherpa.astro.ui.plot_data" title="(in Sherpa v4.18.0)"><code class="xref py py-func docutils literal notranslate"><span class="pre">sherpa.astro.ui.plot_data()</span></code></a> and pass several options to customize the plot. Options that
 are not processed by <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> itself are passed to <a class="reference external" href="https://matplotlib.org/">matplotlib</a> (e.g.
-<cite>color=’C0’</cite> set the first color in the default color cycle in <a class="reference external" href="https://matplotlib.org/">matplotlib</a>).</p>
+<code class="docutils literal notranslate"><span class="pre">color='C0'</span></code> sets the first color in the default color cycle in <a class="reference external" href="https://matplotlib.org/">matplotlib</a>).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">ui</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="n">yerrorbars</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">,</span> <span class="n">xlog</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">ylog</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">plot_data</span><span class="p">(</span><span class="s2">&quot;pileup&quot;</span><span class="p">,</span> <span class="n">yerrorbars</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;C1&#39;</span><span class="p">,</span> <span class="n">alpha</span><span class="o">=</span><span class="mf">0.4</span><span class="p">)</span>
 <span class="n">ui</span><span class="o">.</span><span class="n">plot_model</span><span class="p">(</span><span class="n">color</span><span class="o">=</span><span class="s1">&#39;C0&#39;</span><span class="p">,</span> <span class="n">overplot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;data and model without pileup&#39;</span><span class="p">)</span>
@@ -480,7 +487,7 @@ are not processed by <a class="reference external" href="http://cxc.harvard.edu/
 <figure class="align-default" id="id1">
 <img alt="Plot of the pile-up spectrum. Model and data fit well now." class="plot-directive" src="../../_images/powerlaw-22.png" />
 <figcaption>
-<p><span class="caption-text">Plot of the pileup spectrum</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+<p><span class="caption-text">Plot of the original and the piled-up spectrum</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>Comparing the spectrum simulated without pile-up and with pile-up
@@ -573,7 +580,7 @@ are detected as single higher-energy events.</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

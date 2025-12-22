@@ -4,7 +4,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "d9de7db0",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "remove-cell"
+    ]
+   },
    "outputs": [],
    "source": [
     "from utils import setup_marx, setup_saotrace\n",
@@ -45,64 +49,32 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "95657a07",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
+    "import subprocess\n",
+    "\n",
     "from ciao_contrib.cda.data import download_chandra_obsids\n",
     "from coords.chandra import cel_to_chandra\n",
-    "from astropy.io import fits"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "b78a9e33",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# Download data\n",
-    "out = download_chandra_obsids([15713])"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "f5c79cb4",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "asolfile = '15713/primary/pcadf15713_000N001_asol1.fits.gz'\n",
-    "evt2file = '15713/primary/acisf15713N003_evt2.fits.gz'"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "d6c3e234",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "from astropy.io import fits\n",
     "from astropy.coordinates import SkyCoord\n",
-    "tyc = SkyCoord.from_name('TYC 8241 2652 1')"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "67323581",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "coos = cel_to_chandra(fits.getheader(evt2file, 1), tyc.ra.degree, tyc.dec.degree)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "60f75655",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "\n",
+    "from utils import marxpars_from_asol, write_spectrum_from_fluxcorrection\n",
+    "\n",
+    "# Download data\n",
+    "out = download_chandra_obsids([15713])\n",
+    "\n",
+    "asolfile = '15713/primary/pcadf15713_000N001_asol1.fits.gz'\n",
+    "evt2file = '15713/primary/acisf15713N003_evt2.fits.gz'\n",
+    "\n",
+    "tyc = SkyCoord.from_name('TYC 8241 2652 1')\n",
+    "coos = cel_to_chandra(fits.getheader(evt2file, 1), tyc.ra.degree, tyc.dec.degree)\n",
+    "\n",
+    "# Set parameters for extraction region\n",
     "x = coos['x'][0]\n",
     "y = coos['y'][0]\n",
     "r = 4\n",
@@ -110,30 +82,19 @@
     "psffrac = 1.0\n",
     "\n",
     "bg_x = 4044\n",
-    "bg_y = 4123"
+    "bg_y = 4123\n",
+    "\n",
+    "write_spectrum_from_fluxcorrection(asolfile, evt2file, x, y, region, psffrac=psffrac)\n",
+    "\n"
    ]
   },
   {
    "cell_type": "code",
    "execution_count": null,
-   "id": "5801c78f",
+   "id": "7a2d3772",
    "metadata": {},
    "outputs": [],
    "source": [
-    "from utils import write_spectrum_from_fluxcorrection\n",
-    "\n",
-    "write_spectrum_from_fluxcorrection(asolfile, evt2file, x, y, region, psffrac=psffrac)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "b5992d70",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "from utils import marxpars_from_asol\n",
-    "\n",
     "pars = marxpars_from_asol(asolfile, evt2file)\n",
     "pars['SpectrumType'] = 'FILE'\n",
     "pars['SpectrumFile'] = 'input_spec_marx.tbl'\n",
@@ -142,20 +103,11 @@
     "\n",
     "marxcall = ['marx'] + ['{0}={1}'.format(k, v) for k, v in pars.items()]\n",
     "marxcall = ' '.join(marxcall)\n",
-    "marxcall\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "f89711f0",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "marxcall\n",
+    "\n",
     "'''Currently, MARX can only be run from the command line. So we build\n",
     "a command line call from the parameters dictionary and run it via\n",
-    "subprocess.call().'''\n",
-    "import subprocess\n",
+    "subprocess.run().'''\n",
     "out = subprocess.run(marxcall, shell=True, capture_output=True)"
    ]
   },
@@ -163,7 +115,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "c5a084b2",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "asolh = fits.getheader(asolfile, 1)\n",
@@ -211,20 +167,16 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "2ba202ee",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "out = subprocess.run(trace_nest +\n",
-    "    f'tag=saotrace srcpars=saotrace_source.lua tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec', shell=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "09fe4ee6",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    f'tag=saotrace srcpars=saotrace_source.lua tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec', shell=True)\n",
+    "\n",
     "pars = marxpars_from_asol(asolfile, evt2file)\n",
     "pars['OutputDir'] = 'marx_saotrace'\n",
     "pars['SourceType'] = 'SAOSAC'\n",
@@ -234,17 +186,8 @@
     "marxcall = ['marx'] + ['{0}={1}'.format(k, v) for k, v in pars.items()]\n",
     "marxcall = ' '.join(marxcall)\n",
     "\n",
-    "out = subprocess.run(marxcall, shell=True, capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "3511b998",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "out = subprocess.run('marx2fits --pixadj=EDSER marx_only marx_only.fits', shell=True, \n",
+    "out = subprocess.run(marxcall, shell=True, capture_output=True)\n",
+    "out1 = subprocess.run('marx2fits --pixadj=EDSER marx_only marx_only.fits', shell=True, \n",
     "                     capture_output=True)\n",
     "out2 = subprocess.run('marx2fits --pixadj=EDSER marx_saotrace marx_saotrace.fits', shell=True, \n",
     "                     capture_output=True)\n",
@@ -258,7 +201,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "b1996210",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "'''Reprocess the observation with RANDOMIZE'''\n",
@@ -271,7 +218,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "6ac4840f",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "import numpy as np\n",
@@ -449,7 +400,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "4be2d4ae",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "filterargs = {'energy': [300, 3000], 'circle': (x, y, 5 * r)}\n",
@@ -494,42 +449,22 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "45b2d528",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "# Download data\n",
-    "out = download_chandra_obsids([4469])"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "1c89a0a3",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "out = download_chandra_obsids([4469])\n",
+    "\n",
     "asolfile = '4469/primary/pcadf04469_000N001_asol1.fits.gz'\n",
-    "evt2file = '4469/primary/acisf04469N004_evt2.fits.gz'\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "0b4c6ae2",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "evt2file = '4469/primary/acisf04469N004_evt2.fits.gz'\n",
+    "\n",
     "sky_coos = SkyCoord.from_name('tau Canis Majoris')\n",
-    "coos = cel_to_chandra(fits.getheader(evt2file, 1), sky_coos.ra.degree, sky_coos.dec.degree)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "efb99a17",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "coos = cel_to_chandra(fits.getheader(evt2file, 1), sky_coos.ra.degree, sky_coos.dec.degree)\n",
+    "\n",
     "x = coos['x'][0]\n",
     "y = coos['y'][0]\n",
     "r = 4\n",
@@ -537,26 +472,9 @@
     "psffrac = 1.0\n",
     "\n",
     "bg_x = 4182\n",
-    "bg_y = 4127"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "46476007",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "write_spectrum_from_fluxcorrection(asolfile, evt2file, x, y, region, psffrac=psffrac)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "17dd8bc6",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "bg_y = 4127\n",
+    "write_spectrum_from_fluxcorrection(asolfile, evt2file, x, y, region, psffrac=psffrac)\n",
+    "\n",
     "pars = marxpars_from_asol(asolfile, evt2file)\n",
     "pars['SpectrumType'] = 'FILE'\n",
     "pars['SpectrumFile'] = 'input_spec_marx.tbl'\n",
@@ -564,26 +482,8 @@
     "pars['SourceFlux'] = -1\n",
     "\n",
     "marxcall = ['marx'] + ['{0}={1}'.format(k, v) for k, v in pars.items()]\n",
-    "marxcall = ' '.join(marxcall)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "24b43dc9",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "out = subprocess.run(marxcall, shell=True, capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "2400aca3",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "marxcall = ' '.join(marxcall)\n",
+    "out = subprocess.run(marxcall, shell=True, capture_output=True)\n",
     "asolh = fits.getheader(asolfile, 1)\n",
     "evth = fits.getheader(evt2file, 1)\n",
     "write_saotrace_lua(asolfile, asolh, evth)\n",
@@ -594,27 +494,9 @@
     "Therefore, shorten all times by about 0.01 sec to make sure.\n",
     "'''\n",
     "limit = asolh['TSTOP'] - asolh['TSTART']\n",
-    "limit = limit - 0.02"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "d74263c5",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "limit = limit - 0.02\n",
     "out = subprocess.run(trace_nest +\n",
-    "    f'tag=saotrace srcpars=saotrace_source.lua tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec', shell=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "94eaf250",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    f'tag=saotrace srcpars=saotrace_source.lua tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec', shell=True)\n",
     "pars['OutputDir'] = 'marx_saotrace'\n",
     "pars['SourceType'] = 'SAOSAC'\n",
     "pars['SAOSACFile'] = 'saotrace.fits'\n",
@@ -622,33 +504,15 @@
     "marxcall = ['marx'] + ['{0}={1}'.format(k, v) for k, v in pars.items()]\n",
     "marxcall = ' '.join(marxcall)\n",
     "\n",
-    "out = subprocess.run(marxcall, shell=True, capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "26b45701",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "out = subprocess.run('marx2fits --pixadj=EDSER marx_only marx_only.fits', shell=True, \n",
+    "out = subprocess.run(marxcall, shell=True, capture_output=True)\n",
+    "out1 = subprocess.run('marx2fits --pixadj=EDSER marx_only marx_only.fits', shell=True, \n",
     "                     capture_output=True)\n",
     "out2 = subprocess.run('marx2fits --pixadj=EDSER marx_saotrace marx_saotrace.fits', shell=True, \n",
     "                     capture_output=True)\n",
     "out3 = subprocess.run('marx2fits --pixadj=RANDOMIZE marx_only marx_only_rand.fits', shell=True, \n",
     "                     capture_output=True)\n",
     "out4 = subprocess.run('marx2fits --pixadj=RANDOMIZE marx_saotrace marx_saotrace_rand.fits', shell=True, \n",
-    "                     capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "11e3d75a",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "                     capture_output=True)\n",
     "rt.acis_process_events(infile=evt2file, outfile='obs_rand.fits', acaofffile=asolfile,\n",
     "                        doevtgrade=False, calculate_pi=False, apply_cti=False, pix_adj='RANDOMIZE', clobber=True)"
    ]
@@ -657,7 +521,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "36534066",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "filterargs = {'energy': [300, 3000], 'circle': (x, y, 5 * r)}\n",
@@ -706,57 +574,26 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "ad8e3f04",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "# Download data\n",
-    "out = download_chandra_obsids([13182])"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "e96a9486",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "out = download_chandra_obsids([13182])\n",
+    "\n",
     "asolfile = '13182/primary/pcadf13182_000N001_asol1.fits.gz'\n",
-    "evt2file = '13182/primary/hrcf13182N004_evt2.fits.gz'"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "39639691",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "evt2file = '13182/primary/hrcf13182N004_evt2.fits.gz'\n",
     "sky_coos = SkyCoord.from_name('AR Lac')\n",
-    "coos = cel_to_chandra(fits.getheader(evt2file, 1), sky_coos.ra.degree, sky_coos.dec.degree)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "345c03c3",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "coos = cel_to_chandra(fits.getheader(evt2file, 1), sky_coos.ra.degree, sky_coos.dec.degree)\n",
     "x, y = coos['x'][0], coos['y'][0]\n",
     "r = 15\n",
     "region = f'circle({x},{y},{r})'\n",
     "psffrac = 1.0\n",
     "\n",
-    "bg_x, bg_y = 16043, 16700"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "e811afee",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "bg_x, bg_y = 16043, 16700\n",
     "pars = marxpars_from_asol(asolfile, evt2file)\n",
     "pars['SpectrumType'] = 'FILE'\n",
     "pars['SpectrumFile'] = 'data/ARLac_input_spec_marx.tbl'\n",
@@ -769,10 +606,22 @@
    ]
   },
   {
+   "cell_type": "markdown",
+   "id": "95ae09eb",
+   "metadata": {},
+   "source": [
+    "Just as an example, this is the marx call that is used to generate the underlying marx simulation (unfold the boxes with the script code to see more details on how the input parameters are set): "
+   ]
+  },
+  {
    "cell_type": "code",
    "execution_count": null,
    "id": "f5ae99b0",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "marxcall"
@@ -782,7 +631,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "6a482af9",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "asolh = fits.getheader(asolfile, 1)\n",
@@ -795,57 +648,21 @@
     "Therefore, shorten all times by about 0.01 sec to make sure.\n",
     "'''\n",
     "limit = asolh['TSTOP'] - asolh['TSTART']\n",
-    "limit = limit - 0.02"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "dc9dc950",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "limit = limit - 0.02\n",
     "out = subprocess.run(trace_nest +\n",
-    "    f'tag=saotrace srcpars=saotrace_source.lua tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec', shell=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "06aaeb02",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    f'tag=saotrace srcpars=saotrace_source.lua tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec', shell=True)\n",
     "pars['OutputDir'] = 'marx_saotrace'\n",
     "pars['SourceType'] = 'SAOSAC'\n",
     "pars['SAOSACFile'] = 'saotrace.fits'\n",
     "\n",
     "marxcall = ['marx'] + ['{0}={1}'.format(k, v) for k, v in pars.items()]\n",
     "marxcall = ' '.join(marxcall)\n",
-    "out = subprocess.run(marxcall, shell=True, capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "0f3bda63",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "out = subprocess.run(marxcall, shell=True, capture_output=True)\n",
     "# HRC does not record grade information, so EDSER is not applicable\n",
     "out3 = subprocess.run('marx2fits --pixadj=RANDOMIZE marx_only marx_only.fits', shell=True, \n",
     "                     capture_output=True)\n",
     "out4 = subprocess.run('marx2fits --pixadj=RANDOMIZE marx_saotrace marx_saotrace.fits', shell=True, \n",
-    "                     capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "42d036d3",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "                     capture_output=True)\n",
     "filterargs = {'circle': (x, y, 5 * r)}\n",
     "bgfilterargs =  {'circle': (bg_x, bg_y, 5 * r)}\n",
     "files = [evt2file, 'marx_only.fits', 'marx_saotrace.fits']\n",
@@ -864,7 +681,7 @@
    "source": [
     "Enclosed count fraction for observation and simulations.\n",
     "\n",
-    "The PSF predicted by SAOTrac + marx tracks the general shape pf the observed PSF well, though differences are apparent in the core and in the wings. Like in ACIS, the PSF simulated with marx alone is narrower than the observed PSF."
+    "The PSF predicted by SAOTrace + marx tracks the general shape of the observed PSF well, though differences are apparent in the core and in the wings. Like in ACIS, the PSF simulated with marx alone is narrower than the observed PSF."
    ]
   },
   {
@@ -874,12 +691,12 @@
    "source": [
     "## Off-axis PSF\n",
     "For an off-axis source the differences between detector pixel size and different\n",
-    "event repositioning algorithms is not important any longer. Instead, the size of\n",
+    "event repositioning algorithms is not important. Instead, the size of\n",
     "the PSF is dominated by optics errors because the detector plane deviates from\n",
     "the curved focal plane and because a Wolter type I optic has fundamental limitations\n",
     "for off-axis sources.\n",
     "\n",
-    "The PSF is much larger no longer circular. As this test shows, the shadows of\n",
+    "The PSF is much larger and no longer circular. As this test shows, the shadows of\n",
     "the support struts become visible.\n",
     "   "
    ]
@@ -888,53 +705,25 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "002608de",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
-    "out = download_chandra_obsids([1068])"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "4c84bf14",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "out = download_chandra_obsids([1068])\n",
+    "\n",
     "asolfile = '1068/primary/pcadf01068_000N001_asol1.fits.gz'\n",
-    "evt2file = '1068/primary/acisf01068N004_evt2.fits.gz'"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "6bf54f52",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "evt2file = '1068/primary/acisf01068N004_evt2.fits.gz'\n",
+    "\n",
     "x, y = 5246, 6890\n",
     "r = 200\n",
     "region = f'circle({x},{y},{r})'\n",
-    "psffrac = 1.0"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "5605c7ce",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "write_spectrum_from_fluxcorrection(asolfile, evt2file, x, y, region, psffrac=psffrac)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "82d31139",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "psffrac = 1.0\n",
+    "\n",
+    "write_spectrum_from_fluxcorrection(asolfile, evt2file, x, y, region, psffrac=psffrac)\n",
+    "\n",
     "pars = marxpars_from_asol(asolfile, evt2file)\n",
     "pars['SpectrumType'] = 'FILE'\n",
     "pars['SpectrumFile'] = 'input_spec_marx.tbl'\n",
@@ -943,16 +732,7 @@
     "\n",
     "marxcall = ['marx'] + ['{0}={1}'.format(k, v) for k, v in pars.items()]\n",
     "marxcall = ' '.join(marxcall)\n",
-    "out = subprocess.run(marxcall, shell=True, capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "2e621b04",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "out = subprocess.run(marxcall, shell=True, capture_output=True)\n",
     "asolh = fits.getheader(asolfile, 1)\n",
     "evth = fits.getheader(evt2file, 1)\n",
     "write_saotrace_lua(asolfile, asolh, evth)\n",
@@ -963,27 +743,9 @@
     "Therefore, shorten all times by about 0.01 sec to make sure.\n",
     "'''\n",
     "limit = asolh['TSTOP'] - asolh['TSTART']\n",
-    "limit = limit - 0.02"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "a1e27930",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "limit = limit - 0.02\n",
     "out = subprocess.run(trace_nest +\n",
-    "    f'tag=saotrace srcpars=saotrace_source.lua tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec', shell=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "b9ed2251",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "    f'tag=saotrace srcpars=saotrace_source.lua tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec', shell=True)\n",
     "pars['OutputDir'] = 'marx_saotrace'\n",
     "pars['SourceType'] = 'SAOSAC'\n",
     "pars['SAOSACFile'] = 'saotrace.fits'\n",
@@ -991,17 +753,8 @@
     "marxcall = ['marx'] + ['{0}={1}'.format(k, v) for k, v in pars.items()]\n",
     "marxcall = ' '.join(marxcall)\n",
     "\n",
-    "out = subprocess.run(marxcall, shell=True, capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "ee9f9e25",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "out = subprocess.run('marx2fits --pixadj=EDSER marx_only marx_only.fits', shell=True, \n",
+    "out = subprocess.run(marxcall, shell=True, capture_output=True)\n",
+    "out1 = subprocess.run('marx2fits --pixadj=EDSER marx_only marx_only.fits', shell=True, \n",
     "                     capture_output=True)\n",
     "out2 = subprocess.run('marx2fits --pixadj=EDSER marx_saotrace marx_saotrace.fits', shell=True, \n",
     "                     capture_output=True)"
@@ -1011,7 +764,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "a8fe0f52",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "from astropy.visualization import LogStretch\n",
@@ -1054,44 +811,32 @@
     "However, it is also instructive to look at a few idealized cases with no\n",
     "observational counterpart so we can simulate high fidelity PSFs with a\n",
     "large number of counts without worrying about background or pile-up.\n",
-    "The [Chandra Proposers Observatory Guide](http://cxc.harvard.edu/proposer/POG/html/chap4.html#tth_sEc4.2.3).\n",
+    "The [Chandra Proposers Observatory Guide](http://cxc.harvard.edu/proposer/POG/html/chap4.html#tth_sEc4.2.3)\n",
     "contains a long section on the PSF and encircled energy based on SAOTrace\n",
     "simulations. Some of those simulations are repeated here to compare them\n",
-    "to pure marx simulations."
+    "to pure marx simulations. For the marx part of the simulation, we assume that both the mirrors reflect every photon and the detectors detect every photon. That way,\n",
+    "the simulation gives more photons in the same runtime. That means the |marx|-only simulations will have more photons in the same exposure time than the SAOTrace + |marx| simulations sp the PSF will look a bit more smooth."
    ]
   },
   {
    "cell_type": "code",
    "execution_count": null,
    "id": "79508c2c",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
-    "energy = [0.25, 0.5, 1, 2, 3, 4, 6, 8]"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "9c67a551",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "energy = [0.25, 0.5, 1, 2, 3, 4, 6, 8]\n",
+    "\n",
     "# Default marx settings for all simulations\n",
     "default_marx ='GratingType=NONE DetectorType=HRC-I ' + \\\n",
     "              'ExposureTime=10000 ' + \\\n",
     "              'SourceRA=0. SourceDEC=0. ' + \\\n",
-    "              'RA_Nom=0. Dec_Nom=0. Roll_Nom=0. '"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "f7c9fb9c",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import subprocess\n",
+    "              'RA_Nom=0. Dec_Nom=0. Roll_Nom=0. '\n",
+    "\n",
     "for e in energy:\n",
     "    out = subprocess.run(f'marx MinEnergy={e} MaxEnergy={e} DitherModel=INTERNAL OutputDir=\"marx_{e}\" ' +\n",
     "                    # Higher energies have larger PSF and thus need more photons to plot smooth\n",
@@ -1099,22 +844,14 @@
     "                         f'SourceFlux={0.01*np.sqrt(e)} ' + \n",
     "                     default_marx, shell=True, capture_output=True)\n",
     "    out2 = subprocess.run(f'marx2fits --pixadj=NONE marx_{e} marx{e}.fits', \n",
-    "                          shell=True, capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "a745669d",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "                          shell=True, capture_output=True)\n",
+    "\n",
     "'''Generate asol file\n",
     "\n",
     "Since all simulations use the same pointing and exposure time, it is\n",
     "enough to run `marxasp` once.\n",
     "'''\n",
-    "out = subprocess.run(f'marxasp MarxDir=\"marx_{energy[0]}\" ',\n",
+    "out3 = subprocess.run(f'marxasp MarxDir=\"marx_{energy[0]}\" OutputFile=\"sim_asol.fits\"',\n",
     "                     shell=True, capture_output=True)"
    ]
   },
@@ -1122,7 +859,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "436ec054",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "asolh = fits.getheader('sim_asol.fits', 1)\n",
@@ -1153,7 +894,7 @@
   {
    "cell_type": "code",
    "execution_count": null,
-   "id": "d6ab5d59",
+   "id": "9dd07a37",
    "metadata": {},
    "outputs": [],
    "source": [
@@ -1168,7 +909,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "6c314ebd",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "from mpl_toolkits.axes_grid1 import AxesGrid\n",
@@ -1238,7 +983,7 @@
    "id": "619ff759",
    "metadata": {},
    "source": [
-    "PSF images for different discrete energies for pure marx and SAOTrace + marx simulations. The color scale is linear, but the absolute scaling is different for different images, because the effective area and thus the number of detected photons is lower at higher energies. Contour lines mark flux levels at 30%, 60%, and 90% of the peak flux level. At higher energies, the PSF becomes asymmetric, because mirror pair 6, which is most important at high energies, is slightly tilted with respect to the nominal aimpoint. At the same time, the scatter, and thus the size of the PSF, increase at higher energies.\n",
+    "PSF images for different discrete energies for pure marx and SAOTrace + marx simulations. The color scale is linear, but the absolute scaling is different for different images, because the effective area of the mirror and thus the number of detected photons is lower at higher energies. Contour lines mark flux levels at 30%, 60%, and 90% of the peak flux level. At higher energies, the PSF becomes asymmetric, because mirror pair 6, which is most important at high energies, is slightly tilted with respect to the nominal aimpoint. At the same time, the scatter, and thus the size of the PSF, increase at higher energies.\n",
     "\n",
     "Because the simulations are done with Monte-Carlo methods and the number of photons simulated is finite (but large compared to typical observations), there is some noise in the images. "
    ]
@@ -1247,7 +992,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "0f7c561d",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "fig = plt.figure(figsize=(7, 4))\n",
@@ -1313,49 +1062,29 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "7a900d5c",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
-    "off_axis_angle = [0, .5, 1, 2, 3, 5, 7, 10, 15]  # in arcmin"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "c15ccb4b",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "off_axis_angle = [0, .5, 1, 2, 3, 5, 7, 10, 15]  # in arcmin\n",
+    "\n",
     "# Default marx settings for all simulations\\\n",
     "default_marx ='GratingType=NONE DetectorType=HRC-I ' + \\\n",
     "              'ExposureTime=10000 SourceDEC=0. ' + \\\n",
     "              'RA_Nom=0. Dec_Nom=0. Roll_Nom=0. ' + \\\n",
-    "              'MinEnergy=4 MaxEnergy=4 SourceFlux=0.01 '"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "b5890b5d",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "              'MinEnergy=4 MaxEnergy=4 SourceFlux=0.01 '\n",
+    "\n",
     "import subprocess\n",
     "for a in off_axis_angle:\n",
     "    out = subprocess.run(f'marx DitherModel=INTERNAL OutputDir=\"marx_{a}\" ' +\n",
     "                         f'SourceRA={a / 60.} ' +\n",
     "                     default_marx, shell=True, capture_output=True)\n",
     "    out2 = subprocess.run(f'marx2fits --pixadj=NONE marx_{a} marx{a}.fits', \n",
-    "                          shell=True, capture_output=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "745d0ba8",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "                          shell=True, capture_output=True)\n",
+    "\n",
     "# We can reuse the asol file from above since we set up the same pointing, so the\n",
     "# variable asolh, limit are still valid.\n",
     "for a in off_axis_angle:\n",
@@ -1374,16 +1103,8 @@
     "        f.write(lua_text)\n",
     "    subprocess.run(trace_nest +\n",
     "                   f'tag=sao{a} srcpars=saotrace_source.lua ' +\\\n",
-    "                   f'tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec', shell=True)\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "dabcb9b9",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "                   f'tstart={asolh[\"TSTART\"] + 0.01} limit={limit} limit_type=sec', shell=True)\n",
+    "\n",
     "for a in off_axis_angle:\n",
     "    out = subprocess.run(f'marx SourceType=SAOSAC SAOSACFile=\"sao{a}.fits\" DitherModel=FILE DitherFile=\"sim_asol.fits\" OutputDir=\"saomarx_{a}\" ' + \n",
     "        # The following line is needed because of https://github.com/Chandra-MARX/marx/issues/83\n",
@@ -1397,7 +1118,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "be2910ca",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "ecf = [0.5, 0.7, 0.9]\n",

@@ -7,7 +7,7 @@
 
     <title>Downloading and Installing Marx &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -55,7 +55,7 @@
 compiled before it can be used.  This process is fairly painless and
 is something that even those who have never compiled a C program
 before can do.  It is written in ANSI-C (with a few POSIX extensions)
-and is intended to be portable across most 32 and 64 bit Unix
+and is intended to be portable across most 64 bit Unix
 operating systems, as well as MacOSX and CYGWIN.</p>
 <section id="the-short-cut">
 <h2>The short-cut<a class="headerlink" href="#the-short-cut" title="Link to this heading">¶</a></h2>
@@ -81,7 +81,7 @@ been installed.</p>
 </div>
 <p>(Some webbrowsers will automatically unzip a file when downloaded).  At this point the tar file is
 no longer needed so it may be removed:</p>
-<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>rm marx-6.0.1.tar.g
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>rm marx-6.0.1.tar.gz
 </pre></div>
 </div>
 <p>Now change to the newly created directory to start the build process:</p>
@@ -132,10 +132,7 @@ resolve the problem on your own, then contact <a class="reference external" href
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>make
 </pre></div>
 </div>
-<dl class="simple">
-<dt>(If this step fails and you are unable to resolve the problem, then</dt><dd><p>contact <a class="reference external" href="mailto:marx-help&#37;&#52;&#48;space&#46;mit&#46;edu">marx-help<span>&#64;</span>space<span>&#46;</span>mit<span>&#46;</span>edu</a>.)</p>
-</dd>
-</dl>
+<p>(If this step fails and you are unable to resolve the problem, then contact <a class="reference external" href="mailto:marx-help&#37;&#52;&#48;space&#46;mit&#46;edu">marx-help<span>&#64;</span>space<span>&#46;</span>mit<span>&#46;</span>edu</a>.)</p>
 <p>The final step in the installation process is to actually install the
 compiled executables.  If you do not have write permission to the
 installation-prefix directory (<code class="docutils literal notranslate"><span class="pre">/opt/marx/marx-version</span></code> in this case),
@@ -378,7 +375,7 @@ to work on other POSIX compliant platforms, too, but have not tested this.</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

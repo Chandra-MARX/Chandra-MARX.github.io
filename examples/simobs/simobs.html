@@ -7,7 +7,7 @@
 
     <title>Replicating a Chandra Observation / Using ChaRT or SAOTrace &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -66,21 +66,48 @@ PSF for a far off-axis source.</p></li>
 </ul>
 <p>In this example, we will use the 1999 Chandra calibration observation
 of LMC X-1 observed about 25 arc-minutes off-axis with the ACIS
-detector (ObsID 1068). We download the data with <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/download_chandra_obsid.html">download_chandra_obsid</a>
-and reprocess it with <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/chandra_repro.html">chandra_repro</a>.</p>
-<p>The figure shows the source as seen in <a class="reference external" href="http://ds9.si.edu/">ds9</a>:</p>
-<figure class="align-center" id="id1">
-<span id="fig-ex-simobs-obspsf"></span><a class="reference internal image-reference" href="../../_images/obs1068_chandra.png"><img alt="The Chandra PSF at this position is an ellipse with spokes." src="../../_images/obs1068_chandra.png" style="width: 480.0px; height: 328.8px;" />
-</a>
+detector (ObsID 1068). We download the data with <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/download_chandra_obsid.html">download_chandra_obsid</a>.
+If we want to be sure that the newest calibration data has been applied we could also
+reprocess it with <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/chandra_repro.html">chandra_repro</a> but this particular observation
+is old enough that the calibration does not change any longer.</p>
+<p>We can look at the event file in <a class="reference external" href="http://ds9.si.edu/">ds9</a> to find the coordinates that we are
+interested in or look at plot in Python:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">pylab</span> <span class="k">as</span> <span class="n">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">colors</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ciao_contrib.cda.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_chandra_obsids</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pycrates</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">download_chandra_obsids</span><span class="p">([</span><span class="mi">1068</span><span class="p">],</span> <span class="n">filetypes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;evt2&#39;</span><span class="p">,</span> <span class="s1">&#39;asol&#39;</span><span class="p">])</span>
+
+<span class="n">asolfile</span> <span class="o">=</span> <span class="s1">&#39;1068/primary/pcadf01068_000N001_asol1.fits.gz&#39;</span>
+<span class="n">evt2file</span> <span class="o">=</span> <span class="s1">&#39;1068/primary/acisf01068N004_evt2.fits.gz&#39;</span>
+
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span> <span class="o">=</span> <span class="mi">5256</span><span class="p">,</span> <span class="mi">6890</span>
+
+<span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">evt2file</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aspect&#39;</span><span class="p">:</span><span class="s1">&#39;equal&#39;</span><span class="p">})</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span> <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="n">x</span><span class="o">-</span><span class="mi">150</span><span class="p">,</span><span class="n">x</span><span class="o">+</span><span class="mi">150</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="o">-</span><span class="mi">150</span><span class="p">,</span><span class="n">y</span><span class="o">+</span><span class="mi">150</span><span class="p">]],</span>
+                    <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;hot_r&#39;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">colors</span><span class="o">.</span><span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">15</span><span class="p">))</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="s1">&#39;b+&#39;</span><span class="p">,</span> <span class="n">markersize</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">markeredgewidth</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+<span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+<span class="n">_</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">colorbar</span><span class="p">(</span><span class="n">out</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">ax</span><span class="o">=</span><span class="n">ax</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Counts / bin&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/d8226cf83b8cc73b89d2657d9feefc1f/simobs-1.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/c128c738bcf4293726a6d3a438439804/simobs-1.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/bd25b18bd3cbbc5d0c4168172fcaad8c/simobs-1.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id1">
+<img alt="The Chandra PSF at this position is an ellipse with spokes." class="plot-directive" src="../../_images/simobs-1.png" />
 <figcaption>
-<p><span class="caption-text"><a class="reference external" href="http://ds9.si.edu/">ds9</a> image of the PSF</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
+<p><span class="caption-text">Image of the PSF for a bright off-axis source in ObsID 1068</span><a class="headerlink" href="#id1" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
-<p>The crosshairs in <a class="reference internal" href="#fig-ex-simobs-obspsf"><span class="std std-ref">ds9 image of the PSF</span></a> mark the position where the
+<p>The blue cross in the image marks the position where the
 support strut shadows meet
 as determined by eye: ra=84.91093 degrees, dec=-69.74348 degrees,
 (x,y)=(5256,6890). This coordinate will be used as the position of the
-source.  For this observation, this coordinate falls on ACIS-4 (S0).</p>
+source.  For this observation, this coordinate falls on chip ACIS-4 (S0).</p>
 <section id="creating-the-source-spectral-file">
 <h2>Creating the source spectral file<a class="headerlink" href="#creating-the-source-spectral-file" title="Link to this heading">¶</a></h2>
 <p>For an accurate simulation of an observed source, it is important to
@@ -92,8 +119,8 @@ extract the spectrum, fit a model using <a class="reference external" href="http
 <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> and write an input file from the model as we did in several previous
 examples.</p>
 <p>Just to illustrate another approach, we will do something different here. (But
-do not worry if that looks like black magic to you; you can download the input
-spectrum file below or select another method to get the input spectrum.
+do not worry if that looks like black magic to you; you can get the input spectrum
+from a spectral fit, too.
 We just think it is instructive to show something slightly different in each
 example.)</p>
 <p>Here, we will simply extract the
@@ -102,41 +129,38 @@ effective area.  This is known as “flux-correction”, and involves no
 spectral fitting.  Strictly speaking, the validity of this technique
 assumes that the spectrum does not vary much over the scale of the RMF.</p>
 <p>The first step is to create the ARF to be used for the flux-correction.
-The creation of the ARF is straightforward via this Bourne shell script:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="ch">#!/bin/sh</span>
+The creation of the ARF is straightforward via this script:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">ciao_contrib.runtool</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">rt</span>
 
-<span class="nv">X</span><span class="o">=</span><span class="m">5256</span>
-<span class="nv">Y</span><span class="o">=</span><span class="m">6890</span>
+<span class="n">aspfile</span><span class="o">=</span><span class="s2">&quot;obs1068.asp&quot;</span>
+<span class="n">arffile</span><span class="o">=</span><span class="s2">&quot;obs1068.arf&quot;</span>
 
-<span class="nv">evtfile</span><span class="o">=</span><span class="s2">&quot;1068/repro/acisf01068_repro_evt2.fits&quot;</span>
-<span class="nv">asolfile</span><span class="o">=</span><span class="s2">&quot;1068/repro/pcadf051708271N003_asol1.fits&quot;</span>
-<span class="nv">aspfile</span><span class="o">=</span><span class="s2">&quot;obs1068.asp&quot;</span>
-<span class="nv">arffile</span><span class="o">=</span><span class="s2">&quot;obs1068.arf&quot;</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">asphist</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">aspfile</span><span class="p">,</span> <span class="n">evtfile</span><span class="o">=</span><span class="n">evt2file</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-asphist<span class="w"> </span><span class="nv">infile</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$asolfile</span><span class="s2">&quot;</span><span class="w"> </span><span class="nv">outfile</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$aspfile</span><span class="s2">&quot;</span><span class="w"> </span><span class="nv">evtfile</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$evtfile</span><span class="s2">&quot;</span><span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-
-<span class="c1"># It would be more accuarte to use mkwarf.</span>
+<span class="c1"># It would be more accurate to use mkwarf.</span>
 <span class="c1"># However, that&#39;s slower and for our purposes an approximate solution is good enough.</span>
-mkarf<span class="w"> </span><span class="nv">detsubsys</span><span class="o">=</span><span class="s2">&quot;ACIS-S0&quot;</span><span class="w"> </span><span class="nv">grating</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="w"> </span><span class="nv">outfile</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$arffile</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">obsfile</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$evtfile</span><span class="s2">&quot;</span><span class="w"> </span><span class="nv">asphistfile</span><span class="o">=</span><span class="s2">&quot;</span><span class="nv">$aspfile</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">sourcepixelx</span><span class="o">=</span><span class="nv">$X</span><span class="w"> </span><span class="nv">sourcepixely</span><span class="o">=</span><span class="nv">$Y</span><span class="w"> </span><span class="nv">engrid</span><span class="o">=</span><span class="s2">&quot;0.3:8.0:0.1&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">maskfile</span><span class="o">=</span>NONE<span class="w"> </span><span class="nv">pbkfile</span><span class="o">=</span>NONE<span class="w"> </span><span class="nv">dafile</span><span class="o">=</span>NONE<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">verbose</span><span class="o">=</span><span class="m">1</span><span class="w"> </span><span class="nv">mode</span><span class="o">=</span>h<span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes<span class="w"> </span>
+<span class="n">rt</span><span class="o">.</span><span class="n">mkarf</span><span class="p">(</span><span class="n">detsubsys</span><span class="o">=</span><span class="s2">&quot;ACIS-S0&quot;</span><span class="p">,</span> <span class="n">grating</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">outfile</span><span class="o">=</span><span class="n">arffile</span><span class="p">,</span>
+        <span class="n">obsfile</span><span class="o">=</span><span class="n">evt2file</span><span class="p">,</span> <span class="n">asphistfile</span><span class="o">=</span><span class="n">aspfile</span><span class="p">,</span>
+        <span class="n">sourcepixelx</span><span class="o">=</span><span class="n">x</span><span class="p">,</span> <span class="n">sourcepixely</span><span class="o">=</span><span class="n">y</span><span class="p">,</span> <span class="n">engrid</span><span class="o">=</span><span class="s2">&quot;0.3:8.0:0.1&quot;</span><span class="p">,</span>
+        <span class="n">maskfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">pbkfile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">dafile</span><span class="o">=</span><span class="s2">&quot;NONE&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The next step is to extract the counts in the PSF and divide by the
 ARF to get the flux corrected spectrum.
-Here we show a way using only standard <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> tools; there are some comments
-on what’s happening in the scripts.</p>
+Here we show a way using only standard <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> tools and Python packages that are part
+of the CIAO distribution.</p>
 <p>First, create a region file containing the source events with
 <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/dmellipse.html">dmellipse</a>, and use <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/dmextract.html">dmextract</a> to create the PI histogram.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dmcopy<span class="w"> </span><span class="s2">&quot;1068/primary/acisf01068N003_evt2.fits.gz[EVENTS][bin x=4950:5530:1,y=6700:7100:1]&quot;</span><span class="w"> </span>image.fits<span class="w"> </span><span class="nv">option</span><span class="o">=</span>image<span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-dmellipse<span class="w"> </span>image.fits<span class="w"> </span>psf90.reg<span class="w"> </span><span class="m">0</span>.9<span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">evt2file</span><span class="si">}</span><span class="s2">[EVENTS][bin x=4950:5530:1,y=6700:7100:1]&quot;</span><span class="p">,</span> <span class="s2">&quot;image.fits&quot;</span><span class="p">,</span>
+        <span class="n">option</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmellipse</span><span class="p">(</span><span class="s2">&quot;image.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;psf90.reg&quot;</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="c1"># We have to use the same energy binning in energy space here that we used for the arf!</span>
 <span class="c1"># So, first convert the PI to energy (to a precision that&#39;s good enough for this example.)</span>
-dmtcalc<span class="w"> </span><span class="s2">&quot;1068/repro/acisf01068_repro_evt2.fits[EVENTS][sky=region(psf90.reg)]&quot;</span><span class="w"> </span>obs1068_evt2_with_energy.fits<span class="w">  </span><span class="nv">expr</span><span class="o">=</span><span class="s2">&quot;energy=(float)pi*0.0149&quot;</span><span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-dmextract<span class="w"> </span><span class="s2">&quot;obs1068_evt2_with_energy.fits[bin energy=.3:7.999:0.1]&quot;</span><span class="w"> </span>obs1068.spec<span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes<span class="w"> </span><span class="nv">opt</span><span class="o">=</span>generic
+<span class="n">rt</span><span class="o">.</span><span class="n">dmtcalc</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">evt2file</span><span class="si">}</span><span class="s2">[EVENTS][sky=region(psf90.reg)]&quot;</span><span class="p">,</span> <span class="s2">&quot;obs1068_evt2_with_energy.fits&quot;</span><span class="p">,</span>
+            <span class="n">expr</span><span class="o">=</span><span class="s2">&quot;energy=(float)pi*0.0149&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">rt</span><span class="o">.</span><span class="n">dmextract</span><span class="p">(</span><span class="s2">&quot;obs1068_evt2_with_energy.fits[bin energy=.3:7.999:0.1]&quot;</span><span class="p">,</span> <span class="s2">&quot;obs1068.spec&quot;</span><span class="p">,</span>
+            <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">opt</span><span class="o">=</span><span class="s2">&quot;generic&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The energy binning of the ARF and extracted spectrum are the same. Thus, we can
@@ -144,28 +168,30 @@ now calculate the corrected spectrum by dividing the flux by the effective
 area and exposure time.
 There is an extra factor of 0.9, because the ARF assumes that 100% of the
 PSF are included in the data extraction, while the ellipse above only contains
-90% of the counts. Also, we divide by the exposure time (about 1760 s).
-We make intermediary files to copy columns back and
-forth and write the spectrum out as an ASCII table in the end.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dmcopy<span class="w"> </span><span class="s2">&quot;obs1068.arf[cols energ_lo,energ_hi,specresp]&quot;</span><span class="w"> </span>input_spec.fits<span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-dmpaste<span class="w"> </span>input_spec.fits<span class="w"> </span><span class="s2">&quot;obs1068.spec[cols counts]&quot;</span><span class="w"> </span>input_spec_1.fits<span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-dmtcalc<span class="w"> </span>input_spec_1.fits<span class="w"> </span>input_spec_2.fits<span class="w">  </span><span class="nv">expr</span><span class="o">=</span><span class="s2">&quot;flux=counts/((float)specresp * 0.9*1759.8)&quot;</span><span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-<span class="c1"># devide by binwidth to turn the flux int oa flux DENSITY for marx</span>
-dmtcalc<span class="w"> </span>input_spec_2.fits<span class="w"> </span>input_spec_3.fits<span class="w">  </span><span class="nv">expr</span><span class="o">=</span><span class="s2">&quot;fluxdens=flux/0.1&quot;</span><span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-dmcopy<span class="w"> </span><span class="s2">&quot;input_spec_3.fits[cols energ_hi,fluxdens]&quot;</span><span class="w"> </span><span class="s2">&quot;input_spec_marx.tbl[opt kernel=text/simple]&quot;</span><span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
-dmcopy<span class="w"> </span><span class="s2">&quot;input_spec_3.fits[cols energ_lo,energ_hi,flux]&quot;</span><span class="w"> </span><span class="s2">&quot;input_spec_saotrace.tbl[opt kernel=text/simple]&quot;</span><span class="w"> </span><span class="nv">clobber</span><span class="o">=</span>yes
+90% of the counts. Also, we divide by the exposure time (about 1760 s).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">arf</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">arffile</span><span class="p">)</span>
+<span class="n">spec</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="s2">&quot;obs1068.spec&quot;</span><span class="p">)</span>
 
-<span class="c1"># We now use a combination of some of the most obscure UNIX tools to</span>
-<span class="c1"># bring the SAOTRACE input spectrum into the right format</span>
-<span class="c1"># see http://cxc.harvard.edu/cal/Hrma/RDB/FileFormat.html</span>
-<span class="c1"># Remove the leading &quot;#&quot; from the line with the column names</span>
-awk<span class="w"> </span><span class="s1">&#39;{ sub(/\# ENERG_LO/,&quot;ENERG_LO&quot;); print }&#39;</span><span class="w"> </span>&lt;<span class="w"> </span>input_spec_saotrace.tbl<span class="w"> </span>&gt;<span class="w"> </span>input_spec_saotrace.temp
-<span class="c1"># Then, replace spaces with tabs</span>
-tr<span class="w"> </span><span class="s1">&#39; &#39;</span><span class="w"> </span><span class="se">\\</span>t<span class="w"> </span>&lt;<span class="w"> </span>input_spec_saotrace.temp<span class="w"> </span>&gt;<span class="w"> </span>input_spec_saotrace.rdb
+<span class="n">flux</span> <span class="o">=</span> <span class="n">spec</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;COUNTS&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">/</span> <span class="n">arf</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;SPECRESP&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.9</span> <span class="o">*</span> <span class="mf">1759.8</span><span class="p">)</span>
+
+
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;input_spec_marx.tbl&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;# KEV PHOTONS/S/CM**2/KEV</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">arf</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                   <span class="c1"># divide by bin width to get flux density</span>
+                   <span class="n">flux</span> <span class="o">/</span> <span class="mf">0.1</span><span class="p">):</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+<span class="c1"># SAOTrace requires input in tab-limited rdb format.</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;input_spec_saotrace.rdb&#39;</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;ENERG_LO</span><span class="se">\t</span><span class="s1">ENERG_HI</span><span class="se">\t</span><span class="s1">FLUX</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">arf</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;ENERG_LO&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                     <span class="n">arf</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;ENERG_HI&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                     <span class="n">flux</span><span class="p">):</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">a</span><span class="si">}</span><span class="se">\t</span><span class="si">{</span><span class="n">b</span><span class="si">}</span><span class="se">\t</span><span class="si">{</span><span class="n">c</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The resulting ASCII tables <a class="reference download internal" download="" href="../../_downloads/15ec7d2346b71cf3f06254dac6bece28/input_spec_marx.tbl"><code class="xref download docutils literal notranslate"><span class="pre">for</span> <span class="pre">marx</span></code></a> and
-<a class="reference download internal" download="" href="../../_downloads/061274f56e6fb574775ea1825fab4465/input_spec_saotrace.rdb"><code class="xref download docutils literal notranslate"><span class="pre">for</span> <span class="pre">SAOTrace/Chart</span></code></a> with the spectrum
+<p>The resulting ASCII tables with the spectrum
 will be input into both <strong>marx</strong> and <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a>. The spectrum is the same, but
 the format of the tables is two columns (energy, flux <em>density</em>) for <strong>marx</strong> and
 three columns (lower energy, upper energy, flux) for <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> / <a class="reference external" href="http://cxc.harvard.edu/chart/description.html">ChaRT</a>.</p>
@@ -176,19 +202,51 @@ three columns (lower energy, upper energy, flux) for <a class="reference externa
 examples. We use the <a class="reference internal" href="../../indetail/models.html#parameter-SpectrumFile"><code class="xref std std-par docutils literal notranslate"><span class="pre">SpectrumFile</span></code></a> parameter to input the source spectrum
 we estimated above and set the remaining parameters to match the setting of the
 observation for the pointing direction, exposure time, etc. To get the numbers
-we display the header (e.g. in <a class="reference external" href="http://ds9.si.edu/">ds9</a>) and manually look for the required fits
+we can either display the header (e.g. in <a class="reference external" href="http://ds9.si.edu/">ds9</a>) and manually look for the required fits
 header keywords (e.g. <code class="docutils literal notranslate"><span class="pre">EXPOSURE</span></code> for <a class="reference internal" href="../../inbrief/simsetup.html#parameter-ExposureTime"><code class="xref std std-par docutils literal notranslate"><span class="pre">ExposureTime</span></code></a>, <code class="docutils literal notranslate"><span class="pre">RA_NOM</span></code> for
-<a class="reference internal" href="../../inbrief/simsetup.html#parameter-RA_Nom"><code class="xref std std-par docutils literal notranslate"><span class="pre">RA_Nom</span></code></a>, etc.). Note the <a class="reference internal" href="../../inbrief/simsetup.html#parameter-TStart"><code class="xref std std-par docutils literal notranslate"><span class="pre">TStart</span></code></a> is given in seconds on the
-spacecraft clock as in the <code class="docutils literal notranslate"><span class="pre">TSTART</span></code> and <code class="docutils literal notranslate"><span class="pre">TSTOP</span></code> header keywords.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>marx<span class="w"> </span><span class="nv">ExposureTime</span><span class="o">=</span><span class="m">1737</span><span class="w"> </span><span class="nv">TStart</span><span class="o">=</span><span class="m">51709004</span>.8724941462<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">GratingType</span><span class="o">=</span><span class="s1">&#39;NONE&#39;</span><span class="w"> </span><span class="nv">DetectorType</span><span class="o">=</span><span class="s1">&#39;ACIS-S&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">RA_Nom</span><span class="o">=</span><span class="m">85</span>.368613<span class="w"> </span><span class="nv">Dec_Nom</span><span class="o">=</span>-70.12585<span class="w"> </span><span class="nv">Roll_Nom</span><span class="o">=</span><span class="m">116</span>.86955<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">SourceRA</span><span class="o">=</span><span class="m">84</span>.91093<span class="w"> </span><span class="nv">SourceDEC</span><span class="o">=</span>-69.74348<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">DitherModel</span><span class="o">=</span><span class="s1">&#39;FILE&#39;</span><span class="w"> </span><span class="nv">DitherFile</span><span class="o">=</span><span class="s1">&#39;1068/repro/pcadf051708271N003_asol1.fits&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">SourceFlux</span><span class="o">=</span>-1<span class="w"> </span><span class="nv">SpectrumType</span><span class="o">=</span><span class="s1">&#39;FILE&#39;</span><span class="w"> </span><span class="nv">SpectrumFile</span><span class="o">=</span><span class="s1">&#39;input_spec_marx.tbl&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">OutputDir</span><span class="o">=</span><span class="s1">&#39;marx_only&#39;</span>
+<a class="reference internal" href="../../inbrief/simsetup.html#parameter-RA_Nom"><code class="xref std std-par docutils literal notranslate"><span class="pre">RA_Nom</span></code></a>, etc.) or extract the values using <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/dmkeypar.html">dmkeypar</a>.
+Note that <a class="reference internal" href="../../inbrief/simsetup.html#parameter-TStart"><code class="xref std std-par docutils literal notranslate"><span class="pre">TStart</span></code></a> is given in seconds on the
+spacecraft clock here as in the <code class="docutils literal notranslate"><span class="pre">TSTART</span></code> and <code class="docutils literal notranslate"><span class="pre">TSTOP</span></code> header keywords.
+However, for some ObsIDs, the <code class="docutils literal notranslate"><span class="pre">TSTART</span></code> time is set to include some
+spacecraft slew before the actual observation starts.
+<strong>marx</strong> can deal with a start time set slightly before the data in the aspect
+solution file (asol file) starts, but <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> will raise an error. Thus,
+we set the start time of the simulation to the first entry in the asol file.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">gzip</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
 
-marx2fits<span class="w"> </span>marx_only<span class="w"> </span>marx_only.fits
+<span class="c1"># marx cannot read gzipped asol files, so unzip</span>
+<span class="n">asolfile_unzipped</span> <span class="o">=</span> <span class="n">asolfile</span><span class="p">[:</span><span class="o">-</span><span class="mi">3</span><span class="p">]</span>
+<span class="k">with</span> <span class="n">gzip</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_in</span><span class="p">:</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">asolfile_unzipped</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f_out</span><span class="p">:</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copyfileobj</span><span class="p">(</span><span class="n">f_in</span><span class="p">,</span> <span class="n">f_out</span><span class="p">)</span>
+<span class="n">asolfile</span> <span class="o">=</span> <span class="n">asolfile_unzipped</span>
+
+<span class="n">ra_nom</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rt</span><span class="o">.</span><span class="n">dmkeypar</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evt2file</span><span class="p">,</span> <span class="n">keyword</span><span class="o">=</span><span class="s2">&quot;RA_NOM&quot;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">dec_nom</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rt</span><span class="o">.</span><span class="n">dmkeypar</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evt2file</span><span class="p">,</span> <span class="n">keyword</span><span class="o">=</span><span class="s2">&quot;DEC_NOM&quot;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">roll_nom</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rt</span><span class="o">.</span><span class="n">dmkeypar</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evt2file</span><span class="p">,</span> <span class="n">keyword</span><span class="o">=</span><span class="s2">&quot;ROLL_NOM&quot;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+<span class="n">exptime</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rt</span><span class="o">.</span><span class="n">dmkeypar</span><span class="p">(</span><span class="n">infile</span><span class="o">=</span><span class="n">evt2file</span><span class="p">,</span> <span class="n">keyword</span><span class="o">=</span><span class="s2">&quot;EXPOSURE&quot;</span><span class="p">,</span> <span class="n">echo</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+
+<span class="c1"># Get time of first entry in asol file</span>
+<span class="n">asol</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">asolfile</span><span class="p">)</span>
+<span class="n">tstart</span> <span class="o">=</span> <span class="n">asol</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="c1"># Add a little offset in case of rounding errors when reading the file.</span>
+<span class="n">tstart</span> <span class="o">+=</span> <span class="mf">0.1</span>
+
+<span class="c1"># We will run marx more than once, so make a string that contains the common parameters.</span>
+<span class="n">marx_with_parameters</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;marx ExposureTime=</span><span class="si">{</span><span class="n">exptime</span><span class="si">}</span><span class="s2"> TStart=</span><span class="si">{</span><span class="n">tstart</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="o">+</span> \
+    <span class="s2">&quot;GratingType=&#39;NONE&#39; DetectorType=&#39;ACIS-S&#39; &quot;</span> <span class="o">+</span> \
+    <span class="sa">f</span><span class="s2">&quot;RA_Nom=</span><span class="si">{</span><span class="n">ra_nom</span><span class="si">}</span><span class="s2"> Dec_Nom=</span><span class="si">{</span><span class="n">dec_nom</span><span class="si">}</span><span class="s2"> Roll_Nom=</span><span class="si">{</span><span class="n">roll_nom</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="o">+</span> \
+    <span class="s2">&quot;SourceRA=84.91093 SourceDEC=-69.74348 &quot;</span> <span class="o">+</span> \
+    <span class="sa">f</span><span class="s2">&quot;DitherModel=&#39;FILE&#39; DitherFile=&#39;</span><span class="si">{</span><span class="n">asolfile</span><span class="si">}</span><span class="s2">&#39; &quot;</span> <span class="o">+</span> \
+    <span class="s2">&quot;SourceFlux=-1 SpectrumType=&#39;FILE&#39; &quot;</span>
+
+<span class="c1"># Combine common parameters with the ones specific to this run.</span>
+<span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">marx_with_parameters</span> <span class="o">+</span> \
+                <span class="s2">&quot;SpectrumFile=&#39;input_spec_marx.tbl&#39; OutputDir=&#39;marx_only&#39;&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;marx2fits marx_only marx_only.fits&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -204,7 +262,7 @@ install following the instructions in the <a class="reference external" href="ht
 use <a class="reference external" href="http://cxc.harvard.edu/chart/description.html">ChaRT</a>, which is a web interface to <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a>. Using <a class="reference external" href="http://cxc.harvard.edu/chart/description.html">ChaRT</a> saves you
 the installation, but it is less flexible (e.g. it can only simulate single
 sources).</p>
-<p>Below, we use the installed version of <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a>, but to follow this example,
+<p>Below, we use a locally installed version of <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a>, but to follow this example,
 you can equally well upload <a class="reference download internal" download="" href="../../_downloads/061274f56e6fb574775ea1825fab4465/input_spec_saotrace.rdb"><code class="xref download docutils literal notranslate"><span class="pre">input_spec_saotrace.rdb</span></code></a> to <cite>ChaRT</cite>.
 <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> itself is a very complex system of many different parts. Here, we
 will explain the parameters used in this example, but we need to refer to the
@@ -214,7 +272,7 @@ will explain the parameters used in this example, but we need to refer to the
 <span class="nv">dec_pnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="o">-</span><span class="mf">70.12585</span>
 <span class="nv">roll_pnt</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">116.86955</span>
 
-<span class="nv">dither_asol_chandra</span><span class="p">{</span><span class="w"> </span><span class="nv">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;1068/repro/pcadf051708271N003_asol1.fits&quot;</span><span class="p">,</span><span class="w"> </span>
+<span class="nv">dither_asol_chandra</span><span class="p">{</span><span class="w"> </span><span class="nv">file</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;1068/primary/pcadf01068_000N001_asol1.fits&quot;</span><span class="p">,</span>
 <span class="w">                     </span><span class="nv">ra</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">ra_pnt</span><span class="p">,</span><span class="w"> </span><span class="nv">dec</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">dec_pnt</span><span class="p">,</span><span class="w"> </span><span class="nv">roll</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nv">roll_pnt</span><span class="w"> </span><span class="p">}</span>
 
 <span class="nv">point</span><span class="p">{</span><span class="w"> </span><span class="nv">position</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="nv">ra</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mf">84.91093</span><span class="p">,</span>
@@ -233,48 +291,44 @@ will explain the parameters used in this example, but we need to refer to the
 </pre></div>
 </div>
 <p>and run <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> with the following command:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>trace-nest<span class="w">                    </span><span class="se">\</span>
-<span class="w">   </span><span class="nv">tag</span><span class="o">=</span>saotrace<span class="w">                  </span><span class="se">\</span>
-<span class="w">   </span><span class="nv">srcpars</span><span class="o">=</span>saotrace_source.lua<span class="w">   </span><span class="se">\</span>
-<span class="w">   </span><span class="nv">tstart</span><span class="o">=</span><span class="m">51709004</span>.8724941462<span class="w">   </span><span class="se">\</span>
-<span class="w">   </span><span class="nv">limit</span><span class="o">=</span><span class="m">1759</span>.8607333824<span class="w">  </span><span class="se">\</span>
-<span class="w">   </span><span class="nv">limit_type</span><span class="o">=</span>sec
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;trace-nest tag=saotrace srcpars=saotrace_source.lua tstart=</span><span class="si">{</span><span class="n">tstart</span><span class="si">}</span><span class="s2"> &quot;</span> <span class="o">+</span> \
+               <span class="sa">f</span><span class="s2">&quot;limit=</span><span class="si">{</span><span class="n">exptime</span><span class="si">}</span><span class="s2"> limit_type=sec&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>This gives us a ray file called <a class="reference download internal" download="" href="../../_downloads/aa21943e892e1327c54e544dd50b5c79/saotrace.fits"><code class="xref download docutils literal notranslate"><span class="pre">saotrace.fits</span></code></a>. We take this file as
 input for <strong>marx</strong> using <a class="reference internal" href="../../indetail/models.html#parameter-SourceType"><code class="xref std std-par docutils literal notranslate"><span class="pre">SourceType=&quot;SAOSAC&quot;</span></code></a> and
 <a class="reference internal" href="../../indetail/models.html#parameter-SAOSACFile"><code class="xref std std-par docutils literal notranslate"><span class="pre">SAOSACFile=&quot;saotrace.fits&quot;</span></code></a>. All the remaining parameters for the
 exposure time, pointing direction etc. are the same as above:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>marx<span class="w"> </span><span class="nv">ExposureTime</span><span class="o">=</span><span class="m">1737</span><span class="w"> </span><span class="nv">TStart</span><span class="o">=</span><span class="m">51709004</span>.8724941462<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">GratingType</span><span class="o">=</span><span class="s1">&#39;NONE&#39;</span><span class="w"> </span><span class="nv">DetectorType</span><span class="o">=</span><span class="s1">&#39;ACIS-S&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">RA_Nom</span><span class="o">=</span><span class="m">85</span>.368613<span class="w"> </span><span class="nv">Dec_Nom</span><span class="o">=</span>-70.12585<span class="w"> </span><span class="nv">Roll_Nom</span><span class="o">=</span><span class="m">116</span>.86955<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">SourceRA</span><span class="o">=</span><span class="m">84</span>.91093<span class="w"> </span><span class="nv">SourceDEC</span><span class="o">=</span>-69.74348<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">DitherModel</span><span class="o">=</span><span class="s1">&#39;FILE&#39;</span><span class="w"> </span><span class="nv">DitherFile</span><span class="o">=</span><span class="s1">&#39;1068/repro/pcadf051708271N003_asol1.fits&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">SourceFlux</span><span class="o">=</span>-1<span class="w"> </span><span class="nv">SourceType</span><span class="o">=</span><span class="s1">&#39;SAOSAC&#39;</span><span class="w"> </span><span class="nv">SAOSACFile</span><span class="o">=</span><span class="s1">&#39;saotrace.fits&#39;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="nv">OutputDir</span><span class="o">=</span><span class="s1">&#39;marx_saotrace&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="n">marx_with_parameters</span> <span class="o">+</span> \
+                <span class="s2">&quot;SourceType=&#39;SAOSAC&#39; SAOSACFile=&#39;saotrace.fits&#39; &quot;</span> <span class="o">+</span> \
+                <span class="s2">&quot;OutputDir=&#39;marx_saotrace&#39;&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
-marx2fits<span class="w"> </span>marx_saotrace<span class="w"> </span>marx_saotrace.fits
-</pre></div>
-</div>
-<p>As a last step, we will apply a GTI filter to the output, because the asol
-file, which contains the “aspect solution” (describing where exactly Chandra
-points at any one time), can have a short period of time in the beginning, when
-the telescope is still slewing.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>dmcopy<span class="w"> </span><span class="s2">&quot;marx_saotrace.fits[@1068/repro/acisf01068_repro_evt2.fits[GTI4]]&quot;</span><span class="w"> </span>marx_saotrace-filtered.fits
+<span class="n">subprocess</span><span class="o">.</span><span class="n">call</span><span class="p">(</span><span class="s2">&quot;marx2fits marx_saotrace marx_saotrace.fits&quot;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="comparing-the-results">
 <h2>Comparing the results<a class="headerlink" href="#comparing-the-results" title="Link to this heading">¶</a></h2>
 <p>We can now use <a class="reference external" href="http://ds9.si.edu/">ds9</a> to compare the observation with the two simulated event
-lists:</p>
-<figure class="align-center" id="id2">
-<span id="fig-ex-simobs-simpsf"></span><a class="reference internal image-reference" href="../../_images/compare_sims.png"><img alt="Three very similar PSFs." src="../../_images/compare_sims.png" style="width: 800.0px; height: 500.0px;" />
-</a>
+lists or plot them with <a class="reference external" href="https://matplotlib.org/">matplotlib</a>:</p>
+<div class="highlight-python notranslate" id="fig-ex-simobs-simpsf"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span><span class="mi">3</span><span class="p">),</span> <span class="n">subplot_kw</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;aspect&#39;</span><span class="p">:</span><span class="s1">&#39;equal&#39;</span><span class="p">})</span>
+<span class="k">for</span> <span class="n">ax</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">title</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">axes</span><span class="o">.</span><span class="n">flatten</span><span class="p">(),</span>
+                <span class="p">[</span><span class="n">evt2file</span><span class="p">,</span> <span class="s2">&quot;marx_only.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;marx_saotrace.fits&quot;</span><span class="p">],</span>
+                <span class="p">[</span><span class="s1">&#39;Observation&#39;</span><span class="p">,</span> <span class="s1">&#39;MARX only&#39;</span><span class="p">,</span> <span class="s1">&#39;SAOTrace + MARX&#39;</span><span class="p">]):</span>
+    <span class="n">evt</span> <span class="o">=</span> <span class="n">pycrates</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">src</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">hist2d</span><span class="p">(</span><span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;X&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span> <span class="n">evt</span><span class="o">.</span><span class="n">get_column</span><span class="p">(</span><span class="s1">&#39;Y&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">values</span><span class="p">,</span>
+                    <span class="n">bins</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span> <span class="nb">range</span><span class="o">=</span><span class="p">[[</span><span class="n">x</span><span class="o">-</span><span class="mi">150</span><span class="p">,</span><span class="n">x</span><span class="o">+</span><span class="mi">150</span><span class="p">],</span> <span class="p">[</span><span class="n">y</span><span class="o">-</span><span class="mi">150</span><span class="p">,</span><span class="n">y</span><span class="o">+</span><span class="mi">150</span><span class="p">]],</span>
+                    <span class="n">cmap</span><span class="o">=</span><span class="s1">&#39;hot_r&#39;</span><span class="p">,</span> <span class="n">norm</span><span class="o">=</span><span class="n">colors</span><span class="o">.</span><span class="n">LogNorm</span><span class="p">(</span><span class="n">vmin</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">vmax</span><span class="o">=</span><span class="mi">15</span><span class="p">))</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">set_title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">set_axis_off</span><span class="p">()</span>
+<span class="n">fig</span><span class="o">.</span><span class="n">subplots_adjust</span><span class="p">(</span><span class="n">wspace</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>(<a class="reference download internal" download="" href="../../_downloads/2b1f995a9f51d03f47fb2a62e3c49f91/simobs-8.png"><code class="xref download docutils literal notranslate"><span class="pre">png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/2ce45c137a4aa2f8ced3bee236f4d185/simobs-8.hires.png"><code class="xref download docutils literal notranslate"><span class="pre">hires.png</span></code></a>, <a class="reference download internal" download="" href="../../_downloads/15d918e4609911db06bbee5041974fb1/simobs-8.pdf"><code class="xref download docutils literal notranslate"><span class="pre">pdf</span></code></a>)</p>
+<figure class="align-default" id="id3">
+<img alt="Three very similar PSFs." class="plot-directive" src="../../_images/simobs-8.png" />
 <figcaption>
-<p><span class="caption-text"><a class="reference external" href="http://ds9.si.edu/">ds9</a> image of the PSF in the observation (top left), the simulation using
-only <strong>marx</strong> (top right), and the simulation using <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> to trace the
-mirror and <strong>marx</strong> as the instrument model (bottom left).</span><a class="headerlink" href="#id2" title="Link to this image">¶</a></p>
+<p><span class="caption-text">Comparison of the observed PSF with the two simulations.</span><a class="headerlink" href="#id3" title="Link to this image">¶</a></p>
 </figcaption>
 </figure>
 <p>The structure of the PSFs is very similar, emphasizing how good both mirror
@@ -360,7 +414,7 @@ almost all Chandra simulations.</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

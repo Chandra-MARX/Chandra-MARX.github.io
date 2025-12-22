@@ -13,7 +13,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "a0742783",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "remove-cell"
+    ]
+   },
    "outputs": [],
    "source": [
     "from utils import setup_marx\n",
@@ -26,7 +30,7 @@
    "metadata": {},
    "source": [
     "## Build-in geometric sources\n",
-    "This test exercises build-in |marx| sources with different geometric shapes.\n",
+    "This test exercises build-in marx sources with different geometric shapes.\n",
     "Most source types have parameters, and not all parameters are tested here.\n",
     "See source documentation for a detailed description of source parameters."
    ]
@@ -35,10 +39,16 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "762dd73d",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "import subprocess\n",
+    "from matplotlib import pyplot as plt\n",
+    "import pycrates\n",
     "\n",
     "sources = [ {'OutputDir': 'point'}, # Default shape is POINT\n",
     "            {'SourceType': 'GAUSS', 'S-GaussSigma': 20, 'OutputDir': 'gauss'},\n",
@@ -58,19 +68,12 @@
   {
    "cell_type": "code",
    "execution_count": null,
-   "id": "3c4a8ffb",
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "from matplotlib import pyplot as plt\n",
-    "import pycrates"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
    "id": "aa3c0b9f",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "fig, axes = plt.subplots(2, 3, figsize=(10,6), subplot_kw={'aspect':'equal'})\n",
@@ -89,7 +92,7 @@
    "source": [
     "## Image as source\n",
     "An image can be used as marx input. In this case, the intensity of the\n",
-    "X-ray radiation on that sky is taken to be proportional to the value of the\n",
+    "X-ray radiation on the sky is taken to be proportional to the value of the\n",
     "image at that point.\n",
     "\n",
     "In this example we use Python to make a simple image as input, but one could use any fits image, e.g. a source observed in a different wavelength or the output of a simulation.\n",
@@ -100,7 +103,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "3981463f",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "import numpy as np\n",
@@ -135,16 +142,8 @@
     "hdu = fits.PrimaryHDU(header=header, data=image)\n",
     "\n",
     "# Save to FITS file\n",
-    "hdu.writeto('input_image.fits', overwrite=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "1403d84b",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "hdu.writeto('input_image.fits', overwrite=True)\n",
+    "\n",
     "out = subprocess.run('marx SourceType=IMAGE S-ImageFile=input_image.fits MinEnergy=1.9 MaxEnergy=1.9 GratingType=NONE OutputDir=image',\n",
     "                      shell=True, capture_output=True)\n",
     "out2 = subprocess.run(f'marx2fits --pixadj=EDSER image image.fits', \n",
@@ -155,7 +154,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "eb8ea0ca",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "fig, axes = plt.subplots(1, 2, figsize=(10,6), subplot_kw={'aspect':'equal'})\n",
@@ -206,7 +209,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "97be0b1e",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "out = subprocess.run('marx SourceType=GAUSS S-GaussSigma=300 MinEnergy=0.3 MaxEnergy=0.8 GratingType=NONE DumpToRayFile=yes ExposureTime=30000',\n",
@@ -222,7 +229,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "2e332e04",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "from mpl_toolkits.axes_grid1 import ImageGrid\n",
@@ -267,7 +278,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "57caca79",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "import os\n",
@@ -282,16 +297,8 @@
     "jdmath_a = os.path.join(marxpath, '..', 'lib', 'libjdmath.a')\n",
     "\n",
     "out = subprocess.run(['gcc', '-I' + jdmath_h, jdmath_a,\n",
-    "                      '-shared', 'point.c', '-o', 'point.so'])"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "id": "48338fa1",
-   "metadata": {},
-   "outputs": [],
-   "source": [
+    "                      '-shared', 'point.c', '-o', 'point.so'])\n",
+    "\n",
     "out = subprocess.run(f'marx SourceType=USER UserSourceFile=point.so GratingType=NONE OutputDir=userpoint',\n",
     "                         shell=True, capture_output=True)\n",
     "out2 = subprocess.run(f'marx2fits --pixadj=EDSER userpoint userpoint.fits', \n",
@@ -302,7 +309,11 @@
    "cell_type": "code",
    "execution_count": null,
    "id": "e8356a61",
-   "metadata": {},
+   "metadata": {
+    "tags": [
+     "hide-input"
+    ]
+   },
    "outputs": [],
    "source": [
     "fig, axes = plt.subplots(1, 1, figsize=(5, 5), subplot_kw={'aspect':'equal'})\n",
@@ -318,7 +329,7 @@
    "id": "e4fa6b1a",
    "metadata": {},
    "source": [
-    "The distribution of source is indeed a point source; it seems that we compiled and liked the user source file correctly."
+    "The distribution of photons looks indeed like a point source; it seems that we compiled and linked the user source file correctly."
    ]
   }
  ],

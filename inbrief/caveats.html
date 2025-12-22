@@ -7,7 +7,7 @@
 
     <title>Current caveats for MARX &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -80,7 +80,7 @@ observations on ACIS-S3, this difference should be small since spatial
 variations in the QE are relatively small on this CCD. However,
 simulated ACIS-I observations will be effected to a greater degree due
 to the larger QE variations produced by CTI effects.</p>
-<p>For users of <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> 2.3 and higher, the tools <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/mkarf.html">mkarf</a> and <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/mkinstmap.html">mkinstmap</a>
+<p>The tools <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/mkarf.html">mkarf</a> and <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/mkinstmap.html">mkinstmap</a>
 include the ability to turn off the QE uniformity maps through the use
 of <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/ardlib.html">ardlib</a> qualifiers.  For example, a calling sequence like:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>unix%  mkarf detsubsys=&quot;ACIS-7;uniform;bpmask=0&quot; ......
@@ -114,7 +114,7 @@ does not vary over the detector.</p>
 <h2>Mismatch between the FEF-based response and the CALDB order-sorting tables<a class="headerlink" href="#mismatch-between-the-fef-based-response-and-the-caldb-order-sorting-tables" title="Link to this heading">¶</a></h2>
 <p>As mentioned above, <strong>marx</strong> generates non-CTI corrected PHA values. This
 is accomplished by mapping the incident photon energy to a PHA value
-using a probability from derived from the most recent non-CTI
+using a probability derived from the most recent non-CTI
 calibration data (CALDB <code class="docutils literal notranslate"><span class="pre">acisD2000-01-29fef_phaN0005.fits</span></code>).  The CIAO
 tool <a class="reference external" href="http://cxc.harvard.edu/ciao/ahelp/tg_resolve_events.html">tg_resolve_events</a> assigns a diffracted order to each event
 by comparing the event’s ACIS energy to its dispersion coordinate.
@@ -129,8 +129,8 @@ differ mainly in the region around the Si K edge (~1.8 keV).  As such,
 a comparison of a <strong>marx</strong> spectrum with the expected spectrum
 of the input model will show strong systematic residuals near 1.8 keV.</p>
 </section>
-<section id="isis-pileup-fitting-kernel">
-<h2>ISIS Pileup Fitting Kernel<a class="headerlink" href="#isis-pileup-fitting-kernel" title="Link to this heading">¶</a></h2>
+<section id="pileup-fitting-kernel">
+<h2>Pileup Fitting Kernel<a class="headerlink" href="#pileup-fitting-kernel" title="Link to this heading">¶</a></h2>
 <p>The default parameters for the pileup fitting kernel in <a class="reference external" href="http://space.mit.edu/cxc/isis/">ISIS</a>, but also in
 <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a> and <a class="reference external" href="http://heasarc.nasa.gov/xanadu/xspec/">XSpec</a> have been
 calibrated for point source extractions. Specifically, the values
@@ -174,7 +174,7 @@ generally negligible and should not be a concern for Chandra proposers.</p>
 <li><a class="reference internal" href="#spatial-dependence-of-the-quantum-efficiency">Spatial Dependence of the Quantum Efficiency</a></li>
 <li><a class="reference internal" href="#acis-response-functions">ACIS Response Functions</a></li>
 <li><a class="reference internal" href="#mismatch-between-the-fef-based-response-and-the-caldb-order-sorting-tables">Mismatch between the FEF-based response and the CALDB order-sorting tables</a></li>
-<li><a class="reference internal" href="#isis-pileup-fitting-kernel">ISIS Pileup Fitting Kernel</a></li>
+<li><a class="reference internal" href="#pileup-fitting-kernel">Pileup Fitting Kernel</a></li>
 <li><a class="reference internal" href="#chandra-aimpoint-drift">Chandra Aimpoint Drift</a></li>
 </ul>
 </li>
@@ -228,7 +228,7 @@ generally negligible and should not be a concern for Chandra proposers.</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

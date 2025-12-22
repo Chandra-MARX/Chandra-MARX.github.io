@@ -7,7 +7,7 @@
 
     <title>Running marx simulations &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -138,7 +138,7 @@ until the indicated integration time is reached.
 <strong>This mode takes precedence over ray generation mode.
 If the ExposureTime parameter is set to any positive,
 non-zero value, the simulation will be run in timed exposure mode.</strong>
-Users wishing to run simulations in ray generation mode, should set
+Users wishing to run simulations in ray generation mode should set
 <code class="docutils literal notranslate"><span class="pre">ExposureTime=0</span></code>.</p>
 </dd></dl>
 
@@ -204,14 +204,10 @@ to be used in the simulation as well as which of <strong>marx</strong> mirror mo
 <dl class="parameter">
 <dt class="sig sig-object" id="parameter-MirrorType">
 <span class="sig-name descname"><span class="pre">MirrorType</span></span><a class="headerlink" href="#parameter-MirrorType" title="Link to this definition">¶</a></dt>
-<dd><p>(<em>default</em>: <code class="docutils literal notranslate"><span class="pre">HRMA</span></code>) This parameter can be one of three values: <code class="docutils literal notranslate"><span class="pre">HRMA</span></code>, <code class="docutils literal notranslate"><span class="pre">EA-MIRROR</span></code>, or <code class="docutils literal notranslate"><span class="pre">FLATFIELD</span></code>.
+<dd><p>(<em>default</em>: <code class="docutils literal notranslate"><span class="pre">HRMA</span></code>) This parameter can be one of two values: <code class="docutils literal notranslate"><span class="pre">HRMA</span></code>, <code class="docutils literal notranslate"><span class="pre">FLATFIELD</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">HRMA</span></code> model is a full raytrace using an accurate physical model of the
 HRMA’s parabolic and hyperbolic components. Mode details can be found in
-<a class="reference internal" href="../indetail/hardwaremodel.html#sect-hrma"><span class="std std-ref">HRMA model</span></a>. <code class="docutils literal notranslate"><span class="pre">EA-MIRROR</span></code> model is a simpler
-model based on a thin–lens approximation and using tabulated
-effective area and point spread function data. This simple model is of historical interest only
-and is no longer accurate or supported. This option should <em>not</em>
-be selected.</p>
+<a class="reference internal" href="../indetail/hardwaremodel.html#sect-hrma"><span class="std std-ref">HRMA model</span></a>.</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">MirrorType=FLATFIELD</span></code>, <strong>marx</strong> will propagate rays to a specified
 rectangular region in the focal plane parallel to the optical axis.
 No HRMA vignetting or scattering is applied.
@@ -327,6 +323,14 @@ means of minimizing this effect for a given observation.</p>
 </dd></dl>
 
 <dl class="parameter">
+<dt class="sig sig-object" id="parameter-DetOffsetY">
+<span class="sig-name descname"><span class="pre">DetOffsetY</span></span><a class="headerlink" href="#parameter-DetOffsetY" title="Link to this definition">¶</a></dt>
+<dd><p>(<em>default</em>: <code class="docutils literal notranslate"><span class="pre">0</span></code>) Offset in mm from the nominal on-axis, in-focus SIM position.</p>
+<p>For simulating flight behavior, Y axis translation is not permitted
+and thus <code class="docutils literal notranslate"><span class="pre">DetOffsetY=0</span></code> should be used.</p>
+</dd></dl>
+
+<dl class="parameter">
 <dt class="sig sig-object" id="parameter-DetOffsetZ">
 <span class="sig-name descname"><span class="pre">DetOffsetZ</span></span><a class="headerlink" href="#parameter-DetOffsetZ" title="Link to this definition">¶</a></dt>
 <dd><p>(<em>default</em>: <code class="docutils literal notranslate"><span class="pre">0</span></code>) Offset in mm from the nominal on-axis, in-focus SIM position.</p>
@@ -361,7 +365,7 @@ Chandra Level 2 events file.</p>
 <dl class="parameter">
 <dt class="sig sig-object" id="parameter-SourceDEC">
 <span class="sig-name descname"><span class="pre">SourceDEC</span></span><a class="headerlink" href="#parameter-SourceDEC" title="Link to this definition">¶</a></dt>
-<dd><p>(<em>default</em>: <code class="docutils literal notranslate"><span class="pre">-5.375129700E+01</span></code>) RA of source in the sky in decimal degrees.
+<dd><p>(<em>default</em>: <code class="docutils literal notranslate"><span class="pre">-5.375129700E+01</span></code>) DEC of source in the sky in decimal degrees.
 Corresponds on the <code class="docutils literal notranslate"><span class="pre">DEC_TARG</span></code> FITS header keyword in a standard
 Chandra Level 2 events file.</p>
 </dd></dl>
@@ -377,7 +381,7 @@ Chandra Level 2 events file.</p>
 <dl class="parameter">
 <dt class="sig sig-object" id="parameter-Dec_Nom">
 <span class="sig-name descname"><span class="pre">Dec_Nom</span></span><a class="headerlink" href="#parameter-Dec_Nom" title="Link to this definition">¶</a></dt>
-<dd><p>(<em>default</em>: <code class="docutils literal notranslate"><span class="pre">-53.75743813458669</span></code>) RA of nominal aimpoint in the sky in decimal degrees.
+<dd><p>(<em>default</em>: <code class="docutils literal notranslate"><span class="pre">-53.75743813458669</span></code>) DEC of nominal aimpoint in the sky in decimal degrees.
 Corresponds on the <code class="docutils literal notranslate"><span class="pre">DEC_NOM</span></code> FITS header keyword in a standard
 Chandra Level 2 events file.</p>
 </dd></dl>
@@ -521,7 +525,7 @@ conversion of an integer pixel coordinate to a real-valued one).  The
 user has some control over the form of the randomization blur via the
 <a class="reference internal" href="../Reference/tools.html#marx2fits"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marx2fits</span></code></a> <code class="docutils literal notranslate"><span class="pre">--pixadj</span></code> option.</p>
 <p>Figure <a class="reference internal" href="#fig-ditherexp"><span class="std std-ref">dither</span></a> shows an example of a simulated
-ACIS-I observation of a cluster of galaxies with and without
+ACIS-I observation of a cluster of galaxies without and with
 aspect motion included.</p>
 <figure class="align-center" id="id1">
 <span id="fig-ditherexp"></span><img alt="Example of ACIS-I simulation with and without dither" src="../_images/dither_exp.png" />
@@ -546,7 +550,7 @@ HRC observations with dither can be simulated by adjusting the
 <a class="reference internal" href="../Reference/othermarxpars.html#parameter-DitherPeriod_Dec"><code class="xref std std-par docutils literal notranslate"><span class="pre">DitherPeriod_Dec</span></code></a> to 768.6 and 1414.2 seconds, respectively.
 Current values for Chandra are listed in the
 <a class="reference external" href="https://cxc.harvard.edu/proposer/POG/html/chap5.html#tb:dither">Proposers Observatory Guide (POG)</a>.</p>
-<p>Finally, if <a class="reference internal" href="../indetail/aspect.html#parameter-DitherModel"><code class="xref std std-par docutils literal notranslate"><span class="pre">DitherModel=FILE</span></code></a>, <strong>marx</strong> will use the contents on
+<p>Finally, if <a class="reference internal" href="../indetail/aspect.html#parameter-DitherModel"><code class="xref std std-par docutils literal notranslate"><span class="pre">DitherModel=FILE</span></code></a>, <strong>marx</strong> will use the contents of
 an aspect solution file (ASPSOL) to specify the dither motion pattern.
 The name of the ASPSOL file to use is specified by the <a class="reference internal" href="../indetail/aspect.html#parameter-DitherFile"><code class="xref std std-par docutils literal notranslate"><span class="pre">DitherFile</span></code></a>
 parameter. ASPSOL files can be produced by
@@ -573,45 +577,33 @@ proceeds indicating which configuration is being used as well as
 which data files were accessed. Output from an example
 using the ACIS-I with dither enabled is shown here:</p>
 <div class="highlight-none notranslate"><div class="highlight"><pre><span></span>unix% marx
-MARX version 4.0.8, Copyright (C) 2002 Massachusetts Institute of Technology
+MARX version 6.0.1, Copyright (C) 2002-2025 Massachusetts Institute of Technology
 
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/EKCHDOS06.rdb
-Reading binary HRMA optical constants:
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/iridium.dat
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/corr_1.dat
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/corr_3.dat
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/corr_4.dat
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/corr_6.dat
+Reading binary HRMA optical constants
 Reading scattering tables
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/scat_p1_M.bin
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/scat_h1_M.bin
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/scat_p3_M.bin
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/scat_h3_M.bin
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/scat_p4_M.bin
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/scat_h4_M.bin
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/scat_p6_M.bin
-    /usr/local/src/marx_4.0.8-dist/marx/data/hrma/scat_h6_M.bin
-Initializing ACIS-I detector...
+Initializing ACIS-S detector...
 Reading ACIS-I/S FEF File
-    /usr/local/src/marx_4.0.8-dist/marx/data/caldb/acisfef.fits
-Reading ACIS-I QE/Filter Files
-    /usr/local/src/marx_4.0.8-dist/marx/data/caldb/acisD1997-04-17qeN0004.fits for [CCDID = 0]
-    /usr/local/src/marx_4.0.8-dist/marx/data/caldb/acisD1997-04-17qeN0004.fits for [CCDID = 1]
-    /usr/local/src/marx_4.0.8-dist/marx/data/caldb/acisD1997-04-17qeN0004.fits for [CCDID = 2]
-    /usr/local/src/marx_4.0.8-dist/marx/data/caldb/acisD1997-04-17qeN0004.fits for [CCDID = 3]
+Reading ACIS-S QE/Filter Files
+Reading ACIS4 Contamination File
+Reading ACIS5 Contamination File
+Reading ACIS6 Contamination File
+Reading ACIS7 Contamination File
+Reading ACIS8 Contamination File
+Reading ACIS9 Contamination File
 [Using INTERNAL dither model]
 Initializing source type POINT...
 System initialized.
 
-Starting simulation.  Exposure Time set to 3.000000e+04 seconds
+Starting simulation.  Exposure Time set to 1.000000e+04 seconds
 Collecting 100000 photons...
-    67631 collected.
+        67782 photons collected.
 Reflecting from HRMA
-Detecting with ACIS-I
+Diffracting from HETG.
+Detecting with ACIS-S
 
 Writing output to directory &#39;point&#39; ...
-Total photons: 67631, Total Photons detected: 18060, (efficiency: 0.267037)
-   (efficiency this iteration  0.267037)  Total time: 30000.079736
+Total photons: 67782, Total Photons detected: 5915, (efficiency: 0.087265)
+(efficiency this iteration  0.087265)  Total time: 10000.077041
 </pre></div>
 </div>
 <p>Once the initialization is complete, <strong>marx</strong> will begin processing
@@ -627,7 +619,7 @@ integration time has been reached, the simulation will terminate.</p>
 <dt class="sig sig-object" id="parameter-Verbose">
 <span class="sig-name descname"><span class="pre">Verbose</span></span><a class="headerlink" href="#parameter-Verbose" title="Link to this definition">¶</a></dt>
 <dd><p>(<em>default</em>: <code class="docutils literal notranslate"><span class="pre">1</span></code>) The diagnostic messages can be quieted by setting the parameter
-<code class="docutils literal notranslate"><span class="pre">Verbose=&quot;no&quot;</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">Verbose=&quot;0&quot;</span></code> and more detailed output can be printed with higher values.</p>
 </dd></dl>
 
 </section>
@@ -638,7 +630,7 @@ parameters, <strong>marx</strong> will by default create a directory containing 
 of binary output files. Usually, a user will not use these files directly, but
 convert them to fits files using <a class="reference internal" href="../Reference/tools.html#marx2fits"><code class="xref std std-marxtool docutils literal notranslate"><span class="pre">marx2fits</span></code></a> (see below).
 The native binary format is discussed in more detail in the description of the
-parameter <code class="xref std std-par docutils literal notranslate"><span class="pre">Outputvectors</span></code>.</p>
+parameter <a class="reference internal" href="../Reference/othermarxpars.html#parameter-OutputVectors"><code class="xref std std-par docutils literal notranslate"><span class="pre">OutputVectors</span></code></a>.</p>
 <p>These native binary vectors provide convenient access to the individual
 properties of detected photons. For example, to create an ASCII file
 containing only the times and pulse heights for a set of detected photons,
@@ -788,7 +780,7 @@ have counterparts in all the directories.</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

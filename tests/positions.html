@@ -7,7 +7,7 @@
 
     <title>Coordinates on the sky and the chip &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -49,15 +49,7 @@
         <div class="bodywrapper">
           <div class="body" role="main">
             
-  <div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">setup_marx</span>
-<span class="n">setup_marx</span><span class="p">()</span>
-</pre></div>
-</div>
-</div>
-</div>
-<section id="coordinates-on-the-sky-and-the-chip">
+  <section id="coordinates-on-the-sky-and-the-chip">
 <h1>Coordinates on the sky and the chip<a class="headerlink" href="#coordinates-on-the-sky-and-the-chip" title="Link to this heading">¶</a></h1>
 <p>In every marx simulation, one or more sources are placed at some sky position.
 marx simulates photons coming from that position, traces them through the
@@ -88,29 +80,52 @@ To simplify the simulation input, we assume that all sources have flat
 lightcurves and are monoenergetic at the observed mean energy (the energy matters because
 the effective area is energy dependent and so is the PSF).
 We write a short C code that reads an input coordinate list and generates the photons in this manner.</p>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ciao_contrib.cda.data</span><span class="w"> </span><span class="kn">import</span> <span class="n">download_chandra_obsids</span>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">download_chandra_obsids</span><span class="p">([</span><span class="mi">3744</span><span class="p">],</span> <span class="n">filetypes</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;asol&#39;</span><span class="p">,</span> <span class="s1">&#39;evt2&#39;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">asolfile</span> <span class="o">=</span> <span class="s1">&#39;3744/primary/pcadf03744_000N001_asol1.fits.gz&#39;</span>
 <span class="n">evt2file</span> <span class="o">=</span> <span class="s1">&#39;3744/primary/acisf03744N004_evt2.fits.gz&#39;</span>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;Make input coordinate table</span>
 
@@ -133,8 +148,14 @@ We write a short C code that reads an input coordinate list and generates the ph
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;C code for a grid of sources.</span>
 
@@ -338,8 +359,14 @@ We write a short C code that reads an input coordinate list and generates the ph
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
@@ -356,8 +383,14 @@ We write a short C code that reads an input coordinate list and generates the ph
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">marxpars_from_asol</span>
 <span class="n">pars</span> <span class="o">=</span> <span class="n">marxpars_from_asol</span><span class="p">(</span><span class="n">asolfile</span><span class="p">,</span> <span class="n">evt2file</span><span class="p">)</span>
@@ -381,11 +414,17 @@ We write a short C code that reads an input coordinate list and generates the ph
 </pre></div>
 </div>
 </div>
+</details>
 </div>
 <p>In the observation, the brightest sources are piled-up. We don’t bother
 simulating this here, so for the visualization we just set the scaling limits to bring out
 the fainter details and ignore the bright peaks.</p>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy.visualization</span><span class="w"> </span><span class="kn">import</span> <span class="n">simple_norm</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
@@ -412,12 +451,18 @@ the fainter details and ignore the bright peaks.</p>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
-<img alt="../_images/ce0e93d1d4bb6d74f3f4132c60219bc3da07346bfb2344f185e780419f6cca47.png" src="../_images/ce0e93d1d4bb6d74f3f4132c60219bc3da07346bfb2344f185e780419f6cca47.png" />
+<img alt="../_images/524f7c5ec428f9eaf2f945b5719d8ee3a868ad96bed51bd9bd0f2677eb46389a.png" src="../_images/524f7c5ec428f9eaf2f945b5719d8ee3a868ad96bed51bd9bd0f2677eb46389a.png" />
 </div>
 </div>
-<p>Image of the observed data (left) and simulation (right). The diagonal line from the center to the top right is the read-out streak from $\theta^1$ Ori C.</p>
-<div class="cell docutils container">
+<p>Image of the observed data (left) and simulation (right). The diagonal line from the center to the top right is the read-out streak from :math:<code class="docutils literal notranslate"><span class="pre">\theta^1</span></code> Ori C.</p>
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">ciao_contrib</span><span class="w"> </span><span class="kn">import</span> <span class="n">runtool</span> <span class="k">as</span> <span class="n">rt</span>
 
@@ -428,8 +473,14 @@ the fainter details and ignore the bright peaks.</p>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">astropy.coordinates</span><span class="w"> </span><span class="kn">import</span> <span class="n">SkyCoord</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">astropy.io</span><span class="w"> </span><span class="kn">import</span> <span class="n">fits</span>
@@ -455,8 +506,9 @@ the fainter details and ignore the bright peaks.</p>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
-<img alt="../_images/878fe4bfaef4962cab9385d66a28d18ff06eb64659cafabe873a64253f77b995.png" src="../_images/878fe4bfaef4962cab9385d66a28d18ff06eb64659cafabe873a64253f77b995.png" />
+<img alt="../_images/44af23667958e39886f012fd37d9ade6d4842daa1e5f128904e2a61bc634a8ac.png" src="../_images/44af23667958e39886f012fd37d9ade6d4842daa1e5f128904e2a61bc634a8ac.png" />
 </div>
 </div>
 <p>Apart from a clump close to the aimpoint (where sources in the ONC are so close to each other that they can easily be confused), the distribution of coordinate errors spreads out with increasing distance, i.e. size of the PSF.</p>
@@ -465,17 +517,12 @@ the fainter details and ignore the bright peaks.</p>
 <h2>Simulations with an IMAGE source<a class="headerlink" href="#simulations-with-an-image-source" title="Link to this heading">¶</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">SourceType=IMAGE</span></code> in marx is a strange beast that behaves in ways that users might find surprising. When using this source type, marx will read in an image file and use the pixel values as relative probabilities for generating photons across the image.</p>
 <p>Marx <em>will</em> read the WCS in the image header, but <em>only</em> use the absolute value for the pixel size, not the orientation or position. The center of the image is always supposed to be at the nominal pointing position and the image x/y axes are always aligned with the sky coordinate system in marx.</p>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Turn the downloaded event file into an image</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">ciao_contrib</span><span class="w"> </span><span class="kn">import</span> <span class="n">runtool</span> <span class="k">as</span> <span class="n">rt</span>
-<span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="o">.</span><span class="n">punlearn</span><span class="p">()</span>
-<span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="n">evt2file</span> <span class="o">+</span> <span class="s1">&#39;[bin x=3900:4500:1,y=3900:4500:1]&#39;</span><span class="p">,</span> <span class="s1">&#39;3744_image.fits&#39;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Are using astropy for the coordinate transforms, just because I know it better and can type it faster</span>
 <span class="c1"># than the equivalent packages that are part of CIAO</span>
@@ -491,8 +538,14 @@ the fainter details and ignore the bright peaks.</p>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="sd">&#39;&#39;&#39;MARX simulation with an IMAGE source </span>
 <span class="sd">&#39;&#39;&#39;</span>
@@ -510,20 +563,21 @@ the fainter details and ignore the bright peaks.</p>
 <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="n">marxcall</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">out2</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">(</span><span class="s1">&#39;marx2fits --pixadj=EDSER COUP_image COUP_image_evt2.fits&#39;</span><span class="p">,</span>
                       <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">capture_output</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="c1"># Let&#39;s turn the simulated data into an image, too, to make it easier to </span>
+
+<span class="c1"># Let&#39;s turn the simulated data into an image, too, to make it easier to </span>
 <span class="c1"># display in WCS instead of in detector coordinates</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="s1">&#39;COUP_image_evt2.fits[bin x=3900:4500:1,y=3900:4500:1]&#39;</span><span class="p">,</span> <span class="s1">&#39;COUP_image.fits&#39;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
 <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="s1">&#39;3744_image.fits&#39;</span><span class="p">,</span> <span class="s1">&#39;COUP_image.fits&#39;</span><span class="p">],</span> <span class="n">start</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
@@ -536,12 +590,9 @@ the fainter details and ignore the bright peaks.</p>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
-<div class="output stderr highlight-myst-ansi notranslate"><div class="highlight"><pre><span></span>WARNING: FITSFixedWarning: RADECSYS= &#39;ICRS &#39; / WCS system 
-the RADECSYS keyword is deprecated, use RADESYSa. [astropy.wcs.wcs]
-</pre></div>
-</div>
-<img alt="../_images/a6383fef4cff43cb38634cc4a0b45b928ccdc90242522c6e1b9b80c94459cf51.png" src="../_images/a6383fef4cff43cb38634cc4a0b45b928ccdc90242522c6e1b9b80c94459cf51.png" />
+<img alt="../_images/078ae6ff640837ce9d9e8fa22777a953df68c0a802393c40a5743f9cef281b9b.png" src="../_images/078ae6ff640837ce9d9e8fa22777a953df68c0a802393c40a5743f9cef281b9b.png" />
 </div>
 </div>
 </section>
@@ -552,7 +603,12 @@ emits an equal number of photons (exactly, no Poisson statistics) so that
 we can compare the accuracy of the position we recover. Note that the
 <em>detected</em> number of photons will be smaller for off-axis photons because
 of vignetting!</p>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">ccode</span><span class="o">=</span><span class="s1">&#39;&#39;&#39;</span>
 <span class="s1">#include &lt;stdio.h&gt;</span>
@@ -624,18 +680,19 @@ of vignetting!</p>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">run</span><span class="p">([</span><span class="s1">&#39;gcc&#39;</span><span class="p">,</span> <span class="s1">&#39;-lm&#39;</span><span class="p">,</span>
                       <span class="s1">&#39;-shared&#39;</span><span class="p">,</span> <span class="s1">&#39;radialgrid.c&#39;</span><span class="p">,</span> <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="s1">&#39;radialgrid.so&#39;</span><span class="p">])</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pars</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;SourceType&#39;</span><span class="p">:</span> <span class="s1">&#39;USER&#39;</span><span class="p">,</span> <span class="s1">&#39;OutputDir&#39;</span><span class="p">:</span> <span class="s1">&#39;points&#39;</span><span class="p">,</span>
+
+<span class="n">pars</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;SourceType&#39;</span><span class="p">:</span> <span class="s1">&#39;USER&#39;</span><span class="p">,</span> <span class="s1">&#39;OutputDir&#39;</span><span class="p">:</span> <span class="s1">&#39;points&#39;</span><span class="p">,</span>
         <span class="s1">&#39;GratingType&#39;</span><span class="p">:</span> <span class="s1">&#39;NONE&#39;</span><span class="p">,</span><span class="s1">&#39;SourceRA&#39;</span><span class="p">:</span> <span class="mf">90.</span><span class="p">,</span> <span class="s1">&#39;SourceDEC&#39;</span><span class="p">:</span> <span class="mf">0.</span><span class="p">,</span>
         <span class="s1">&#39;RA_Nom&#39;</span><span class="p">:</span> <span class="mf">90.</span><span class="p">,</span> <span class="s1">&#39;Dec_Nom&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span> <span class="s1">&#39;Roll_Nom&#39;</span><span class="p">:</span> <span class="mi">0</span><span class="p">,</span>
         <span class="s1">&#39;DetectorType&#39;</span><span class="p">:</span> <span class="s1">&#39;ACIS-I&#39;</span><span class="p">,</span>
@@ -653,8 +710,14 @@ of vignetting!</p>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
 
@@ -668,24 +731,25 @@ of vignetting!</p>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
-<img alt="../_images/23261d646b28399bd5186143f9e7413527d35dec9bee08cd3f7ebfa7efb05bfb.png" src="../_images/23261d646b28399bd5186143f9e7413527d35dec9bee08cd3f7ebfa7efb05bfb.png" />
+<img alt="../_images/da82629be9794dc8b4b8f84c14e75964e48eadb3be426002ad9e4d496b184b91.png" src="../_images/da82629be9794dc8b4b8f84c14e75964e48eadb3be426002ad9e4d496b184b91.png" />
 </div>
 </div>
 <p>Image of the simulation. The size of the PSF increases further away from the aimpoint.</p>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="s2">&quot;points.fits[EVENTS][bin x=3000:5100:1,y=3000:5100:1]&quot;</span><span class="p">,</span> <span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">,</span>
            <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">mkpsfmap</span><span class="p">(</span><span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;psf.map&quot;</span><span class="p">,</span> <span class="n">energy</span><span class="o">=</span><span class="mf">1.4</span><span class="p">,</span> <span class="n">ecf</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="n">rt</span><span class="o">.</span><span class="n">celldetect</span><span class="p">(</span><span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="s2">&quot;src.fits&quot;</span><span class="p">,</span> <span class="n">psffile</span><span class="o">=</span><span class="s2">&quot;psf.map&quot;</span><span class="p">,</span> <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-</pre></div>
-</div>
-</div>
-</div>
-<div class="cell docutils container">
-<div class="cell_input docutils container">
-<div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">src</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;src.fits&#39;</span><span class="p">)</span>
+
+<span class="n">src</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;src.fits&#39;</span><span class="p">)</span>
 <span class="c1"># Find distance from input position.</span>
 <span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA_INPUT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">//</span> <span class="p">(</span><span class="mf">360.</span><span class="o">/</span><span class="mf">16.</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mf">360.</span><span class="o">/</span><span class="mf">16.</span><span class="p">)</span> <span class="o">-</span> <span class="mf">10.</span>
 <span class="c1"># Problem: Might expect source at 1.0,</span>
@@ -725,8 +789,9 @@ of vignetting!</p>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
-<img alt="../_images/7a051e1e95630ce43e890446cee5d7082b93587ffa418c2e695b65a932e6bf33.png" src="../_images/7a051e1e95630ce43e890446cee5d7082b93587ffa418c2e695b65a932e6bf33.png" />
+<img alt="../_images/079d6ffc086522dcce6da15a8ac31eccc249a73f5641a63961ed5c95564dc0f1.png" src="../_images/079d6ffc086522dcce6da15a8ac31eccc249a73f5641a63961ed5c95564dc0f1.png" />
 </div>
 </div>
 <p><em>left</em>: The error in the position (measured radially to the optical axis) increases with the distance to the optical axis. One part of this is just that the effective area and thus the number of counts decreases. There is also a systematic trend where sources at larger off-axis angle are systematically fitted too close to the center. Further investigation is necessary to check if this is a problem of marx or the CIAO tool celldetect. In any case, the typical offset is below 0.2 arcsec, which is less than half a pixel in ACIS. <em>right</em>: Difference in position angle between input and fit.</p>
@@ -739,7 +804,12 @@ of vignetting!</p>
 very large at large off-axis angles and thus the positional uncertainty
 will be so large that a comparison to marx is no longer helpful to test
 the accuracy of the marx simulations.</p>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">pars</span><span class="p">[</span><span class="s1">&#39;DetectorType&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;HRC-I&#39;</span>
 <span class="n">marxcall</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;marx&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">=</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pars</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
@@ -750,8 +820,14 @@ the accuracy of the marx simulations.</p>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">fig</span><span class="p">,</span> <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">6</span><span class="p">,</span><span class="mi">6</span><span class="p">))</span>
 
@@ -765,12 +841,18 @@ the accuracy of the marx simulations.</p>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
-<img alt="../_images/4795f81b8185e8f5537a976ff1af87238e45d13c715a011f32c73c5db4769b6b.png" src="../_images/4795f81b8185e8f5537a976ff1af87238e45d13c715a011f32c73c5db4769b6b.png" />
+<img alt="../_images/3dab316a32f87231ce8ab31b99079d03b93d3dfae9ddaabe4586f85e15679945.png" src="../_images/3dab316a32f87231ce8ab31b99079d03b93d3dfae9ddaabe4586f85e15679945.png" />
 </div>
 </div>
 <p>Image of the simulation. The size of the PSF increases further away from the aimpoint.</p>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">rt</span><span class="o">.</span><span class="n">dmcopy</span><span class="p">(</span><span class="s2">&quot;points.fits[EVENTS][bin x=8500:24500:2,y=8500:24500:2]&quot;</span><span class="p">,</span> <span class="s2">&quot;im.fits&quot;</span><span class="p">,</span> <span class="n">option</span><span class="o">=</span><span class="s2">&quot;image&quot;</span><span class="p">,</span>
            <span class="n">clobber</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -779,8 +861,14 @@ the accuracy of the marx simulations.</p>
 </pre></div>
 </div>
 </div>
+</details>
 </div>
-<div class="cell docutils container">
+<div class="cell tag_hide-input docutils container">
+<details class="admonition hide above-input">
+<summary aria-label="Toggle hidden content">
+<p class="collapsed admonition-title">Click to show code</p>
+<p class="expanded admonition-title">Click to hide code</p>
+</summary>
 <div class="cell_input docutils container">
 <div class="highlight-ipython3 notranslate"><div class="highlight"><pre><span></span><span class="n">src</span> <span class="o">=</span> <span class="n">Table</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;src.fits&#39;</span><span class="p">)</span>
 <span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA_INPUT&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">src</span><span class="p">[</span><span class="s1">&#39;RA&#39;</span><span class="p">]</span> <span class="o">//</span> <span class="p">(</span><span class="mf">360.</span><span class="o">/</span><span class="mf">16.</span><span class="p">))</span> <span class="o">*</span> <span class="p">(</span><span class="mf">360.</span><span class="o">/</span><span class="mf">16.</span><span class="p">)</span> <span class="o">-</span> <span class="mf">10.</span>
@@ -817,8 +905,9 @@ the accuracy of the marx simulations.</p>
 </pre></div>
 </div>
 </div>
+</details>
 <div class="cell_output docutils container">
-<img alt="../_images/25307a2686fce5388a201189bf2e49c7b5ae3e15f8b419f073aad3a8ea270fe4.png" src="../_images/25307a2686fce5388a201189bf2e49c7b5ae3e15f8b419f073aad3a8ea270fe4.png" />
+<img alt="../_images/9d2918f9733203a70b3f165c9b8b82a191e16aa6436361c2d93bdd0aaeec8c30.png" src="../_images/9d2918f9733203a70b3f165c9b8b82a191e16aa6436361c2d93bdd0aaeec8c30.png" />
 </div>
 </div>
 <p>See previous example. The same trends are visible with a slightly larger scatter.</p>
@@ -897,7 +986,7 @@ the accuracy of the marx simulations.</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

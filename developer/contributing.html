@@ -7,7 +7,7 @@
 
     <title>Contributing code or documentation &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -63,14 +63,23 @@ Building the source code has only minimal requirements (a C compiler and GNU aut
 The documentation is written using <a class="reference external" href="http://www.sphinx-doc.org/">Sphinx</a> and requires
 a number of packages to be build:</p>
 <ul>
-<li><p>python, sphinx, matplotlib, pygments: for text and figures</p></li>
-<li><p><strong>marx</strong>, <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a>, <a class="reference external" href="http://space.mit.edu/cxc/isis/">ISIS</a>, <a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a>, and <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> to run the examples and
-generate the associated figures. (The documentation can be build without this, but it
-will be missing all figures in the examples.)</p></li>
+<li><p>Python, sphinx, matplotlib.</p></li>
+<li><p><strong>marx</strong>, <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a> (incl. the CALDB and the ACIS background files),
+<a class="reference external" href="http://cxc.harvard.edu/sherpa/">Sherpa</a>, and <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a> to run the examples and
+generate the associated figures. The examples expect all <strong>marx</strong> binaries and
+<code class="docutils literal notranslate"><span class="pre">trace-nest</span></code> (from <a class="reference external" href="http://cxc.harvard.edu/cal/Hrma/SAOTrace.html">SAOTrace</a>) to be in the system path. They also expect
+the <code class="docutils literal notranslate"><span class="pre">PFILES</span></code> environment variable to point to the <strong>marx</strong> parameter files.</p></li>
+<li><p>Longer running tests are in the <cite>tests/</cite> subdirectory. These are written as
+<a class="reference external" href="https://jupyter.org/">Jupyter notebooks</a> and additionally require
+astropy, myst_nb (for chaching and building the notebooks with sphinx).
+The notebooks also need <strong>marx</strong> and <cite>SAOTrace</cite>. If they are not on the system path,
+they can be specified in a <code class="docutils literal notranslate"><span class="pre">marx_examples.cfg</span></code> files in the <code class="docutils literal notranslate"><span class="pre">tests/</span></code> directory.</p></li>
 </ul>
 </li>
-<li><p><a class="reference external" href="https://github.com/Chandra-MARX/marx-test">https://github.com/Chandra-MARX/marx-test</a> : Tests that either run a long time or have
-extra dependencies beyond <strong>marx</strong> itself (e.g. <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a>) are collected in this repository.</p></li>
+<li><p><a class="reference external" href="https://github.com/Chandra-MARX/marx-test">https://github.com/Chandra-MARX/marx-test</a> : This repository focusses on CI-like tests
+that have additional requirements beyond the basic <strong>marx</strong> build (if it only needs
+<strong>marx</strong> and some shell script, it should to into <strong>marx</strong> itself).
+For example, some tests need <a class="reference external" href="http://cxc.harvard.edu/ciao/">CIAO</a>, or additional Python packages.</p></li>
 </ul>
 </section>
 
@@ -133,7 +142,7 @@ extra dependencies beyond <strong>marx</strong> itself (e.g. <a class="reference
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>

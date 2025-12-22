@@ -7,7 +7,7 @@
 
     <title>Simulating an LETG/ACIS-S observation &#8212; MARX 6.0.1 documentation</title>
     <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=03e43079" />
-    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=c47e7066" />
+    <link rel="stylesheet" type="text/css" href="../../_static/marxwebtheme.css?v=8224f6db" />
     <link rel="stylesheet" type="text/css" href="../../_static/plot_directive.css?v=7f9a90b1" />
     <link rel="stylesheet" type="text/css" href="../../_static/mystnb.8ecb98da25f57f5357bf6f572d296f466b2cfe2517ffebfabe82451661e28f02.css?v=6644e6bb" />
     
@@ -60,7 +60,7 @@ absorbed powerlaw spectrum with a column density of <span class="math notranslat
 spectral index of 1.8. Rather than specifying an
 exposure time for the observation as in the other examples, here we
 specify the desired number of detected events.  In this case, the
-simulation will be run until 1,000,000 (1e6) events have been
+simulation will be run until 100,000 (1e5) events have been
 detected.</p>
 <section id="creating-an-input-spectrum-from-a-sherpa-model">
 <span id="creating-sherpa-spectrum"></span><h2>Creating an input spectrum from a Sherpa model<a class="headerlink" href="#creating-an-input-spectrum-from-a-sherpa-model" title="Link to this heading">¶</a></h2>
@@ -150,7 +150,7 @@ projected to the sky plane.</p>
              <span class="s1">&#39;&quot;letgplaw_evt.fits[x=3950:4250][y=3950:4250][energy=500:2000][bin sky=1]&quot; &#39;</span> <span class="o">+</span>
              <span class="s1">&#39;&quot;letgplaw_evt.fits[x=3950:4250][y=3950:4250][energy=2000:12000][bin sky=1]&quot; &#39;</span> <span class="o">+</span>
              <span class="s1">&#39;regionfile=&quot;&quot; outfile=&quot;image_rgb.jpg&quot; minred=0 mingreen=0 minblue=0 maxred=10 &#39;</span> <span class="o">+</span>
-             <span class="s1">&#39;maxgreen=50 maxblue=1000 clobber=yes&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+             <span class="s1">&#39;maxgreen=50 maxblue=50 clobber=yes&#39;</span><span class="p">,</span> <span class="n">shell</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.image</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpimg</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
@@ -174,7 +174,8 @@ right corresponds to diffracted photons from the primary grating bars
 of the LEG.  The events in this line are the subject of the spatial
 extraction step when creating the event histograms for spectral
 analysis, as described below.  The other blue lines in the fan-like
-structure correspond to photons that have also been diffracted by the
+structure (very faint, comes out better in longer simulations)
+correspond to photons that have also been diffracted by the
 fine support structure of the LEG. This fine support structure forms a
 grating that diffracts in a direction orthogonal to the primary
 diffraction direction.  The events in the multicolored line that runs
@@ -362,7 +363,7 @@ Monte-Carlo simulation based on random numbers.</p>
     <div class="footer">
     <a href="mailto:marx-help@space.mit.edu">MARX support: marx-help@space.mit.edu</a>
     <a href="https://accessibility.mit.edu/">Accessibility</a>
-        &copy; Copyright 2002-2023, Massachusetts Institute of Technology.
+        &copy; Copyright 2002-2025, Massachusetts Institute of Technology.
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 8.2.3.
     </div>
   </body>
